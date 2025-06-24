@@ -1,11 +1,61 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
+import { UserManagement } from "@/components/dashboard/UserManagement";
+import { AssessmentData } from "@/components/dashboard/AssessmentData";
+import { InquiriesManagement } from "@/components/dashboard/InquiriesManagement";
+import { FeedbackTracking } from "@/components/dashboard/FeedbackTracking";
+import { ResourceManager } from "@/components/dashboard/ResourceManager";
+import { NotificationsCenter } from "@/components/dashboard/NotificationsCenter";
+import { SettingsPage } from "@/components/dashboard/SettingsPage";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <DashboardOverview />;
+      case "users":
+        return <UserManagement />;
+      case "assessments":
+        return <AssessmentData />;
+      case "inquiries":
+        return <InquiriesManagement />;
+      case "feedback":
+        return <FeedbackTracking />;
+      case "resources":
+        return <ResourceManager />;
+      case "notifications":
+        return <NotificationsCenter />;
+      case "settings":
+        return <SettingsPage />;
+      default:
+        return <DashboardOverview />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="flex">
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          collapsed={sidebarCollapsed}
+          setCollapsed={setSidebarCollapsed}
+        />
+        <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+          <DashboardHeader 
+            toggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sidebarCollapsed={sidebarCollapsed}
+          />
+          <main className="p-6">
+            {renderContent()}
+          </main>
+        </div>
       </div>
     </div>
   );

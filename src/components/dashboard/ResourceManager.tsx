@@ -110,6 +110,16 @@ const categories = [
   "sleep"
 ];
 
+// Utility to convert file to Base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export const ResourceManager = () => {
   const [resources, setResources] = useState([...mockResources]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -140,7 +150,16 @@ export const ResourceManager = () => {
   useEffect(() => {
     const stored = localStorage.getItem("resources");
     if (stored) {
-      setResources(JSON.parse(stored));
+      // Migrate tags to string[] if needed
+      const parsed = JSON.parse(stored).map((r: any) => ({
+        ...r,
+        tags: Array.isArray(r.tags)
+          ? r.tags
+          : typeof r.tags === 'string'
+            ? r.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+            : [],
+      }));
+      setResources(parsed);
     }
   }, []);
   useEffect(() => {
@@ -154,17 +173,16 @@ export const ResourceManager = () => {
   const handleSelect = (field, value) => {
     setForm((f) => ({ ...f, [field]: value }));
   };
-  const handleFile = (field, e) => {
-    const file = e.target.files[0];
-    setForm((f) => ({ ...f, [field]: file }));
+  const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      if (field === "thumbnail") setThumbPreview(url);
-      if (field === "emptyImage") setEmptyPreview(url);
+      const base64 = await fileToBase64(file);
+      setForm((f) => ({ ...f, [field]: base64 }));
+      if (field === "thumbnail") setThumbPreview(base64);
+      if (field === "emptyImage") setEmptyPreview(base64);
     }
   };
   const handlePublish = () => {
-    const tagsArr = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
     const newResource = {
       id: Date.now(),
       title: form.title,
@@ -172,7 +190,7 @@ export const ResourceManager = () => {
       type: form.type,
       category: form.category,
       description: form.description,
-      tags: tagsArr,
+      tags: form.tags,
       status: "published",
       publishDate: new Date().toISOString(),
       views: 0,
@@ -180,9 +198,12 @@ export const ResourceManager = () => {
       thumbnail: thumbPreview,
       emptyImage: emptyPreview,
     };
-    setResources((prev) => [newResource, ...prev]);
+    setResources((prev) => [
+      newResource,
+      ...prev.filter(r => Array.isArray(r.tags)),
+    ]);
     setIsAddDialogOpen(false);
-    setForm({ title: "", author: "", type: "", category: "", description: "", tags: "", thumbnail: null, emptyImage: null });
+    setForm({ title: "", author: "", type: "", category: "", description: "", tags: [], thumbnail: null, emptyImage: null });
     setThumbPreview(null);
     setEmptyPreview(null);
   };
@@ -234,7 +255,7 @@ export const ResourceManager = () => {
       type: resource.type,
       category: resource.category,
       description: resource.description,
-      tags: resource.tags.join(", "),
+      tags: Array.isArray(resource.tags) ? resource.tags : [],
       thumbnail: resource.thumbnail,
       emptyImage: resource.emptyImage,
     });
@@ -252,15 +273,15 @@ export const ResourceManager = () => {
             type: form.type,
             category: form.category,
             description: form.description,
-            tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+            tags: form.tags,
             thumbnail: thumbPreview,
             emptyImage: emptyPreview,
           }
         : r
-    ));
+    ).filter(r => Array.isArray(r.tags)));
     setEditDialogOpen(false);
     setEditingResource(null);
-    setForm({ title: "", author: "", type: "", category: "", description: "", tags: "", thumbnail: null, emptyImage: null });
+    setForm({ title: "", author: "", type: "", category: "", description: "", tags: [], thumbnail: null, emptyImage: null });
     setThumbPreview(null);
     setEmptyPreview(null);
   };
@@ -275,6 +296,15 @@ export const ResourceManager = () => {
   const tableHeaders = [
     "Thumbnail", "Title", "Author", "Type", "Category", "Status", "Published", "Actions"
   ];
+
+  // Before the return statement:
+  const viewingTags = viewingResource
+    ? Array.isArray(viewingResource.tags)
+      ? viewingResource.tags
+      : typeof viewingResource.tags === 'string'
+        ? viewingResource.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+        : []
+    : [];
 
   return (
     <div className="space-y-6">
@@ -607,7 +637,7 @@ export const ResourceManager = () => {
                   <div className="md:col-span-2"><span className="font-semibold text-gray-600">Description:</span> <span className="text-gray-900">{viewingResource.description}</span></div>
                   <div className="md:col-span-2 flex flex-wrap gap-2 items-center">
                     <span className="font-semibold text-gray-600">Tags:</span>
-                    {viewingResource.tags.map((tag, idx) => (
+                    {viewingTags.map((tag, idx) => (
                       <span key={idx} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{tag}</span>
                     ))}
                   </div>

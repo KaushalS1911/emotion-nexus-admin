@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +12,10 @@ export const SettingsPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-[#FF7119]">
           Settings
         </h1>
-        <p className="text-gray-600 mt-2">Manage your admin preferences and system settings</p>
+        <p className="text-gray-600 mt-2 text-[#012765]">Manage your admin preferences and system settings</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -31,9 +30,7 @@ export const SettingsPage = () => {
           <CardContent className="space-y-6">
             <div className="flex items-center space-x-4">
               <Avatar className="h-20 w-20">
-                <AvatarFallback className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg">
-                  AD
-                </AvatarFallback>
+                <AvatarFallback className="bg-[#012765] text-white">AD</AvatarFallback>
               </Avatar>
               <div>
                 <Button variant="outline">Change Avatar</Button>
@@ -72,7 +69,7 @@ export const SettingsPage = () => {
               </Select>
             </div>
 
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button className="bg-[#012765] text-white">
               Save Changes
             </Button>
           </CardContent>
@@ -210,7 +207,7 @@ export const SettingsPage = () => {
             <Switch />
           </div>
 
-          <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+          <Button className="bg-[#012765] text-white">
             Save Configuration
           </Button>
         </CardContent>

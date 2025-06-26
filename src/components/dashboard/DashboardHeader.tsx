@@ -51,7 +51,7 @@ export const DashboardHeader = ({ toggleSidebar, sidebarCollapsed }: DashboardHe
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar>
-                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                  <AvatarFallback className="bg-[#012765] text-white">
                     AD
                   </AvatarFallback>
                 </Avatar>

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, Activity, Target } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -41,10 +40,10 @@ export const DashboardOverview = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-[#FF7119]">
             Dashboard Overview
           </h1>
-          <p className="text-gray-600 mt-2">Monitor your emotional wellness platform performance</p>
+          <p className="text-gray-600 mt-2 text-[#012765]">Monitor your emotional wellness platform performance</p>
         </div>
         <div className="text-sm text-gray-500 mt-4 md:mt-0">
           Last updated: {new Date().toLocaleString()}
@@ -53,7 +52,7 @@ export const DashboardOverview = () => {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -66,7 +65,7 @@ export const DashboardOverview = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -79,7 +78,7 @@ export const DashboardOverview = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -92,7 +91,7 @@ export const DashboardOverview = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -122,27 +121,17 @@ export const DashboardOverview = () => {
                 <Area 
                   type="monotone" 
                   dataKey="users" 
-                  stroke="#8b5cf6" 
-                  fill="url(#colorUsers)" 
+                  stroke="#012765"
+                  fill="#012765"
                   strokeWidth={2}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="active" 
-                  stroke="#06b6d4" 
-                  fill="url(#colorActive)" 
+                  stroke="#FF7119" 
+                  fill="#FF7119"
                   strokeWidth={2}
                 />
-                <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -161,10 +150,10 @@ export const DashboardOverview = () => {
                 <Tooltip />
                 <Line 
                   type="monotone" 
-                  dataKey="score" 
-                  stroke="#10b981" 
+                  dataKey="score"
+                  stroke="#012765"
                   strokeWidth={3}
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 6 }}
+                  dot={{ fill: '#FF7119', strokeWidth: 2, r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>

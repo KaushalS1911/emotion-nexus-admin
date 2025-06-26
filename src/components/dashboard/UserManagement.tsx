@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -106,12 +105,12 @@ export const UserManagement = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-[#FF7119]">
             User Management
           </h1>
-          <p className="text-gray-600 mt-2">Manage and monitor user accounts</p>
+          <p className="text-gray-600 mt-2 text-[#012765]">Manage and monitor user accounts</p>
         </div>
-        <Button className="mt-4 md:mt-0 bg-gradient-to-r from-purple-600 to-blue-600">
+        <Button className="mt-4 md:mt-0 bg-[#012765] text-white">
           <Download className="h-4 w-4 mr-2" />
           Export Data
         </Button>
@@ -181,7 +180,7 @@ export const UserManagement = () => {
                     <td className="py-4 px-2">
                       <div className="flex items-center space-x-3">
                         <Avatar>
-                          <AvatarFallback className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                          <AvatarFallback className="bg-[#012765] text-white">
                             {user.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>

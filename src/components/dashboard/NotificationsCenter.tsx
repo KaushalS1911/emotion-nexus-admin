@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -143,14 +142,14 @@ export const NotificationsCenter = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-[#FF7119]">
             Notifications Center
           </h1>
-          <p className="text-gray-600 mt-2">Send updates and reminders to users</p>
+          <p className="text-gray-600 mt-2 text-[#012765]">Send updates and reminders to users</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="mt-4 md:mt-0 bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button className="mt-4 md:mt-0 bg-[#012765] text-white">
               <Plus className="h-4 w-4 mr-2" />
               Create Notification
             </Button>
@@ -236,7 +235,7 @@ export const NotificationsCenter = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -248,7 +247,7 @@ export const NotificationsCenter = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -260,7 +259,7 @@ export const NotificationsCenter = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+        <Card className="border-0 shadow-lg bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>

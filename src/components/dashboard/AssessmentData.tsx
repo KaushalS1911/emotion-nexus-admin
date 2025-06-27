@@ -394,7 +394,7 @@ export const AssessmentData = () => {
                             <Label htmlFor="duration">Duration</Label>
                             <Input id="duration" value={form.duration}
                                    onChange={e => handleFormChange('duration', e.target.value)}
-                                   placeholder="e.g. 10 min"/>
+                                   placeholder="e.g. 10"/>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>

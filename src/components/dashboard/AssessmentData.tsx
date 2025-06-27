@@ -330,6 +330,18 @@ export const AssessmentData = () => {
         }
     }, [toast]);
 
+    // 1. On initial load, check localStorage for 'assessments' and use it if present; otherwise, use mockAssessments.
+    useEffect(() => {
+        const stored = localStorage.getItem("assessments");
+        if (stored) {
+            setAssessments(JSON.parse(stored));
+        }
+    }, []);
+    // 2. On every change to assessments, save it to localStorage.
+    useEffect(() => {
+        localStorage.setItem("assessments", JSON.stringify(assessments));
+    }, [assessments]);
+
     return (
         <div className="space-y-6">
             {/* Toast/Alert */}
@@ -674,10 +686,10 @@ export const AssessmentData = () => {
                             <tr className="border-b border-gray-100 text-left text-gray-600">
                                 <th className="py-3 px-2">Assessment Name</th>
                                 <th className="py-3 px-2">Category</th>
-                                <th className="py-3 px-2">Date</th>
+                                <th className="py-3 px-2">Age</th>
                                 <th className="py-3 px-2">Score</th>
                                 <th className="py-3 px-2">Duration</th>
-                                <th className="py-3 px-2">Age</th>
+                                <th className="py-3 px-2">Date</th>
                                 <th className="py-3 px-2">Actions</th>
                             </tr>
                             </thead>
@@ -695,8 +707,9 @@ export const AssessmentData = () => {
                                             {assessment.category}
                                         </Badge>
                                     </td>
-                                    <td className="py-3 px-2 text-gray-600">
-                                        {new Date(assessment.date).toLocaleDateString()}
+                                    <td className="py-3 px-2">
+                                        <Badge
+                                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{assessment.maxAge && assessment.maxAge !== assessment.minAge ? `${assessment.minAge}-${assessment.maxAge} age group` : `${assessment.minAge} age group`}</Badge>
                                     </td>
                                     <td className="py-3 px-2">
                                         <Badge className={getScoreColor(assessment.score)}>
@@ -706,9 +719,8 @@ export const AssessmentData = () => {
                                     <td className="py-3 px-2 text-gray-600">
                                         {assessment.duration} min
                                     </td>
-                                    <td className="py-3 px-2">
-                                        <Badge
-                                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{assessment.maxAge && assessment.maxAge !== assessment.minAge ? `${assessment.minAge}-${assessment.maxAge} age group` : `${assessment.minAge} age group`}</Badge>
+                                    <td className="py-3 px-2 text-gray-600">
+                                        {new Date(assessment.date).toLocaleDateString()}
                                     </td>
                                     <td className="py-3 px-2">
                                         <DropdownMenu>

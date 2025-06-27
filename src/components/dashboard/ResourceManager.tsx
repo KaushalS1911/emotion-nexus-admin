@@ -348,7 +348,7 @@ export const ResourceManager = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#FF7119]">
-              Resource Manager
+              Resources
             </h1>
             <p className="text-gray-600 mt-2 text-[#012765]">
               Manage wellness articles, videos, and tips

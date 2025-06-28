@@ -155,8 +155,8 @@ export const FeedbackTracking = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">Total Feedback</p>
-                <p className="text-2xl font-bold text-blue-700">{mockFeedback.length}</p>
+                <p className="text-sm font-medium text-[#012765]">Total Feedback</p>
+                <p className="text-3xl font-bold text-[#012765]">{mockFeedback.length}</p>
               </div>
               <MessageSquare className="h-8 w-8 text-blue-500" />
             </div>
@@ -167,8 +167,8 @@ export const FeedbackTracking = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-yellow-600">Average Rating</p>
-                <p className="text-2xl font-bold text-yellow-700">{averageRating}</p>
+                <p className="text-sm font-medium text-[#012765]">Average Rating</p>
+                <p className="text-3xl font-bold text-[#012765]">{averageRating}</p>
               </div>
               <Star className="h-8 w-8 text-yellow-500" />
             </div>
@@ -179,8 +179,8 @@ export const FeedbackTracking = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Positive Feedback</p>
-                <p className="text-2xl font-bold text-green-700">74%</p>
+                <p className="text-sm font-medium text-[#012765]">Positive Feedback</p>
+                <p className="text-3xl font-bold text-[#012765]">74%</p>
               </div>
               <ThumbsUp className="h-8 w-8 text-green-500" />
             </div>
@@ -191,8 +191,8 @@ export const FeedbackTracking = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Response Rate</p>
-                <p className="text-2xl font-bold text-purple-700">68%</p>
+                <p className="text-sm font-medium text-[#012765]">Response Rate</p>
+                <p className="text-3xl font-bold text-[#012765]">68%</p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-500" />
             </div>
@@ -204,7 +204,7 @@ export const FeedbackTracking = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Rating Distribution</CardTitle>
+            <CardTitle className="text-[#FF7119]">Rating Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -221,7 +221,7 @@ export const FeedbackTracking = () => {
 
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Feedback Sentiment</CardTitle>
+            <CardTitle className="text-[#FF7119]">Feedback Sentiment</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

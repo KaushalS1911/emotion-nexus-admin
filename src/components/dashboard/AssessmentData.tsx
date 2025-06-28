@@ -366,10 +366,10 @@ export const AssessmentData = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-blue-600">
+                                <p className="text-sm font-medium text-[#012765]">
                                     Total Assessments
                                 </p>
-                                <p className="text-2xl font-bold text-blue-700">12,847</p>
+                                <p className="text-3xl font-bold text-[#012765]">12,847</p>
                             </div>
                             <FileText className="h-8 w-8 text-blue-500"/>
                         </div>
@@ -380,8 +380,8 @@ export const AssessmentData = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-green-600">Avg. Score</p>
-                                <p className="text-2xl font-bold text-green-700">78.5</p>
+                                <p className="text-sm font-medium text-[#012765]">Avg. Score</p>
+                                <p className="text-3xl font-bold text-[#012765]">78.5</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-green-500"/>
                         </div>
@@ -392,10 +392,10 @@ export const AssessmentData = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-purple-600">
+                                <p className="text-sm font-medium text-[#012765]">
                                     This Week
                                 </p>
-                                <p className="text-2xl font-bold text-purple-700">367</p>
+                                <p className="text-3xl font-bold text-[#012765]">367</p>
                             </div>
                             <Calendar className="h-8 w-8 text-purple-500"/>
                         </div>
@@ -406,10 +406,10 @@ export const AssessmentData = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-orange-600">
+                                <p className="text-sm font-medium text-[#012765]">
                                     Completion Rate
                                 </p>
-                                <p className="text-2xl font-bold text-orange-700">94.2%</p>
+                                <p className="text-3xl font-bold text-[#012765]">94.2%</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-orange-500"/>
                         </div>
@@ -421,7 +421,7 @@ export const AssessmentData = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-0 shadow-lg">
                     <CardHeader>
-                        <CardTitle>Score Distribution</CardTitle>
+                        <CardTitle className="text-[#FF7119]">Score Distribution</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
@@ -438,7 +438,7 @@ export const AssessmentData = () => {
 
                 <Card className="border-0 shadow-lg">
                     <CardHeader>
-                        <CardTitle>Weekly Assessment Trends</CardTitle>
+                        <CardTitle className="text-[#FF7119]">Weekly Assessment Trends</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>

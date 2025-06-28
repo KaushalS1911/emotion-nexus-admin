@@ -239,8 +239,8 @@ export const NotificationsCenter = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">Total Sent</p>
-                <p className="text-2xl font-bold text-blue-700">{totalSent}</p>
+                <p className="text-sm font-medium text-[#012765]">Total Sent</p>
+                <p className="text-3xl font-bold text-[#012765]">{totalSent}</p>
               </div>
               <Send className="h-8 w-8 text-blue-500" />
             </div>
@@ -251,8 +251,8 @@ export const NotificationsCenter = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Recipients</p>
-                <p className="text-2xl font-bold text-green-700">{totalRecipients.toLocaleString()}</p>
+                <p className="text-sm font-medium text-[#012765]">Recipients</p>
+                <p className="text-3xl font-bold text-[#012765]">{totalRecipients.toLocaleString()}</p>
               </div>
               <Mail className="h-8 w-8 text-green-500" />
             </div>
@@ -263,20 +263,20 @@ export const NotificationsCenter = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Avg. Open Rate</p>
-                <p className="text-2xl font-bold text-purple-700">{avgOpenRate.toFixed(0)}%</p>
+                <p className="text-sm font-medium text-[#012765]">Avg. Open Rate</p>
+                <p className="text-3xl font-bold text-[#012765]">{avgOpenRate.toFixed(0)}%</p>
               </div>
               <Bell className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+        <Card className="border-0 shadow-lg ">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-600">Scheduled</p>
-                <p className="text-2xl font-bold text-orange-700">
+                <p className="text-sm font-medium text-[#012765]">Scheduled</p>
+                <p className="text-3xl font-bold text-[#012765]">
                   {mockNotifications.filter(n => n.status === "scheduled").length}
                 </p>
               </div>

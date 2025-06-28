@@ -148,8 +148,8 @@ export const InquiriesManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">Total Inquiries</p>
-                <p className="text-2xl font-bold text-blue-700">{statusCounts.total}</p>
+                <p className="text-sm font-medium text-[#012765]">Total Inquiries</p>
+                <p className="text-3xl font-bold text-[#012765]">{statusCounts.total}</p>
               </div>
               <MessageSquare className="h-8 w-8 text-blue-500" />
             </div>
@@ -160,10 +160,10 @@ export const InquiriesManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-yellow-600">Pending</p>
-                <p className="text-2xl font-bold text-yellow-700">{statusCounts.pending}</p>
+                <p className="text-sm font-medium text-[#012765]">Pending</p>
+                <p className="text-3xl font-bold text-[#012765]">{statusCounts.pending}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
+                <Clock className="h-8 w-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -172,8 +172,8 @@ export const InquiriesManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-600">In Progress</p>
-                <p className="text-2xl font-bold text-orange-700">{statusCounts.inProgress}</p>
+                <p className="text-sm font-medium text-[#012765]">In Progress</p>
+                <p className="text-3xl font-bold text-[#012765]">{statusCounts.inProgress}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-orange-500" />
             </div>
@@ -184,8 +184,8 @@ export const InquiriesManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Resolved</p>
-                <p className="text-2xl font-bold text-green-700">{statusCounts.resolved}</p>
+                <p className="text-sm font-medium text-[#012765]">Resolved</p>
+                <p className="text-3xl font-bold text-[#012765]">{statusCounts.resolved}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>

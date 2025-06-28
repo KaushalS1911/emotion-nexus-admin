@@ -502,10 +502,10 @@ export const ResourceManager = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">
+                  <p className="text-sm font-medium text-[#012765]">
                     Total Resources
                   </p>
-                  <p className="text-2xl font-bold text-blue-700">
+                  <p className="text-3xl font-bold text-[#012765]">
                     {resources.length}
                   </p>
                 </div>
@@ -518,8 +518,8 @@ export const ResourceManager = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">Published</p>
-                  <p className="text-2xl font-bold text-green-700">
+                  <p className="text-sm font-medium text-[#012765]">Published</p>
+                  <p className="text-3xl font-bold text-[#012765]">
                     {publishedCount}
                   </p>
                 </div>
@@ -532,10 +532,10 @@ export const ResourceManager = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">
+                  <p className="text-sm font-medium text-[#012765]">
                     Total Views
                   </p>
-                  <p className="text-2xl font-bold text-purple-700">
+                  <p className="text-3xl font-bold text-[#012765]">
                     {totalViews.toLocaleString()}
                   </p>
                 </div>
@@ -548,8 +548,8 @@ export const ResourceManager = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-pink-600">Total Likes</p>
-                  <p className="text-2xl font-bold text-pink-700">{totalLikes}</p>
+                  <p className="text-sm font-medium text-[#012765]">Total Likes</p>
+                  <p className="text-3xl font-bold text-[#012765]">{totalLikes}</p>
                 </div>
                 <Heart className="h-8 w-8 text-pink-500" />
               </div>

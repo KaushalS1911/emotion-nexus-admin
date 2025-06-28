@@ -446,18 +446,18 @@ export const AssessmentData = () => {
                                 className="pl-10"
                             />
                         </div>
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-full md:w-48">
-                                <SelectValue placeholder="Category"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Categories</SelectItem>
-                                <SelectItem value="K12">K12 Students</SelectItem>
-                                <SelectItem value="Primary">Primary Students</SelectItem>
-                                <SelectItem value="Aspirant">Aspirants</SelectItem>
-                                <SelectItem value="Employee">Employees</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {/*<Select value={categoryFilter} onValueChange={setCategoryFilter}>*/}
+                        {/*    <SelectTrigger className="w-full md:w-48">*/}
+                        {/*        <SelectValue placeholder="Category"/>*/}
+                        {/*    </SelectTrigger>*/}
+                        {/*    <SelectContent>*/}
+                        {/*        <SelectItem value="all">All Categories</SelectItem>*/}
+                        {/*        <SelectItem value="K12">K12 Students</SelectItem>*/}
+                        {/*        <SelectItem value="Primary">Primary Students</SelectItem>*/}
+                        {/*        <SelectItem value="Aspirant">Aspirants</SelectItem>*/}
+                        {/*        <SelectItem value="Employee">Employees</SelectItem>*/}
+                        {/*    </SelectContent>*/}
+                        {/*</Select>*/}
                     </div>
                 </CardContent>
             </Card>
@@ -473,7 +473,7 @@ export const AssessmentData = () => {
                             <thead>
                             <tr className="border-b border-gray-100 text-left text-gray-600">
                                 <th className="py-3 px-2">Assessment Name</th>
-                                <th className="py-3 px-2">Category</th>
+                                {/*<th className="py-3 px-2">Category</th>*/}
                                 <th className="py-3 px-2">Age</th>
                                 <th className="py-3 px-2">Score</th>
                                 <th className="py-3 px-2">Duration</th>
@@ -490,11 +490,11 @@ export const AssessmentData = () => {
                                     <td className="py-3 px-2 font-medium text-gray-800">
                                         {assessment.userName}
                                     </td>
-                                    <td className="py-3 px-2">
-                                        <Badge className={getCategoryColor(assessment.category)}>
-                                            {assessment.category}
-                                        </Badge>
-                                    </td>
+                                    {/*<td className="py-3 px-2">*/}
+                                    {/*    <Badge className={getCategoryColor(assessment.category)}>*/}
+                                    {/*        {assessment.category}*/}
+                                    {/*    </Badge>*/}
+                                    {/*</td>*/}
                                     <td className="py-3 px-2">
                                         <Badge
                                             className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{assessment.maxAge && assessment.maxAge !== assessment.minAge ? `${assessment.minAge}-${assessment.maxAge} age group` : `${assessment.minAge} age group`}</Badge>

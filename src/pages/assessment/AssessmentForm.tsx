@@ -162,25 +162,25 @@ export default function AssessmentForm() {
         <div className={`px-4 py-2 rounded text-white font-semibold ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>
       )}
       <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-0 gap-4">
           <div>
             <Label htmlFor="userName">Assessment Name</Label>
             <Input id="userName" value={form.userName} onChange={e => handleFormChange('userName', e.target.value)} placeholder="Assessment name..." />
           </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Select value={form.category} onValueChange={v => handleFormChange('category', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="K12">K12</SelectItem>
-                <SelectItem value="Primary">Primary</SelectItem>
-                <SelectItem value="Aspirant">Aspirant</SelectItem>
-                <SelectItem value="Employee">Employee</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/*<div>*/}
+          {/*  <Label htmlFor="category">Category</Label>*/}
+          {/*  <Select value={form.category} onValueChange={v => handleFormChange('category', v)}>*/}
+          {/*    <SelectTrigger>*/}
+          {/*      <SelectValue placeholder="Select category" />*/}
+          {/*    </SelectTrigger>*/}
+          {/*    <SelectContent>*/}
+          {/*      <SelectItem value="K12">K12</SelectItem>*/}
+          {/*      <SelectItem value="Primary">Primary</SelectItem>*/}
+          {/*      <SelectItem value="Aspirant">Aspirant</SelectItem>*/}
+          {/*      <SelectItem value="Employee">Employee</SelectItem>*/}
+          {/*    </SelectContent>*/}
+          {/*  </Select>*/}
+          {/*</div>*/}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

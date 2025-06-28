@@ -1,5 +1,5 @@
 import React from "react";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
     BarChart3,
     Users,
@@ -14,10 +14,9 @@ import {
 } from "lucide-react";
 import logo from "../../../public/Emotionally Yours Logo.png";
 import logo1 from "../../../public/logo.jpg";
+import { NavLink } from "react-router-dom";
 
 interface SidebarProps {
-    activeTab: string;
-    setActiveTab: (tab: string) => void;
     collapsed: boolean;
     setCollapsed: (collapsed: boolean) => void;
 }
@@ -26,25 +25,24 @@ interface MenuItem {
     id: string;
     label: string;
     icon: React.ElementType;
+    route: string;
 }
 
 const menuItems: MenuItem[] = [
-    {id: "dashboard", label: "Dashboard", icon: BarChart3},
-    {id: "users", label: "Users", icon: Users},
-    {id: "assessments", label: "Assessments", icon: FileText},
-    {id: "inquiries", label: "Inquiries", icon: MessageSquare},
-    {id: "feedback", label: "Feedback", icon: Star},
-    {id: "resources", label: "Resources", icon: BookOpen},
-    {id: "notifications", label: "Notifications", icon: Bell},
-    {id: "settings", label: "Settings", icon: Settings},
+    { id: "dashboard", label: "Dashboard", icon: BarChart3, route: "/dashboard" },
+    { id: "users", label: "Users", icon: Users, route: "/users" },
+    { id: "assessments", label: "Assessments", icon: FileText, route: "/assessments" },
+    { id: "inquiries", label: "Inquiries", icon: MessageSquare, route: "/inquiries" },
+    { id: "feedback", label: "Feedback", icon: Star, route: "/feedback" },
+    { id: "resources", label: "Resources", icon: BookOpen, route: "/resources" },
+    { id: "notifications", label: "Notifications", icon: Bell, route: "/notifications" },
+    { id: "settings", label: "Settings", icon: Settings, route: "/settings" },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-                                                    activeTab,
-                                                    setActiveTab,
-                                                    collapsed,
-                                                    setCollapsed,
-                                                }) => {
+    collapsed,
+    setCollapsed,
+}) => {
     return (
         <div
             className={cn(
@@ -75,9 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className="bg-white border border-gray-300 shadow-md p-1.5 rounded-md hover:bg-gray-100 transition-all"
                     >
                         {collapsed ? (
-                            <ChevronRight className="h-4 w-4 text-gray-600"/>
+                            <ChevronRight className="h-4 w-4 text-gray-600" />
                         ) : (
-                            <ChevronLeft className="h-4 w-4 text-gray-600"/>
+                            <ChevronLeft className="h-4 w-4 text-gray-600" />
                         )}
                     </button>
                 </div>
@@ -88,22 +86,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {menuItems.map((item) => {
                     const Icon = item.icon;
                     return (
-                        <button
+                        <NavLink
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={cn(
-                                "w-full flex items-center px-4 py-3 text-left transition-all duration-200",
-                                activeTab === item.id
-                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119]"
-                                    : "text-blue-950 hover:text-[#FF7119]",
-                                collapsed ? "justify-center" : "justify-start"
-                            )}
+                            to={item.route}
+                            className={({ isActive }) =>
+                                cn(
+                                    "w-full flex items-center px-4 py-3 text-left transition-all duration-200",
+                                    isActive
+                                        ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119]"
+                                        : "text-blue-950 hover:text-[#FF7119]",
+                                    collapsed ? "justify-center" : "justify-start"
+                                )
+                            }
+                            end={item.route === "/dashboard"}
                         >
-                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-3")}/>
+                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-3")} />
                             {!collapsed && (
                                 <span className="font-medium">{item.label}</span>
                             )}
-                        </button>
+                        </NavLink>
                     );
                 })}
             </nav>

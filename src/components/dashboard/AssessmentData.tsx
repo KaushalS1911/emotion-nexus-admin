@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
 
 // Type Definitions
 interface Assessment {
@@ -181,25 +182,9 @@ export const AssessmentData = () => {
         questions: [],
         active: true
     }))]);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
-    const [form, setForm] = useState<AssessmentWithQuestions>({
-        id: 0,
-        userId: "",
-        userName: "",
-        category: "",
-        date: "",
-        score: 0,
-        duration: "",
-        recommendations: [],
-        issues: [],
-        questions: [],
-        active: true,
-        minAge: 0,
-        maxAge: 0,
-    });
     const [viewing, setViewing] = useState<AssessmentWithQuestions | null>(null);
     const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+    const navigate = useNavigate();
 
     const filteredAssessments = assessments.filter((assessment) => {
         const matchesSearch =
@@ -226,102 +211,17 @@ export const AssessmentData = () => {
         return colors[category] || "bg-gray-100 text-gray-800";
     };
 
-    // Dialog handlers
-    const openAddDialog = () => {
-        setForm({
-            id: Date.now(),
-            userId: "",
-            userName: "",
-            category: "",
-            date: "",
-            score: 0,
-            duration: "",
-            recommendations: [],
-            issues: [],
-            questions: [],
-            active: true,
-            minAge: 0,
-            maxAge: 0,
-        });
-        setIsEdit(false);
-        setIsDialogOpen(true);
-    };
-    const openEditDialog = (assessment: AssessmentWithQuestions) => {
-        setForm({...assessment});
-        setIsEdit(true);
-        setIsDialogOpen(true);
-    };
     const openViewDialog = (assessment: AssessmentWithQuestions) => {
         setViewing(assessment);
     };
-    const closeDialog = () => {
-        setIsDialogOpen(false);
-        setIsEdit(false);
+
+    const handleDeactivate = (assessmentId: number) => {
+        const updatedAssessments = assessments.filter(assessment => assessment.id !== assessmentId);
+        setAssessments(updatedAssessments);
+        localStorage.setItem("assessments", JSON.stringify(updatedAssessments));
+        setToast({ type: "success", message: "Assessment deactivated successfully." });
     };
-    // Form handlers
-    const handleFormChange = (field: keyof AssessmentWithQuestions, value: any) => {
-        setForm(f => ({...f, [field]: value}));
-    };
-    // Questions logic
-    const addQuestion = () => {
-        setForm(f => ({...f, questions: [...f.questions, {text: "", options: [""]}]}));
-    };
-    const updateQuestion = (idx: number, field: "text" | "options", value: any) => {
-        setForm(f => ({
-            ...f,
-            questions: f.questions.map((q, i) =>
-                i === idx ? {...q, [field]: value} : q
-            ),
-        }));
-    };
-    const addOption = (qIdx: number) => {
-        setForm(f => ({
-            ...f,
-            questions: f.questions.map((q, i) =>
-                i === qIdx ? {...q, options: [...q.options, ""]} : q
-            ),
-        }));
-    };
-    const updateOption = (qIdx: number, oIdx: number, value: string) => {
-        setForm(f => ({
-            ...f,
-            questions: f.questions.map((q, i) =>
-                i === qIdx
-                    ? {...q, options: q.options.map((opt, j) => (j === oIdx ? value : opt))}
-                    : q
-            ),
-        }));
-    };
-    const removeOption = (qIdx: number, oIdx: number) => {
-        setForm(f => ({
-            ...f,
-            questions: f.questions.map((q, i) =>
-                i === qIdx
-                    ? {...q, options: q.options.filter((_, j) => j !== oIdx)}
-                    : q
-            ),
-        }));
-    };
-    // Save/Add assessment
-    const handleSave = () => {
-        if (!form.userName || !form.category || !form.date) {
-            setToast({type: "error", message: "Please fill all required fields."});
-            return;
-        }
-        if (isEdit) {
-            setAssessments(prev => prev.map(a => a.id === form.id ? {...form} : a));
-            setToast({type: "success", message: "Assessment updated successfully."});
-        } else {
-            setAssessments(prev => [{...form}, ...prev]);
-            setToast({type: "success", message: "Assessment added successfully."});
-        }
-        setIsDialogOpen(false);
-    };
-    // Deactivate
-    const handleDeactivate = (id: number) => {
-        setAssessments(prev => prev.map(a => a.id === id ? {...a, active: false} : a));
-        setToast({type: "info", message: "Assessment deactivated."});
-    };
+
     // Toast auto-hide
     useEffect(() => {
         if (toast) {
@@ -337,10 +237,6 @@ export const AssessmentData = () => {
             setAssessments(JSON.parse(stored));
         }
     }, []);
-    // 2. On every change to assessments, save it to localStorage.
-    useEffect(() => {
-        localStorage.setItem("assessments", JSON.stringify(assessments));
-    }, [assessments]);
 
     return (
         <div className="space-y-6">
@@ -349,112 +245,6 @@ export const AssessmentData = () => {
                 <div
                     className={`fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>{toast.message}</div>
             )}
-            {/* Add/Edit Assessment Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>{isEdit ? 'Edit Assessment' : 'Add Assessment'}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="userName">Assessment Name</Label>
-                                <Input id="userName" value={form.userName}
-                                       onChange={e => handleFormChange('userName', e.target.value)}
-                                       placeholder="Assessment name..."/>
-                            </div>
-                            <div>
-                                <Label htmlFor="category">Category</Label>
-                                <Select value={form.category} onValueChange={v => handleFormChange('category', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select category"/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="K12">K12</SelectItem>
-                                        <SelectItem value="Primary">Primary</SelectItem>
-                                        <SelectItem value="Aspirant">Aspirant</SelectItem>
-                                        <SelectItem value="Employee">Employee</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="date">Date</Label>
-                                <Input id="date" type="date" value={form.date}
-                                       onChange={e => handleFormChange('date', e.target.value)}/>
-                            </div>
-                            <div>
-                                <Label htmlFor="score">Score</Label>
-                                <Input id="score" type="number" value={form.score}
-                                       onChange={e => handleFormChange('score', Number(e.target.value))}/>
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="duration">Duration</Label>
-                            <Input id="duration" value={form.duration}
-                                   onChange={e => handleFormChange('duration', e.target.value)}
-                                   placeholder="e.g. 10"/>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="minAge">Min Age</Label>
-                                <Input id="minAge" type="number" value={form.minAge}
-                                       onChange={e => handleFormChange('minAge', Number(e.target.value))}/>
-                            </div>
-                            <div>
-                                <Label htmlFor="maxAge">Max Age</Label>
-                                <Input id="maxAge" type="number" value={form.maxAge}
-                                       onChange={e => handleFormChange('maxAge', Number(e.target.value))}/>
-                            </div>
-                        </div>
-                        {/* Questions Section */}
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <Label>Questions</Label>
-                                <Button size="sm" variant="outline" onClick={addQuestion}>+ Add Question</Button>
-                            </div>
-                            <div className="space-y-4">
-                                {form.questions.map((q, qIdx) => (
-                                    <div key={qIdx} className="border rounded-lg p-3 bg-gray-50">
-                                        <div className="mb-2">
-                                            <Label>Question {qIdx + 1}</Label>
-                                            <Input value={q.text}
-                                                   onChange={e => updateQuestion(qIdx, 'text', e.target.value)}
-                                                   placeholder="Question text..."/>
-                                        </div>
-                                        <div>
-                                            <Label>Options</Label>
-                                            <div className="space-y-2">
-                                                {q.options.map((opt, oIdx) => (
-                                                    <div key={oIdx} className="flex items-center gap-2">
-                                                        <Input value={opt}
-                                                               onChange={e => updateOption(qIdx, oIdx, e.target.value)}
-                                                               placeholder={`Option ${oIdx + 1}`}/>
-                                                        {q.options.length > 1 && (
-                                                            <Button size="icon" variant="ghost"
-                                                                    onClick={() => removeOption(qIdx, oIdx)}
-                                                                    title="Remove option">
-                                                                ×
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <Button size="sm" variant="outline" onClick={() => addOption(qIdx)}>+
-                                                    Add Option</Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-2 mt-4">
-                            <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                            <Button onClick={handleSave}>{isEdit ? 'Save Changes' : 'Add Assessment'}</Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
             {/* View Profile Dialog */}
             <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
                 <DialogContent className="max-w-2xl">
@@ -538,9 +328,7 @@ export const AssessmentData = () => {
                     </p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                    <Button className="bg-[#012765] text-white" onClick={openAddDialog}>
-                        + Add Assessment
-                    </Button>
+                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/assessments/new")}>+ Add Assessment</Button>
                 </div>
             </div>
 
@@ -734,7 +522,7 @@ export const AssessmentData = () => {
                                                                   className="flex items-center gap-2">
                                                     <Eye className="h-4 w-4"/> View Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => openEditDialog(assessment)}
+                                                <DropdownMenuItem onClick={() => navigate(`/assessments/edit/${assessment.id}`)}
                                                                   className="flex items-center gap-2">
                                                     <Pencil className="h-4 w-4"/> Edit
                                                 </DropdownMenuItem>

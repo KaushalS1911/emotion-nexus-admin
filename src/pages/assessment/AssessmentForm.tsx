@@ -66,7 +66,7 @@ export default function AssessmentForm() {
   };
 
   const handleSave = () => {
-    if (!form.userName || !form.category || !form.date) {
+    if (!form.userName  || !form.date) {
       setToast({ type: "error", message: "Please fill all required fields." });
       return;
     }

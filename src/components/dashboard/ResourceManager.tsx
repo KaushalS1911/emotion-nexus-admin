@@ -163,9 +163,10 @@ export const ResourceManager = () => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   localStorage.setItem("resources", JSON.stringify(resources));
-  // }, [resources]);
+  // Save to localStorage whenever resources change
+  useEffect(() => {
+    localStorage.setItem("resources", JSON.stringify(resources));
+  }, [resources]);
 
   const handleInput = (e) => {
     const { id, value } = e.target;
@@ -187,7 +188,6 @@ export const ResourceManager = () => {
   };
 
   const handlePublish = () => {
-
     const tagsArray = form.tags
         .split(",")
         .map((t) => t.trim())
@@ -286,7 +286,6 @@ export const ResourceManager = () => {
   };
 
   const handleEditSave = () => {
-
     const tagsArray = form.tags
         .split(",")
         .map((t) => t.trim())

@@ -247,61 +247,89 @@ export const AssessmentData = () => {
             )}
             {/* View Profile Dialog */}
             <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl p-0">
                     <DialogHeader>
-                        <DialogTitle>Assessment Details :</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-[#012765] mb-2 px-8 pt-8">Assessment Details :</DialogTitle>
                     </DialogHeader>
                     <hr className="my-2 border-gray-200"/>
                     {viewing && (
-                        <div className="space-y-4">
-                            <div className="mb-6">
-                                <div className="font-semibold text-lg mb-2">Main Info :</div>
-                                <div className="bg-gray-900 p-4 rounded-md text-sm font-mono text-left space-y-1">
+                        <div className="space-y-8 px-8 pb-8 pt-2 overflow-y-auto" style={{maxHeight: '80vh'}}>
+                            <div>
+                                <div className="font-semibold text-lg mb-2 text-[#012765]">Main Info :</div>
+                                <div className="bg-[#181f2a] p-5 rounded-lg text-sm font-mono text-left space-y-1 w-full">
                                     <div>
-                                        <span className="text-pink-500">Assessment Name :</span>
-                                        <span className="text-teal-400">{viewing.userName}</span>
+                                        <span className="text-pink-400 font-semibold">Assessment Name :</span>
+                                        <span className="text-teal-300 ml-2">{viewing.userName}</span>
                                     </div>
                                     <div>
-                                        <span className="text-pink-500">Category :</span>
-                                        <span className="text-teal-400">{viewing.category}</span>
+                                        <span className="text-pink-400 font-semibold">Category :</span>
+                                        <span className="text-teal-300 ml-2">{viewing.category}</span>
                                     </div>
                                     <div>
-                                        <span className="text-pink-500">Date :</span>
-                                        <span
-                                            className="text-teal-400">{new Date(viewing.date).toLocaleDateString()}</span>
+                                        <span className="text-pink-400 font-semibold">Date :</span>
+                                        <span className="text-teal-300 ml-2">{new Date(viewing.date).toLocaleDateString()}</span>
                                     </div>
                                     <div>
-                                        <span className="text-pink-500">Score :</span>
-                                        <span className="text-teal-400">{viewing.score}</span>
+                                        <span className="text-pink-400 font-semibold">Score :</span>
+                                        <span className="text-teal-300 ml-2">{viewing.score}</span>
                                     </div>
                                     <div>
-                                        <span className="text-pink-500">Duration :</span>
-                                        <span className="text-teal-400">{viewing.duration} min</span>
+                                        <span className="text-pink-400 font-semibold">Duration :</span>
+                                        <span className="text-teal-300 ml-2">{viewing.duration} min</span>
                                     </div>
                                     <div>
-                                        <span className="text-pink-500">Age Group :</span>
-                                        <span className="text-teal-400">
-                                       {viewing.maxAge && viewing.maxAge !== viewing.minAge
-                                           ? `${viewing.minAge}-${viewing.maxAge} age group`
-                                           : `${viewing.minAge} age group`}
-                                     </span>
+                                        <span className="text-pink-400 font-semibold">Age Group :</span>
+                                        <span className="text-teal-300 ml-2">
+                                            {viewing.maxAge && viewing.maxAge !== viewing.minAge
+                                                ? `${viewing.minAge}-${viewing.maxAge} age group`
+                                                : `${viewing.minAge} age group`}
+                                        </span>
                                     </div>
                                 </div>
-
                             </div>
                             <hr className="my-4 border-gray-200"/>
                             <div>
-                                <div className="font-semibold mb-2">Questions :</div>
+                                <div className="font-semibold mb-2 text-[#012765]">Questions :</div>
                                 <div className="space-y-3">{viewing.questions.length === 0 &&
                                     <div className="text-gray-400">No questions added.</div>
                                 }
                                     {viewing.questions.map((q, qIdx) => (
                                         <div key={qIdx} className="border rounded-lg p-3 bg-gray-50">
-                                            <div className="font-semibold mb-3">Q{qIdx + 1} : {q.text}</div>
+                                            <div className="font-semibold mb-3 text-[#FF7119]">Q{qIdx + 1} : {q.text}</div>
                                             <div className="flex flex-wrap gap-2">{q.options.map((opt, oIdx) => (
                                                 <Badge key={oIdx}
                                                        className="bg-gray-100 text-gray-700">{opt}</Badge>))}
                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <hr className="my-4 border-gray-200"/>
+                            <div>
+                                <div className="font-semibold mb-2 text-green-900">Recommendations :</div>
+                                <div className="space-y-3">
+                                    {viewing.recommendations.length === 0 &&
+                                        <div className="text-gray-400">No recommendations added.</div>
+                                    }
+                                    {viewing.recommendations.map((rec, rIdx) => (
+                                        <div key={rIdx} className="rounded-lg px-4 py-3 bg-[#e6faee] flex items-start min-h-[44px] w-full">
+                                            <span className="text-green-900 font-semibold text-base mt-1">•</span>
+                                            <span className="ml-2 text-green-900 font-medium break-words whitespace-pre-line w-full">{rec}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <hr className="my-4 border-gray-200"/>
+                            <div>
+                                <div className="font-semibold mb-2 text-red-900">Issues :</div>
+                                <div className="space-y-3">
+                                    {viewing.issues.length === 0 &&
+                                        <div className="text-gray-400">No issues added.</div>
+                                    }
+                                    {viewing.issues.map((issue, iIdx) => (
+                                        <div key={iIdx} className="rounded-lg px-4 py-3 bg-[#fdeaea] flex items-start min-h-[44px] w-full">
+                                            <span className="text-red-700 font-semibold text-base mt-1">•</span>
+                                            <span className="ml-2 text-red-900 font-medium break-words whitespace-pre-line w-full">{issue}</span>
                                         </div>
                                     ))}
                                 </div>

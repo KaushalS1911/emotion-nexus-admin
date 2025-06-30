@@ -143,7 +143,7 @@ export const NotificationsCenter = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#FF7119]">
-            Notifications Center
+            Notifications
           </h1>
           <p className="text-gray-600 mt-2 text-[#012765]">Send updates and reminders to users</p>
         </div>
@@ -327,9 +327,9 @@ export const NotificationsCenter = () => {
 
       {/* Notifications Table */}
       <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>Notifications ({filteredNotifications.length})</CardTitle>
-        </CardHeader>
+        {/*<CardHeader>*/}
+        {/*  <CardTitle>Notifications ({filteredNotifications.length})</CardTitle>*/}
+        {/*</CardHeader>*/}
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">

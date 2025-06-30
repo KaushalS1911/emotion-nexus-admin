@@ -349,7 +349,7 @@ export const AssessmentData = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">
-                        Assessment Data
+                        Assessments
                     </h1>
                     <p className="text-gray-600 mt-2 text-[#012765]">
                         Monitor assessment results and insights
@@ -418,47 +418,47 @@ export const AssessmentData = () => {
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="text-[#FF7119]">Score Distribution</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={scoreDistributionData}>
-                                <CartesianGrid strokeDasharray="3 3"/>
-                                <XAxis dataKey="range"/>
-                                <YAxis/>
-                                <Tooltip/>
-                                <Bar dataKey="count" fill="#012765" radius={[4, 4, 0, 0]}/>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
+            {/*<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">*/}
+            {/*    <Card className="border-0 shadow-lg">*/}
+            {/*        <CardHeader>*/}
+            {/*            <CardTitle className="text-[#FF7119]">Score Distribution</CardTitle>*/}
+            {/*        </CardHeader>*/}
+            {/*        <CardContent>*/}
+            {/*            <ResponsiveContainer width="100%" height={300}>*/}
+            {/*                <BarChart data={scoreDistributionData}>*/}
+            {/*                    <CartesianGrid strokeDasharray="3 3"/>*/}
+            {/*                    <XAxis dataKey="range"/>*/}
+            {/*                    <YAxis/>*/}
+            {/*                    <Tooltip/>*/}
+            {/*                    <Bar dataKey="count" fill="#012765" radius={[4, 4, 0, 0]}/>*/}
+            {/*                </BarChart>*/}
+            {/*            </ResponsiveContainer>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
 
-                <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="text-[#FF7119]">Weekly Assessment Trends</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={weeklyAssessmentData}>
-                                <CartesianGrid strokeDasharray="3 3"/>
-                                <XAxis dataKey="week"/>
-                                <YAxis/>
-                                <Tooltip/>
-                                <Line
-                                    type="monotone"
-                                    dataKey="assessments"
-                                    stroke="#012765"
-                                    strokeWidth={3}
-                                    dot={{fill: '#FF7119', strokeWidth: 2, r: 6}}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-            </div>
+            {/*    <Card className="border-0 shadow-lg">*/}
+            {/*        <CardHeader>*/}
+            {/*            <CardTitle className="text-[#FF7119]">Weekly Assessment Trends</CardTitle>*/}
+            {/*        </CardHeader>*/}
+            {/*        <CardContent>*/}
+            {/*            <ResponsiveContainer width="100%" height={300}>*/}
+            {/*                <LineChart data={weeklyAssessmentData}>*/}
+            {/*                    <CartesianGrid strokeDasharray="3 3"/>*/}
+            {/*                    <XAxis dataKey="week"/>*/}
+            {/*                    <YAxis/>*/}
+            {/*                    <Tooltip/>*/}
+            {/*                    <Line*/}
+            {/*                        type="monotone"*/}
+            {/*                        dataKey="assessments"*/}
+            {/*                        stroke="#012765"*/}
+            {/*                        strokeWidth={3}*/}
+            {/*                        dot={{fill: '#FF7119', strokeWidth: 2, r: 6}}*/}
+            {/*                    />*/}
+            {/*                </LineChart>*/}
+            {/*            </ResponsiveContainer>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*</div>*/}
 
             {/* Filters */}
             <Card className="border-0 shadow-lg">
@@ -468,7 +468,7 @@ export const AssessmentData = () => {
                             <Search
                                 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
-                                placeholder="Search by name or email"
+                                placeholder="Search by Assessment name"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -492,9 +492,9 @@ export const AssessmentData = () => {
 
             {/* Table */}
             <Card className="border-0 shadow-lg">
-                <CardHeader>
-                    <CardTitle>Assessments ({filteredAssessments.length})</CardTitle>
-                </CardHeader>
+                {/*<CardHeader>*/}
+                {/*    <CardTitle>Assessments ({filteredAssessments.length})</CardTitle>*/}
+                {/*</CardHeader>*/}
                 <CardContent>
                     <div className="overflow-x-auto">
                         <table className="w-full">

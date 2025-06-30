@@ -143,7 +143,7 @@ export const FeedbackTracking = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#FF7119]">
-            Feedback Tracking
+            Feedback
           </h1>
           <p className="text-gray-600 mt-2 text-[#012765]">Monitor user feedback and satisfaction levels</p>
         </div>
@@ -302,9 +302,9 @@ export const FeedbackTracking = () => {
 
       {/* Feedback Table */}
       <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>User Feedback ({filteredFeedback.length})</CardTitle>
-        </CardHeader>
+        {/*<CardHeader>*/}
+        {/*  <CardTitle>User Feedback ({filteredFeedback.length})</CardTitle>*/}
+        {/*</CardHeader>*/}
         <CardContent>
           <div className="space-y-4">
             {filteredFeedback.map((feedback) => (

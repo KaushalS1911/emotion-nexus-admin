@@ -119,23 +119,44 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+const getInitialForm = () => ({
+  title: "",
+  author: "",
+  type: "",
+  category: "",
+  description: "",
+  tags: "",
+  thumbnail: null,
+  emptyImage: null,
+});
+
+const getInitialResources = () => {
+  const stored = localStorage.getItem("resources");
+  if (stored) {
+    try {
+      return JSON.parse(stored).map((r) => ({
+        ...r,
+        tags: Array.isArray(r.tags)
+          ? r.tags
+          : typeof r.tags === "string"
+            ? r.tags.split(",").map((t) => t.trim()).filter(Boolean)
+            : [],
+      }));
+    } catch {
+      // fallback to mock if corrupted
+    }
+  }
+  return [...mockResources];
+};
+
 export const ResourceManager = () => {
-  const [resources, setResources] = useState([...mockResources]);
+  const [resources, setResources] = useState(getInitialResources);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    author: "",
-    type: "",
-    category: "",
-    description: "",
-    tags: "",
-    thumbnail: null,
-    emptyImage: null,
-  });
+  const [form, setForm] = useState(getInitialForm());
   const [thumbPreview, setThumbPreview] = useState(null);
   const [emptyPreview, setEmptyPreview] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -144,24 +165,6 @@ export const ResourceManager = () => {
   const [viewingResource, setViewingResource] = useState(null);
   const fileInputRef = useRef();
   const emptyInputRef = useRef();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("resources");
-    if (stored) {
-      const parsed = JSON.parse(stored).map((r: any) => ({
-        ...r,
-        tags: Array.isArray(r.tags)
-            ? r.tags
-            : typeof r.tags === "string"
-                ? r.tags
-                    .split(",")
-                    .map((t: string) => t.trim())
-                    .filter(Boolean)
-                : [],
-      }));
-      setResources(parsed);
-    }
-  }, []);
 
   // Save to localStorage whenever resources change
   useEffect(() => {
@@ -210,16 +213,7 @@ export const ResourceManager = () => {
     };
     setResources((prev) => [newResource, ...prev]);
     setIsAddDialogOpen(false);
-    setForm({
-      title: "",
-      author: "",
-      type: "",
-      category: "",
-      description: "",
-      tags: "",
-      thumbnail: null,
-      emptyImage: null,
-    });
+    setForm(getInitialForm());
     setThumbPreview(null);
     setEmptyPreview(null);
   };
@@ -310,16 +304,7 @@ export const ResourceManager = () => {
     );
     setEditDialogOpen(false);
     setEditingResource(null);
-    setForm({
-      title: "",
-      author: "",
-      type: "",
-      category: "",
-      description: "",
-      tags: "",
-      thumbnail: null,
-      emptyImage: null,
-    });
+    setForm(getInitialForm());
     setThumbPreview(null);
     setEmptyPreview(null);
   };
@@ -353,7 +338,17 @@ export const ResourceManager = () => {
               Manage wellness articles, videos, and tips
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog
+            open={isAddDialogOpen}
+            onOpenChange={(open) => {
+              setIsAddDialogOpen(open);
+              if (open) {
+                setForm(getInitialForm());
+                setThumbPreview(null);
+                setEmptyPreview(null);
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="mt-4 md:mt-0 bg-[#012765] text-white">
                 <Plus className="h-4 w-4 mr-2" />
@@ -444,7 +439,7 @@ export const ResourceManager = () => {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="emptyImage">Empty Image</Label>
+                    <Label htmlFor="emptyImage">Image</Label>
                     <Input
                         id="emptyImage"
                         type="file"
@@ -696,7 +691,7 @@ export const ResourceManager = () => {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="emptyImage">Empty Image</Label>
+                  <Label htmlFor="emptyImage">Image</Label>
                   <Input
                       id="emptyImage"
                       type="file"
@@ -778,7 +773,7 @@ export const ResourceManager = () => {
                                     className="max-h-48 max-w-full object-contain rounded shadow"
                                 />
                                 <span className="mt-2 text-xs text-gray-500">
-                          Empty Image
+                          Image
                         </span>
                               </div>
                           )}

@@ -224,7 +224,7 @@ export const InquiriesManagement = () => {
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
-                    <th className="text-left py-4 px-2 font-medium text-gray-600">Enquiry Type</th>
+                    <th className="text-left py-4 px-2 font-medium text-gray-600">Inquiry Type</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Message</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
                   </tr>
@@ -279,7 +279,7 @@ export const InquiriesManagement = () => {
                                       <td className="px-4 py-2 bg-gray-50">{selectedInquiry.name}</td>
                                     </tr>
                                     <tr className="border-b">
-                                      <td className="font-medium text-gray-600 px-4 py-2">Enquiry Type</td>
+                                      <td className="font-medium text-gray-600 px-4 py-2">Inquiry Type</td>
                                       <td className="px-4 py-2 bg-gray-50">{selectedInquiry.enquiry_type}</td>
                                     </tr>
                                     <tr className="border-b">

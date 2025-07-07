@@ -198,6 +198,7 @@ export const UserManagement = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100">
+                  <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                   <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                   <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                   <th className="text-left py-4 px-2 font-medium text-gray-600">Age</th>
@@ -208,8 +209,9 @@ export const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedUsers.map((user) => (
+                {paginatedUsers.map((user, idx) => (
                   <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                     <td className="py-4 px-2">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-lg">

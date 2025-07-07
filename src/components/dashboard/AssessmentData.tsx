@@ -504,6 +504,7 @@ export const AssessmentData = () => {
                         <table className="w-full">
                             <thead>
                             <tr className="border-b border-gray-100 text-left text-gray-600">
+                                <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                                 <th className="py-3 px-2">Assessment Name</th>
                                 {/*<th className="py-3 px-2">Category</th>*/}
                                 <th className="py-3 px-2">Age</th>
@@ -514,11 +515,12 @@ export const AssessmentData = () => {
                             </tr>
                             </thead>
                             <tbody>
-                            {paginatedAssessments.map((assessment) => (
+                            {paginatedAssessments.map((assessment, idx) => (
                                 <tr
                                     key={`${assessment.id}-${assessment.userName}`}
                                     className="border-b hover:bg-gray-50"
                                 >
+                                    <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                                     <td className="py-3 px-2 font-medium text-gray-800">
                                         {assessment.userName}
                                     </td>

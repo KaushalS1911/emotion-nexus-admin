@@ -228,6 +228,7 @@ export const InquiriesManagement = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
+                    <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
@@ -237,8 +238,9 @@ export const InquiriesManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedInquiries.map((inquiry) => (
+                  {paginatedInquiries.map((inquiry, idx) => (
                     <tr key={inquiry.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                       <td className="py-4 px-2">{inquiry.name}</td>
                       <td className="py-4 px-2">{inquiry.email}</td>
                       <td className="py-4 px-2">{inquiry.mobile || "-"}</td>

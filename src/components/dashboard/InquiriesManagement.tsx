@@ -135,6 +135,8 @@ export const InquiriesManagement = () => {
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   // Fetch inquiry list from API
   useEffect(() => {
@@ -160,6 +162,8 @@ export const InquiriesManagement = () => {
     }
   }, [selectedInquiryId]);
 
+  useEffect(() => { setPage(0); }, [searchTerm, typeFilter, inquiries]);
+
   // Filter logic (search and type)
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch =
@@ -172,6 +176,9 @@ export const InquiriesManagement = () => {
 
   // Unique types for filter dropdown
   const uniqueTypes = Array.from(new Set(inquiries.map((inq) => inq.enquiry_type).filter(Boolean)));
+
+  const paginatedInquiries = filteredInquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const totalPages = Math.ceil(filteredInquiries.length / rowsPerPage);
 
   return (
     <div className="space-y-6">
@@ -230,7 +237,7 @@ export const InquiriesManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredInquiries.map((inquiry) => (
+                  {paginatedInquiries.map((inquiry) => (
                     <tr key={inquiry.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-2">{inquiry.name}</td>
                       <td className="py-4 px-2">{inquiry.email}</td>
@@ -305,10 +312,49 @@ export const InquiriesManagement = () => {
                       </td>
                     </tr>
                   ))}
+                  {filteredInquiries.length === 0 && (
+                    <tr>
+                      <td className="py-4 px-2 text-center" colSpan={6}>No inquiries found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             )}
           </div>
+          {/* Pagination Controls */}
+          {!loading && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center gap-2">
+                <span>Rows per page:</span>
+                <select
+                  className="border rounded px-2 py-1 cursor-pointer"
+                  value={rowsPerPage}
+                  onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(0); }}
+                >
+                  {[5, 10, 25, 50].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                >
+                  {'<'}
+                </button>
+                <span>{filteredInquiries.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredInquiries.length)} of {filteredInquiries.length}</span>
+                <button
+                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages - 1}
+                >
+                  {'>'}
+                </button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

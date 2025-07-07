@@ -185,6 +185,8 @@ export const AssessmentData = () => {
     const [viewing, setViewing] = useState<AssessmentWithQuestions | null>(null);
     const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
     const navigate = useNavigate();
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const filteredAssessments = assessments.filter((assessment) => {
         const matchesSearch =
@@ -194,6 +196,11 @@ export const AssessmentData = () => {
             categoryFilter === "all" || assessment.category === categoryFilter;
         return matchesSearch && matchesCategory && assessment.active !== false;
     });
+
+    useEffect(() => { setPage(0); }, [searchTerm, categoryFilter]);
+
+    const paginatedAssessments = filteredAssessments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const totalPages = Math.ceil(filteredAssessments.length / rowsPerPage);
 
     const getScoreColor = (score: number) => {
         if (score >= 80) return "text-green-600 bg-green-100";
@@ -492,9 +499,6 @@ export const AssessmentData = () => {
 
             {/* Table */}
             <Card className="border-0 shadow-lg">
-                {/*<CardHeader>*/}
-                {/*    <CardTitle>Assessments ({filteredAssessments.length})</CardTitle>*/}
-                {/*</CardHeader>*/}
                 <CardContent>
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -510,7 +514,7 @@ export const AssessmentData = () => {
                             </tr>
                             </thead>
                             <tbody>
-                            {filteredAssessments.map((assessment) => (
+                            {paginatedAssessments.map((assessment) => (
                                 <tr
                                     key={`${assessment.id}-${assessment.userName}`}
                                     className="border-b hover:bg-gray-50"
@@ -563,8 +567,45 @@ export const AssessmentData = () => {
                                     </td>
                                 </tr>
                             ))}
+                            {filteredAssessments.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="text-center text-gray-400">No assessments found.</td>
+                                </tr>
+                            )}
                             </tbody>
                         </table>
+                    </div>
+                    {/* Pagination Controls */}
+                    <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-2">
+                            <span>Rows per page:</span>
+                            <select
+                                className="border rounded px-2 py-1 cursor-pointer"
+                                value={rowsPerPage}
+                                onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(0); }}
+                            >
+                                {[5, 10, 25, 50].map(n => (
+                                    <option key={n} value={n}>{n}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                className="px-2 py-1 border rounded disabled:opacity-50"
+                                onClick={() => setPage(page - 1)}
+                                disabled={page === 0}
+                            >
+                                {'<'}
+                            </button>
+                            <span>{filteredAssessments.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredAssessments.length)} of {filteredAssessments.length}</span>
+                            <button
+                                className="px-2 py-1 border rounded disabled:opacity-50"
+                                onClick={() => setPage(page + 1)}
+                                disabled={page >= totalPages - 1}
+                            >
+                                {'>'}
+                            </button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

@@ -94,10 +94,15 @@ export const UserManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     localStorage.setItem("users", JSON.stringify(users));
   }, [users]);
+
+  // Reset page if filters change
+  useEffect(() => { setPage(0); }, [searchTerm, statusFilter]);
 
   // Filter users by name, email, assessment name, and status
   const filteredUsers = users.filter((user) => {
@@ -109,6 +114,10 @@ export const UserManagement = () => {
     const matchesStatus = statusFilter === "all" || user.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination logic
+  const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
 
   const getStatusColor = (status: UserStatus) =>
     status === "active"
@@ -199,7 +208,7 @@ export const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-2">
                       <div className="flex items-center space-x-3">
@@ -242,6 +251,38 @@ export const UserManagement = () => {
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-2">
+              <span>Rows per page:</span>
+              <select
+                className="border rounded px-2 py-1 cursor-pointer"
+                value={rowsPerPage}
+                onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(0); }}
+              >
+                {[5, 10, 25, 50].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="px-2 py-1 border rounded disabled:opacity-50"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 0}
+              >
+                {'<'}
+              </button>
+              <span>{filteredUsers.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredUsers.length)} of {filteredUsers.length}</span>
+              <button
+                className="px-2 py-1 border rounded disabled:opacity-50"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages - 1}
+              >
+                {'>'}
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

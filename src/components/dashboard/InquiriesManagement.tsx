@@ -325,35 +325,47 @@ export const InquiriesManagement = () => {
           </div>
           {/* Pagination Controls */}
           {!loading && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <span>Rows per page:</span>
-                <select
-                  className="border rounded px-2 py-1 cursor-pointer"
-                  value={rowsPerPage}
-                  onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(0); }}
-                >
-                  {[5, 10, 25, 50].map(n => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
+            <div className="w-full flex justify-end mt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-700">
                 <button
-                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 0}
+                  aria-label="Previous page"
                 >
-                  {'<'}
+                  &#60;
                 </button>
-                <span>{filteredInquiries.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredInquiries.length)} of {filteredInquiries.length}</span>
+                <span className="font-medium">{filteredInquiries.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredInquiries.length)}</span>
+                <span className="text-gray-400">of</span>
+                <span className="font-semibold text-[#012765] text-base ml-2">{filteredInquiries.length}</span>
                 <button
-                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
                   onClick={() => setPage(page + 1)}
                   disabled={page >= totalPages - 1}
+                  aria-label="Next page"
                 >
-                  {'>'}
+                  &#62;
                 </button>
+                <span className="text-sm text-gray-500 ml-4">Rows per page:</span>
+                <Select value={rowsPerPage === filteredInquiries.length ? 'All' : String(rowsPerPage)} onValueChange={val => {
+                  if (val === 'All') {
+                    setRowsPerPage(filteredInquiries.length || 1);
+                    setPage(0);
+                  } else {
+                    setRowsPerPage(Number(val));
+                    setPage(0);
+                  }
+                }}>
+                  <SelectTrigger className="w-16 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2 ">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="w-16 rounded-md shadow-lg border-gray-200">
+                    <SelectItem value="5" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">5</SelectItem>
+                    <SelectItem value="10" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">10</SelectItem>
+                    <SelectItem value="25" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">25</SelectItem>
+                    <SelectItem value="All" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">All</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}

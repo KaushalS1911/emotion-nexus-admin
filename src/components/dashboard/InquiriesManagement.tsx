@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MessageSquare, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Search, MessageSquare, Clock, CheckCircle, AlertCircle, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -55,66 +55,6 @@ const getInitialInquiries = (): Inquiry[] => {
       // fallback to mock if corrupted
     }
   }
-  return [
-    // {
-    //   id: 1,
-    //   inquiryType: "Contact",
-    //   firstName: "Sarah",
-    //   lastName: "Johnson",
-    //   email: "sarah.j@email.com",
-    //   phone: "(123) 456-7890",
-    //   inquiryCategory: "Individual Therapy",
-    //   message:
-    //     "I would like to understand my recent assessment results better. Could someone explain what the wellness score means and how I can improve it?",
-    //   date: "2024-06-23",
-    //   status: "pending",
-    //   assignedTo: null,
-    //   responses: [],
-    // },
-    // {
-    //   id: 2,
-    //   inquiryType: "Request a Callback",
-    //   fullName: "Michael Chen",
-    //   email: "m.chen@email.com",
-    //   phone: "(234) 567-8901",
-    //   age: 28,
-    //   message: "Please call me back regarding my account access.",
-    //   date: "2024-06-22",
-    //   status: "in-progress",
-    //   assignedTo: "Support Team A",
-    //   responses: [
-    //     { content: "We will call you back today.", timestamp: "2024-06-22T10:30:00" },
-    //   ],
-    // },
-    // {
-    //   id: 3,
-    //   inquiryType: "Contact",
-    //   firstName: "Emma",
-    //   lastName: "Wilson",
-    //   email: "emma.w@email.com",
-    //   phone: "(345) 678-9012",
-    //   inquiryCategory: "Technical Support",
-    //   message:
-    //     "Could you recommend some specific resources for dealing with exam anxiety? I found the assessment helpful but need more guidance.",
-    //   date: "2024-06-21",
-    //   status: "resolved",
-    //   assignedTo: "Wellness Coach B",
-    //   responses: [],
-    // },
-    // {
-    //   id: 4,
-    //   inquiryType: "Request a Callback",
-    //   fullName: "David Kumar",
-    //   email: "d.kumar@email.com",
-    //   phone: "(456) 789-0123",
-    //   age: 19,
-    //   message: "I would like to discuss a feature request over the phone.",
-    //   date: "2024-06-20",
-    //   status: "pending",
-    //   assignedTo: null,
-    //   responses: [],
-    // },
-  ];
 };
 
 const supportTeam = [
@@ -123,6 +63,22 @@ const supportTeam = [
   "Wellness Coach A",
   "Wellness Coach B",
   "Technical Support",
+];
+
+const inquiryTypes = [
+  "Individual Therapy",
+  "Student Services",
+  "Corporate Wellness",
+  "Technical Support",
+  "Billing & Payment",
+  "Request a Callback - Stress & Anxiety",
+  "Request a Callback - Relationships",
+  "Request a Callback - Grief & Trauma",
+  "Request a Callback - Addiction",
+  "Request a Callback - Self-Esteem",
+  "Request a Callback - Bullying",
+  "Request a Callback - Overthinking",
+  "Request a Callback - Career Uncertainty",
 ];
 
 export const InquiriesManagement = () => {
@@ -204,16 +160,38 @@ export const InquiriesManagement = () => {
                 className="pl-4"
               />
             </div>
-            <select
-              className="w-full md:w-48 border rounded px-2 py-2 text-gray-700"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              {uniqueTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+            <div className="w-full md:w-80">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    value="all"
+                    className={
+                      typeFilter === 'all'
+                        ? 'bg-gray-200 text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-gray-800'
+                        : 'hover:bg-gray-200 hover:text-gray-800'
+                    }
+                  >
+                    All Types
+                  </SelectItem>
+                  {inquiryTypes.map((type) => (
+                    <SelectItem
+                      key={type}
+                      value={type}
+                      className={
+                        typeFilter === type
+                          ? 'bg-gray-200 text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-gray-800'
+                          : 'hover:bg-gray-200 hover:text-gray-800'
+                      }
+                    >
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>

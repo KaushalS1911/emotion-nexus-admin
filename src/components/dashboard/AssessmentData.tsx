@@ -38,7 +38,6 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@
 import {Label} from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
-// Type Definitions
 interface Assessment {
     id: number;
     userId: string;
@@ -229,7 +228,6 @@ export const AssessmentData = () => {
         setToast({ type: "success", message: "Assessment deactivated successfully." });
     };
 
-    // Toast auto-hide
     useEffect(() => {
         if (toast) {
             const t = setTimeout(() => setToast(null), 2500);
@@ -237,7 +235,6 @@ export const AssessmentData = () => {
         }
     }, [toast]);
 
-    // 1. On initial load, check localStorage for 'assessments' and use it if present; otherwise, use mockAssessments.
     useEffect(() => {
         const stored = localStorage.getItem("assessments");
         if (stored) {

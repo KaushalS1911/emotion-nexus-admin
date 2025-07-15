@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     mobileOpen = false,
                                                     setMobileOpen,
                                                 }) => {
-    // Drawer overlay for mobile
+
     if (isMobile) {
         return (
             <>
@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </>
         );
     }
-    // Desktop sidebar (unchanged)
+
     return (
         <div
             className={cn(

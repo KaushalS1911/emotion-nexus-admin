@@ -19,7 +19,6 @@ interface DashboardHeaderProps {
     sidebarCollapsed: boolean;
 }
 
-// Define sidebar links here
 const pages = [
     {name: "Dashboard", path: "/dashboard"},
     {name: "Users", path: "/users"},

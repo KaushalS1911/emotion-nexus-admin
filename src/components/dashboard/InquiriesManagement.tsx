@@ -14,11 +14,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// API endpoints
+
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
 const API_SINGLE = (id: string | number) => `https://interactapiverse.com/mahadevasth/enquiry/${id}`;
 
-// TypeScript interfaces for dynamic data
+
 interface InquiryBase {
   id: number;
   inquiryType: "Contact" | "Request a Callback";
@@ -52,7 +52,7 @@ const getInitialInquiries = (): Inquiry[] => {
     try {
       return JSON.parse(stored);
     } catch {
-      // fallback to mock if corrupted
+
     }
   }
 };
@@ -82,7 +82,6 @@ const inquiryTypes = [
 ];
 
 export const InquiriesManagement = () => {
-  // State for inquiries, filters, and selected inquiry
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -94,7 +93,7 @@ export const InquiriesManagement = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // Fetch inquiry list from API
+
   useEffect(() => {
     setLoading(true);
     fetch(API_LIST)
@@ -105,7 +104,7 @@ export const InquiriesManagement = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Fetch single inquiry when dialog opens
+
   useEffect(() => {
     if (selectedInquiryId) {
       setDetailLoading(true);
@@ -120,7 +119,7 @@ export const InquiriesManagement = () => {
 
   useEffect(() => { setPage(0); }, [searchTerm, typeFilter, inquiries]);
 
-  // Filter logic (search and type)
+
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch =
       (inquiry.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,7 +129,7 @@ export const InquiriesManagement = () => {
     return matchesSearch && matchesType;
   });
 
-  // Unique types for filter dropdown
+
   const uniqueTypes = Array.from(new Set(inquiries.map((inq) => inq.enquiry_type).filter(Boolean)));
 
   const paginatedInquiries = filteredInquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);

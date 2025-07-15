@@ -8,7 +8,6 @@ import { Search, Download, MoreHorizontal, Eye, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// User interface
 type UserStatus = "active" | "inactive";
 interface User {
   id: number;
@@ -101,10 +100,10 @@ export const UserManagement = () => {
     localStorage.setItem("users", JSON.stringify(users));
   }, [users]);
 
-  // Reset page if filters change
+
   useEffect(() => { setPage(0); }, [searchTerm, statusFilter]);
 
-  // Filter users by name, email, assessment name, and status
+
   const filteredUsers = users.filter((user) => {
     const term = searchTerm.toLowerCase();
     const matchesSearch =
@@ -115,7 +114,7 @@ export const UserManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination logic
+
   const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
 
@@ -124,7 +123,7 @@ export const UserManagement = () => {
       ? "bg-green-100 text-green-800"
       : "bg-gray-100 text-gray-800";
 
-  // Export users as CSV
+
   const handleExport = () => {
     const header = ["Name", "Email", "Age", "Assessment Name", "Join Date", "Status"];
     const rows = users.map((u) => [u.name, u.email, u.age, u.assessmentName, u.joinDate, u.status]);
@@ -138,12 +137,12 @@ export const UserManagement = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Delete user
+
   const handleDelete = (id: number) => {
     setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
-  // View user details
+
   const handleView = (user: User) => {
     setViewUser(user);
     setViewDialogOpen(true);

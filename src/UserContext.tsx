@@ -4,7 +4,6 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  // Add more fields as needed
   settings?: Record<string, any>;
 };
 
@@ -26,7 +25,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    // Optionally clear localStorage or cookies here
   };
 
   return (

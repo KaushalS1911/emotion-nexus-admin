@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
-import { UserManagement } from "@/components/dashboard/UserManagement";
+import { Beneficiaries } from "@/components/dashboard/Beneficiaries.tsx";
 import { AssessmentData } from "@/components/dashboard/AssessmentData";
 import { InquiriesManagement } from "@/components/dashboard/InquiriesManagement";
 import { FeedbackTracking } from "@/components/dashboard/FeedbackTracking";
@@ -19,8 +19,8 @@ const Index = () => {
     switch (activeTab) {
       case "dashboard":
         return <DashboardOverview />;
-      case "users":
-        return <UserManagement />;
+      case "Beneficieries":
+        return <Beneficiaries />;
       case "assessments":
         return <AssessmentData />;
       case "inquiries":
@@ -42,8 +42,6 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="flex">
         <Sidebar 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab}
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
         />

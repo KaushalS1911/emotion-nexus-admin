@@ -2,6 +2,7 @@ import React from "react";
 import {cn} from "@/lib/utils";
 import {
     BarChart3,
+    User,
     Users,
     FileText,
     MessageSquare,
@@ -33,9 +34,10 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
     {id: "dashboard", label: "Dashboard", icon: BarChart3, route: "/dashboard"},
-    {id: "users", label: "Users", icon: Users, route: "/users"},
+    {id: "beneficieries", label: "Beneficiaries", icon: User, route: "/Beneficieries"},
     {id: "assessments", label: "Assessments", icon: FileText, route: "/assessments"},
     {id: "inquiries", label: "Inquiries", icon: MessageSquare, route: "/inquiries"},
+    {id: "users", label: "Users", icon: Users, route: "/users"},
     {id: "feedback", label: "Feedback", icon: Star, route: "/feedback"},
     {id: "resources", label: "Resources", icon: BookOpen, route: "/resources"},
     {id: "notifications", label: "Notifications", icon: Bell, route: "/notifications"},

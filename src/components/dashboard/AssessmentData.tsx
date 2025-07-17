@@ -242,14 +242,14 @@ export const AssessmentData = () => {
         }
     }, []);
 
-    // Dynamic summary calculations (use filteredAssessments for all summary cards)
+
     const totalAssessments = filteredAssessments.length;
     const avgScore = filteredAssessments.length > 0 ? (filteredAssessments.reduce((sum, a) => sum + a.score, 0) / filteredAssessments.length).toFixed(1) : '0.0';
-    // Calculate how many filtered assessments are in the current week
+
     const getStartOfWeek = (date: Date) => {
         const d = new Date(date);
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
     };
     const now = new Date();
@@ -260,7 +260,7 @@ export const AssessmentData = () => {
         const ad = new Date(a.date);
         return ad >= startOfWeek && ad <= endOfWeek;
     }).length;
-    // Completion rate: assuming all are completed (100%) unless you have incomplete logic
+
     const completionRate = '100%';
 
     return (

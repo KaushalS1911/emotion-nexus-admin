@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardHeaderProps {
     toggleSidebar: () => void;
@@ -21,7 +22,7 @@ interface DashboardHeaderProps {
 
 const pages = [
     {name: "Dashboard", path: "/dashboard"},
-    {name: "Users", path: "/users"},
+    {name: "Beneficieries", path: "/beneficieries"},
     {name: "Assessments", path: "/assessments"},
     {name: "Inquiries", path: "/inquiries"},
     {name: "Feedback", path: "/feedback"},
@@ -33,7 +34,7 @@ const pages = [
 export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredPages, setFilteredPages] = useState<typeof pages>([]);
-
+    const navigate = useNavigate();
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
@@ -122,7 +123,8 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
                             <DropdownMenuItem>Profile Settings</DropdownMenuItem>
                             <DropdownMenuItem>Account</DropdownMenuItem>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem>Log out</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => {sessionStorage.removeItem("admin-token")
+                            navigate("/login")}}>Log out</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

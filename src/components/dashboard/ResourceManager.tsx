@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Eye, Heart, BookOpen, Video, FileText, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Eye, Heart, BookOpen, Video, FileText, Edit, Trash2, MoreVertical } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+type ResourceFormErrors = {
+  title?: string;
+  author?: string;
+  type?: string;
+  category?: string;
+  platform?: string;
+  age?: string;
+  description?: string;
+  tags?: string;
+  thumbnail?: string;
+  emptyImage?: string;
+};
 
 const mockResources = [
   {
@@ -25,11 +39,13 @@ const mockResources = [
     publishDate: "2024-06-20",
     views: 1247,
     likes: 89,
-    status: "published",
+    status: "live",
     description: "Learn simple yet effective breathing techniques that can help you manage stress and anxiety in just a few minutes.",
     tags: ["breathing", "stress", "anxiety", "mindfulness"],
     thumbnail: null,
     emptyImage: null,
+    platform: "website",
+    age: "18+",
   },
   {
     id: 2,
@@ -40,11 +56,13 @@ const mockResources = [
     publishDate: "2024-06-18",
     views: 2156,
     likes: 156,
-    status: "published",
+    status: "live",
     description: "A 10-minute guided meditation session perfect for those new to mindfulness practice.",
     tags: ["meditation", "mindfulness", "beginners", "guided"],
     thumbnail: null,
     emptyImage: null,
+    platform: "app",
+    age: "13+",
   },
   {
     id: 3,
@@ -55,11 +73,13 @@ const mockResources = [
     publishDate: "2024-06-15",
     views: 892,
     likes: 67,
-    status: "published",
+    status: "hide",
     description: "Comprehensive strategies to overcome exam anxiety and improve academic performance.",
     tags: ["exams", "anxiety", "students", "performance"],
     thumbnail: null,
     emptyImage: null,
+    platform: "both",
+    age: "16+",
   },
   {
     id: 4,
@@ -75,6 +95,8 @@ const mockResources = [
     tags: ["workplace", "stress", "productivity", "balance"],
     thumbnail: null,
     emptyImage: null,
+    platform: "website",
+    age: "21+",
   },
   {
     id: 5,
@@ -85,11 +107,13 @@ const mockResources = [
     publishDate: "2024-06-10",
     views: 2890,
     likes: 234,
-    status: "published",
+    status: "live",
     description: "Expert advice on helping children develop emotional resilience and coping skills.",
     tags: ["children", "resilience", "parenting", "emotional-health"],
     thumbnail: null,
     emptyImage: null,
+    platform: "both",
+    age: "6+",
   },
 ];
 
@@ -110,6 +134,18 @@ const categories = [
   "sleep",
 ];
 
+const platformOptions = [
+  { value: "website", label: "Website" },
+  { value: "app", label: "App" },
+  { value: "both", label: "Both" },
+];
+
+const statusOptions = [
+  { value: "live", label: "Live" },
+  { value: "hide", label: "Hide" },
+  { value: "draft", label: "Draft" },
+];
+
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -119,16 +155,29 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// 1. Change form.tags to be an array, add tagInput state
 const getInitialForm = () => ({
   title: "",
   author: "",
   type: "",
   category: "",
   description: "",
-  tags: "",
+  tags: [], // now an array
   thumbnail: null,
   emptyImage: null,
+  platform: "",
+  age: "",
+  status: "live",
 });
+
+// 2. Update getInitialResources to support both string and array tags
+const getTagsArray = (tags) => {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === "string") {
+    return tags.split(",").map((t) => t.trim()).filter(Boolean);
+  }
+  return [];
+};
 
 const getInitialResources = () => {
   const stored = localStorage.getItem("resources");
@@ -136,11 +185,7 @@ const getInitialResources = () => {
     try {
       return JSON.parse(stored).map((r) => ({
         ...r,
-        tags: Array.isArray(r.tags)
-          ? r.tags
-          : typeof r.tags === "string"
-            ? r.tags.split(",").map((t) => t.trim()).filter(Boolean)
-            : [],
+        tags: getTagsArray(r.tags),
       }));
     } catch {
       // fallback to mock if corrupted
@@ -157,32 +202,66 @@ export const ResourceManager = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [form, setForm] = useState(getInitialForm());
+  const [tagInput, setTagInput] = useState("");
   const [thumbPreview, setThumbPreview] = useState(null);
   const [emptyPreview, setEmptyPreview] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
   const [viewingResource, setViewingResource] = useState(null);
+  const [errors, setErrors] = useState<ResourceFormErrors>({});
   const fileInputRef = useRef();
   const emptyInputRef = useRef();
+
+  // Validation function
+  const validateForm = () => {
+    const newErrors: ResourceFormErrors = {};
+    if (!form.title.trim()) newErrors.title = "Title is required";
+    if (!form.author.trim()) newErrors.author = "Author is required";
+    if (!form.type) newErrors.type = "Type is required";
+    if (!form.category) newErrors.category = "Category is required";
+    if (!form.platform) newErrors.platform = "Platform is required";
+    if (!form.age.trim()) newErrors.age = "Age is required";
+    if (!form.description.trim()) newErrors.description = "Description is required";
+    if (!form.tags || form.tags.length === 0) newErrors.tags = "At least one tag is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Save to localStorage whenever resources change
   useEffect(() => {
     localStorage.setItem("resources", JSON.stringify(resources));
   }, [resources]);
 
+  // Handler for all input fields, including tagInput
   const handleInput = (e) => {
     const { id, value } = e.target;
-    setForm((f) => ({ ...f, [id]: value }));
+    if (id === "tagInput") {
+      setTagInput(value);
+    } else {
+      setForm((f) => ({ ...f, [id]: value }));
+    }
   };
 
+  // Handler for Select fields
   const handleSelect = (field, value) => {
     setForm((f) => ({ ...f, [field]: value }));
   };
 
-  const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler for file inputs
+  const handleFile = async (field, e) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        setErrors((prev) => ({ ...prev, [field]: "Only JPG, GIF, or PNG files are allowed." }));
+        return;
+      }
+      if (file.size > 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, [field]: "File size must be 1MB or less." }));
+        return;
+      }
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
       const base64 = await fileToBase64(file);
       setForm((f) => ({ ...f, [field]: base64 }));
       if (field === "thumbnail") setThumbPreview(base64);
@@ -190,12 +269,47 @@ export const ResourceManager = () => {
     }
   };
 
-  const handlePublish = () => {
-    const tagsArray = form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
+  // 4. Add handleTagKeyDown
+  const handleTagKeyDown = (e) => {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+      e.preventDefault();
+      if (!form.tags.includes(tagInput.trim())) {
+        setForm((f) => ({ ...f, tags: [...f.tags, tagInput.trim()] }));
+      }
+      setTagInput("");
+    }
+  };
 
+  // 5. Remove tag
+  const handleRemoveTag = (tag) => {
+    setForm((f) => ({ ...f, tags: f.tags.filter((t) => t !== tag) }));
+  };
+
+  // 6. Update openEditDialog to support array tags
+  const openEditDialog = (resource) => {
+    setEditingResource(resource);
+    setForm({
+      title: resource.title,
+      author: resource.author,
+      type: resource.type,
+      category: resource.category,
+      description: resource.description,
+      tags: getTagsArray(resource.tags),
+      thumbnail: resource.thumbnail,
+      emptyImage: resource.emptyImage,
+      platform: resource.platform,
+      age: resource.age,
+      status: resource.status,
+    });
+    setTagInput("");
+    setThumbPreview(resource.thumbnail);
+    setEmptyPreview(resource.emptyImage);
+    setEditDialogOpen(true);
+  };
+
+  // 7. Update handlePublish and handleEditSave to use array tags
+  const handlePublish = () => {
+    if (!validateForm()) return;
     const newResource = {
       id: Date.now(),
       title: form.title,
@@ -203,19 +317,23 @@ export const ResourceManager = () => {
       type: form.type,
       category: form.category,
       description: form.description,
-      tags: tagsArray,
-      status: "published",
+      tags: form.tags,
+      status: form.status || "live",
       publishDate: new Date().toISOString(),
       views: 0,
       likes: 0,
       thumbnail: thumbPreview,
       emptyImage: emptyPreview,
+      platform: form.platform,
+      age: form.age,
     };
     setResources((prev) => [newResource, ...prev]);
     setIsAddDialogOpen(false);
     setForm(getInitialForm());
+    setTagInput("");
     setThumbPreview(null);
     setEmptyPreview(null);
+    setErrors({});
   };
 
   const handleDelete = (id) => {
@@ -252,61 +370,48 @@ export const ResourceManager = () => {
   };
 
   const getStatusColor = (status: string) => {
-    return status === "published"
+    return status === "live"
         ? "bg-green-100 text-green-800"
-        : "bg-yellow-100 text-yellow-800";
+        : status === "hide"
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-gray-100 text-gray-800";
   };
 
   const totalViews = resources.reduce((sum, resource) => sum + resource.views, 0);
   const totalLikes = resources.reduce((sum, resource) => sum + resource.likes, 0);
-  const publishedCount = resources.filter((r) => r.status === "published").length;
+  const publishedCount = resources.filter((r) => r.status === "live").length;
 
 
-  const openEditDialog = (resource) => {
-    setEditingResource(resource);
-    setForm({
-      title: resource.title,
-      author: resource.author,
-      type: resource.type,
-      category: resource.category,
-      description: resource.description,
-      tags: resource.tags.join(", "),
-      thumbnail: resource.thumbnail,
-      emptyImage: resource.emptyImage,
-    });
-    setThumbPreview(resource.thumbnail);
-    setEmptyPreview(resource.emptyImage);
-    setEditDialogOpen(true);
-  };
-
+  // 7. Update handleEditSave to use array tags
   const handleEditSave = () => {
-    const tagsArray = form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
-
+    if (!validateForm()) return;
     setResources((prev) =>
-        prev.map((r) =>
-            r.id === editingResource.id
-                ? {
-                  ...r,
-                  title: form.title,
-                  author: form.author,
-                  type: form.type,
-                  category: form.category,
-                  description: form.description,
-                  tags: tagsArray,
-                  thumbnail: thumbPreview,
-                  emptyImage: emptyPreview,
-                }
-                : r
-        )
+      prev.map((r) =>
+        r.id === editingResource.id
+          ? {
+              ...r,
+              title: form.title,
+              author: form.author,
+              type: form.type,
+              category: form.category,
+              description: form.description,
+              tags: form.tags,
+              thumbnail: thumbPreview,
+              emptyImage: emptyPreview,
+              platform: form.platform,
+              age: form.age,
+              status: form.status,
+            }
+          : r
+      )
     );
     setEditDialogOpen(false);
     setEditingResource(null);
     setForm(getInitialForm());
+    setTagInput("");
     setThumbPreview(null);
     setEmptyPreview(null);
+    setErrors({});
   };
 
 
@@ -344,6 +449,7 @@ export const ResourceManager = () => {
               setIsAddDialogOpen(open);
               if (open) {
                 setForm(getInitialForm());
+                setTagInput("");
                 setThumbPreview(null);
                 setEmptyPreview(null);
               }
@@ -368,7 +474,9 @@ export const ResourceManager = () => {
                         value={form.title}
                         onChange={handleInput}
                         placeholder="Resource title..."
+                        className={errors && errors.title ? 'border-red-500' : ''}
                     />
+                    {errors && errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
                   </div>
                   <div>
                     <Label htmlFor="author">Author</Label>
@@ -377,7 +485,9 @@ export const ResourceManager = () => {
                         value={form.author}
                         onChange={handleInput}
                         placeholder="Author name..."
+                        className={errors && errors.author ? 'border-red-500' : ''}
                     />
+                    {errors && errors.author && <div className="text-red-500 text-xs mt-1">{errors.author}</div>}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -398,6 +508,7 @@ export const ResourceManager = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors && errors.type && <div className="text-red-500 text-xs mt-1">{errors.type}</div>}
                   </div>
                   <div>
                     <Label htmlFor="category">Category</Label>
@@ -418,6 +529,7 @@ export const ResourceManager = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors && errors.category && <div className="text-red-500 text-xs mt-1">{errors.category}</div>}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -430,6 +542,7 @@ export const ResourceManager = () => {
                         onChange={(e) => handleFile("thumbnail", e)}
                         ref={fileInputRef}
                     />
+                    <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
                     {thumbPreview && (
                         <img
                             src={thumbPreview}
@@ -437,6 +550,7 @@ export const ResourceManager = () => {
                             className="mt-2 w-full h-40 object-cover rounded"
                         />
                     )}
+                    {errors && errors.thumbnail && <div className="text-red-500 text-xs mt-1">{errors.thumbnail}</div>}
                   </div>
                   <div>
                     <Label htmlFor="emptyImage">Image</Label>
@@ -447,6 +561,7 @@ export const ResourceManager = () => {
                         onChange={(e) => handleFile("emptyImage", e)}
                         ref={emptyInputRef}
                     />
+                    <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
                     {emptyPreview && (
                         <img
                             src={emptyPreview}
@@ -454,6 +569,39 @@ export const ResourceManager = () => {
                             className="mt-2 w-full h-40 object-cover rounded"
                         />
                     )}
+                    {errors && errors.emptyImage && <div className="text-red-500 text-xs mt-1">{errors.emptyImage}</div>}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="platform">Platform</Label>
+                    <Select
+                        value={form.platform}
+                        onValueChange={(v) => handleSelect("platform", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {platformOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors && errors.platform && <div className="text-red-500 text-xs mt-1">{errors.platform}</div>}
+                  </div>
+                  <div>
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                        id="age"
+                        value={form.age}
+                        onChange={handleInput}
+                        placeholder="e.g. 13+, 18+, All Ages"
+                        className={errors && errors.age ? 'border-red-500' : ''}
+                    />
+                    {errors && errors.age && <div className="text-red-500 text-xs mt-1">{errors.age}</div>}
                   </div>
                 </div>
                 <div>
@@ -463,16 +611,56 @@ export const ResourceManager = () => {
                       value={form.description}
                       onChange={handleInput}
                       placeholder="Resource description..."
+                      className={errors && errors.description ? 'border-red-500' : ''}
                   />
+                  {errors && errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
                 </div>
                 <div>
                   <Label htmlFor="tags">Tags (comma separated)</Label>
-                  <Input
-                      id="tags"
-                      value={form.tags}
+                  {/* 8. In Add/Edit Dialogs, render chips and tag input */}
+                  <div className="flex flex-wrap gap-2 items-center border rounded px-2 py-1 bg-white">
+                    {form.tags.map((tag, idx) => (
+                      <span key={idx} className="flex items-center bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                        {tag}
+                        <button
+                          type="button"
+                          className="ml-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                          onClick={() => handleRemoveTag(tag)}
+                          aria-label={`Remove tag ${tag}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      id="tagInput"
+                      value={tagInput}
                       onChange={handleInput}
-                      placeholder="tag1, tag2, tag3..."
-                  />
+                      onKeyDown={handleTagKeyDown}
+                      placeholder="Add tag and press Enter"
+                      className="flex-1 min-w-[120px] border-none outline-none py-1 px-2 text-xs"
+                      autoComplete="off"
+                    />
+                  </div>
+                  {errors && errors.tags && <div className="text-red-500 text-xs mt-1">{errors.tags}</div>}
+                </div>
+                <div>
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                      value={form.status}
+                      onValueChange={(v) => handleSelect("status", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <Button
@@ -552,6 +740,7 @@ export const ResourceManager = () => {
           </Card>
         </div>
 
+
         {/* Filters */}
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
@@ -565,17 +754,6 @@ export const ResourceManager = () => {
                     className="pl-10"
                 />
               </div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="article">Articles</SelectItem>
-                  <SelectItem value="video">Videos</SelectItem>
-                  <SelectItem value="tip">Tips</SelectItem>
-                </SelectContent>
-              </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="Category" />
@@ -597,13 +775,41 @@ export const ResourceManager = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
+                  {statusOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
+
+        {/* Insert after the stats cards, before the search/filter card: */}
+        <div className="w-full overflow-x-auto mb-4">
+          <div className="flex items-center gap-2 md:gap-4 bg-white rounded-lg px-2 py-2 border border-gray-100">
+            {[
+              { label: 'All', value: 'all', color: 'bg-gray-400 text-white', count: resources.length },
+              ...resourceTypes.map(rt => ({
+                label: rt.label,
+                value: rt.value,
+                color: rt.value === 'article' ? 'bg-blue-50 text-blue-800' : rt.value === 'video' ? 'bg-purple-50 text-purple-800' : 'bg-green-50 text-green-800',
+                count: resources.filter(r => r.type === rt.value).length
+              }))
+            ].map(tab => (
+                <button
+                    key={tab.value}
+                    onClick={() => setTypeFilter(tab.value)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm transition-colors border border-transparent whitespace-nowrap ${typeFilter === tab.value ? 'bg-[#012765] text-white shadow' : tab.color} hover:bg-[#FF7119] hover:text-white`}
+                    style={{ minWidth: 80 }}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${typeFilter === tab.value ? 'bg-white text-[#012765]' : 'bg-gray-200 text-gray-700'}`}>{tab.count}</span>
+                </button>
+            ))}
+          </div>
+        </div>
 
         {/* Edit Resource Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -620,7 +826,9 @@ export const ResourceManager = () => {
                       value={form.title}
                       onChange={handleInput}
                       placeholder="Resource title..."
+                      className={errors && errors.title ? 'border-red-500' : ''}
                   />
+                  {errors && errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
                 </div>
                 <div>
                   <Label htmlFor="author">Author</Label>
@@ -629,7 +837,9 @@ export const ResourceManager = () => {
                       value={form.author}
                       onChange={handleInput}
                       placeholder="Author name..."
+                      className={errors && errors.author ? 'border-red-500' : ''}
                   />
+                  {errors && errors.author && <div className="text-red-500 text-xs mt-1">{errors.author}</div>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -650,6 +860,7 @@ export const ResourceManager = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors && errors.type && <div className="text-red-500 text-xs mt-1">{errors.type}</div>}
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
@@ -670,6 +881,7 @@ export const ResourceManager = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors && errors.category && <div className="text-red-500 text-xs mt-1">{errors.category}</div>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -682,6 +894,7 @@ export const ResourceManager = () => {
                       onChange={(e) => handleFile("thumbnail", e)}
                       ref={fileInputRef}
                   />
+                  <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
                   {thumbPreview && (
                       <img
                           src={thumbPreview}
@@ -689,6 +902,7 @@ export const ResourceManager = () => {
                           className="mt-2 w-full h-40 object-cover rounded"
                       />
                   )}
+                  {errors && errors.thumbnail && <div className="text-red-500 text-xs mt-1">{errors.thumbnail}</div>}
                 </div>
                 <div>
                   <Label htmlFor="emptyImage">Image</Label>
@@ -699,6 +913,7 @@ export const ResourceManager = () => {
                       onChange={(e) => handleFile("emptyImage", e)}
                       ref={emptyInputRef}
                   />
+                  <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
                   {emptyPreview && (
                       <img
                           src={emptyPreview}
@@ -706,6 +921,39 @@ export const ResourceManager = () => {
                           className="mt-2 w-full h-40 object-cover rounded"
                       />
                   )}
+                  {errors && errors.emptyImage && <div className="text-red-500 text-xs mt-1">{errors.emptyImage}</div>}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="platform">Platform</Label>
+                  <Select
+                      value={form.platform}
+                      onValueChange={(v) => handleSelect("platform", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select platform" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {platformOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors && errors.platform && <div className="text-red-500 text-xs mt-1">{errors.platform}</div>}
+                </div>
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                      id="age"
+                      value={form.age}
+                      onChange={handleInput}
+                      placeholder="e.g. 13+, 18+, All Ages"
+                      className={errors && errors.age ? 'border-red-500' : ''}
+                  />
+                  {errors && errors.age && <div className="text-red-500 text-xs mt-1">{errors.age}</div>}
                 </div>
               </div>
               <div>
@@ -715,16 +963,56 @@ export const ResourceManager = () => {
                     value={form.description}
                     onChange={handleInput}
                     placeholder="Resource description..."
+                    className={errors && errors.description ? 'border-red-500' : ''}
                 />
+                {errors && errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
               </div>
               <div>
                 <Label htmlFor="tags">Tags (comma separated)</Label>
-                <Input
-                    id="tags"
-                    value={form.tags}
+                {/* 8. In Add/Edit Dialogs, render chips and tag input */}
+                <div className="flex flex-wrap gap-2 items-center border rounded px-2 py-1 bg-white">
+                  {form.tags.map((tag, idx) => (
+                    <span key={idx} className="flex items-center bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                      {tag}
+                      <button
+                        type="button"
+                        className="ml-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                        onClick={() => handleRemoveTag(tag)}
+                        aria-label={`Remove tag ${tag}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    id="tagInput"
+                    value={tagInput}
                     onChange={handleInput}
-                    placeholder="tag1, tag2, tag3..."
-                />
+                    onKeyDown={handleTagKeyDown}
+                    placeholder="Add tag and press Enter"
+                    className="flex-1 min-w-[120px] border-none outline-none py-1 px-2 text-xs"
+                    autoComplete="off"
+                  />
+                </div>
+                {errors && errors.tags && <div className="text-red-500 text-xs mt-1">{errors.tags}</div>}
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                    value={form.status}
+                    onValueChange={(v) => handleSelect("status", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-end space-x-2">
                 <Button
@@ -869,107 +1157,111 @@ export const ResourceManager = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Resource Listing */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredResources.map((resource) => (
-              <Card
-                  key={resource.id}
-                  className="border-0 shadow-xl hover:shadow-2xl transition-shadow rounded-xl bg-white"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                        <div className="flex items-center space-x-1">
-                          {getTypeIcon(resource.type)}
-                          <span>{resource.type}</span>
-                        </div>
-                      </Badge>
-                      <Badge className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                        {resource.status}
-                      </Badge>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(resource)}
-                          title="Edit"
-                      >
-                        <Edit className="h-4 w-4 text-blue-600" />
-                      </Button>
-                      <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => handleDelete(resource.id)}
-                          title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {resource.thumbnail && (
-                      <div
-                          className="mb-4 w-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 p-2"
-                          style={{ minHeight: 160, maxHeight: 220 }}
-                      >
-                        <img
-                            src={resource.thumbnail}
-                            alt="Thumbnail"
-                            className="max-h-48 max-w-full object-contain rounded"
-                        />
-                      </div>
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {resource.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {resource.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {resource.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                            key={index}
-                            className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded"
-                        >
-                    {tag}
-                  </span>
-                    ))}
-                    {resource.tags.length > 3 && (
-                        <span className="text-gray-400 text-xs">
-                    +{resource.tags.length - 3} more
-                  </span>
+        {/* Resource Listing Table */}
+        <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thumbnail</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Published</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Likes</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {filteredResources.map((resource) => (
+                <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-2">
+                    {resource.thumbnail ? (
+                      <img
+                        src={resource.thumbnail}
+                        alt="Thumbnail"
+                        className="h-12 w-12 object-cover rounded border border-gray-200"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-400">No Image</span>
                     )}
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <span>By {resource.author}</span>
-                    <span>{new Date(resource.publishDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  </td>
+                  <td className="px-4 py-2 font-semibold text-gray-900 max-w-xs truncate">{resource.title}</td>
+                  <td className="px-4 py-2 text-gray-700">{resource.author}</td>
+                  <td className="px-4 py-2">
+                    <Badge className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                       <div className="flex items-center space-x-1">
-                        <Eye className="h-4 w-4" />
-                        <span>{resource.views.toLocaleString()}</span>
+                        {getTypeIcon(resource.type)}
+                        <span>{resource.type}</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <Heart className="h-4 w-4" />
-                        <span>{resource.likes}</span>
-                      </div>
-                    </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openViewDialog(resource)}
-                        className="border-blue-200 text-blue-700 hover:bg-blue-50 font-semibold rounded"
-                        title="View Details"
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-          ))}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2">
+                    <Badge className="bg-purple-100 text-purple-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                      {resource.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2">
+                    <Badge className="bg-gray-100 text-gray-800">
+                      {platformOptions.find((p) => p.value === resource.platform)?.label || resource.platform}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-gray-700">{resource.age}</td>
+                  <td className="px-4 py-2">
+                    <Badge className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                      {statusOptions.find((s) => s.value === resource.status)?.label || resource.status}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-gray-700">{new Date(resource.publishDate).toLocaleDateString()}</td>
+                  <td className="px-4 py-2 text-gray-700">{resource.views.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-gray-700">{resource.likes}</td>
+                  <td className="px-4 py-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onClick={() => openViewDialog(resource)}
+                          className="flex items-center gap-2"
+                        >
+                          <Eye className="h-4 w-4 mr-2 text-gray-600" />
+                          View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => openEditDialog(resource)}
+                          className="flex items-center gap-2"
+                        >
+                          <Edit className="h-4 w-4 mr-2 text-gray-600" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(resource.id)}
+                          className="flex items-center gap-2 text-red-600 focus:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Deactivate
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+              {filteredResources.length === 0 && (
+                <tr>
+                  <td colSpan={12} className="text-center py-8 text-gray-400">
+                    No resources found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
   );

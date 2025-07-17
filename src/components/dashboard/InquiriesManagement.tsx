@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MessageSquare, Clock, CheckCircle, AlertCircle, Check } from "lucide-react";
+import { Search, MessageSquare, Clock, CheckCircle, AlertCircle, Check, Calendar, TrendingUp, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { MoreVertical, Eye, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
@@ -92,6 +95,7 @@ export const InquiriesManagement = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -135,16 +139,75 @@ export const InquiriesManagement = () => {
   const paginatedInquiries = filteredInquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const totalPages = Math.ceil(filteredInquiries.length / rowsPerPage);
 
+  // Dynamic summary values
+  const totalInquiries = filteredInquiries.length;
+  const activeInquiries = filteredInquiries.filter(i => i.status === 'active').length;
+  const thisWeekCount = filteredInquiries.filter(i => {
+    const d = new Date(i.date);
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return d >= startOfWeek && d <= endOfWeek;
+  }).length;
+  const completionRate = totalInquiries > 0 ? ((activeInquiries / totalInquiries) * 100).toFixed(0) : '0';
+
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Title and description section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#FF7119]">Inquiries</h1>
-          <p className="text-gray-600 mt-2 text-[#012765]">
-            Manage user inquiries and support requests
-          </p>
+          <p className="text-gray-600 mt-2 text-[#012765]">Manage and monitor all user inquiries</p>
         </div>
+      </div>
+
+      {/* Summary Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#012765]">Total Inquiries</p>
+                <p className="text-3xl font-bold text-[#012765]">{totalInquiries}</p>
+              </div>
+              <FileText className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#012765]">Active Inquiries</p>
+                <p className="text-3xl font-bold text-[#012765]">{activeInquiries}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#012765]">This Week</p>
+                <p className="text-3xl font-bold text-[#012765]">{thisWeekCount}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#012765]">Completion Rate</p>
+                <p className="text-3xl font-bold text-[#012765]">{completionRate}%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -211,10 +274,12 @@ export const InquiriesManagement = () => {
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Inquiry Type</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Message</th>
+                    <th className="text-left py-4 px-2 font-medium text-gray-600">Status</th>
                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
+                  
                   {paginatedInquiries.map((inquiry, idx) => (
                     <tr key={inquiry.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
@@ -226,24 +291,48 @@ export const InquiriesManagement = () => {
                       </td>
                       <td className="py-4 px-2 max-w-xs truncate" title={inquiry.message}>{inquiry.message}</td>
                       <td className="py-4 px-2">
+                        <Badge className={
+                          inquiry.status === 'resolved'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }>
+                          {/* {inquiry?.status} */}
+                          Unesolved
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-5 w-5 text-gray-500" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedInquiryId(inquiry.id);
+                                setDialogOpen(true);
+                              }}
+                              className="flex items-center gap-2"
+                            >
+                              <Eye className="h-4 w-4 mr-2 text-gray-600" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/inquiries/${inquiry.id}/notes`)}
+                              className="flex items-center gap-2"
+                            >
+                              <Edit className="h-4 w-4 mr-2 text-gray-600" />
+                              Add Notes
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <Dialog open={dialogOpen && selectedInquiryId === inquiry.id} onOpenChange={(open) => {
                           setDialogOpen(open);
                           if (!open) {
                             setSelectedInquiryId(null);
                           }
                         }}>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedInquiryId(inquiry.id);
-                                setDialogOpen(true);
-                              }}
-                            >
-                              View Details
-                            </Button>
-                          </DialogTrigger>
                           <DialogContent className="max-w-xl">
                             <DialogHeader>
                               <DialogTitle>Inquiry Details</DialogTitle>

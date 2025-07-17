@@ -242,6 +242,27 @@ export const AssessmentData = () => {
         }
     }, []);
 
+    // Dynamic summary calculations (use filteredAssessments for all summary cards)
+    const totalAssessments = filteredAssessments.length;
+    const avgScore = filteredAssessments.length > 0 ? (filteredAssessments.reduce((sum, a) => sum + a.score, 0) / filteredAssessments.length).toFixed(1) : '0.0';
+    // Calculate how many filtered assessments are in the current week
+    const getStartOfWeek = (date: Date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
+        return new Date(d.setDate(diff));
+    };
+    const now = new Date();
+    const startOfWeek = getStartOfWeek(now);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const thisWeekCount = filteredAssessments.filter(a => {
+        const ad = new Date(a.date);
+        return ad >= startOfWeek && ad <= endOfWeek;
+    }).length;
+    // Completion rate: assuming all are completed (100%) unless you have incomplete logic
+    const completionRate = '100%';
+
     return (
         <div className="space-y-6">
             {/* Toast/Alert */}
@@ -265,10 +286,10 @@ export const AssessmentData = () => {
                                         <span className="text-pink-400 font-semibold">Assessment Name :</span>
                                         <span className="text-teal-300 ml-2">{viewing.userName}</span>
                                     </div>
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Category :</span>
-                                        <span className="text-teal-300 ml-2">{viewing.category}</span>
-                                    </div>
+                                    {/*<div>*/}
+                                    {/*    <span className="text-pink-400 font-semibold">Category :</span>*/}
+                                    {/*    <span className="text-teal-300 ml-2">{viewing.category}</span>*/}
+                                    {/*</div>*/}
                                     <div>
                                         <span className="text-pink-400 font-semibold">Date :</span>
                                         <span className="text-teal-300 ml-2">{new Date(viewing.date).toLocaleDateString()}</span>
@@ -373,7 +394,7 @@ export const AssessmentData = () => {
                                 <p className="text-sm font-medium text-[#012765]">
                                     Total Assessments
                                 </p>
-                                <p className="text-3xl font-bold text-[#012765]">12,847</p>
+                                <p className="text-3xl font-bold text-[#012765]">{totalAssessments}</p>
                             </div>
                             <FileText className="h-8 w-8 text-blue-500"/>
                         </div>
@@ -385,7 +406,7 @@ export const AssessmentData = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-[#012765]">Avg. Score</p>
-                                <p className="text-3xl font-bold text-[#012765]">78.5</p>
+                                <p className="text-3xl font-bold text-[#012765]">{avgScore}</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-green-500"/>
                         </div>
@@ -399,7 +420,7 @@ export const AssessmentData = () => {
                                 <p className="text-sm font-medium text-[#012765]">
                                     This Week
                                 </p>
-                                <p className="text-3xl font-bold text-[#012765]">367</p>
+                                <p className="text-3xl font-bold text-[#012765]">{thisWeekCount}</p>
                             </div>
                             <Calendar className="h-8 w-8 text-purple-500"/>
                         </div>
@@ -413,7 +434,7 @@ export const AssessmentData = () => {
                                 <p className="text-sm font-medium text-[#012765]">
                                     Completion Rate
                                 </p>
-                                <p className="text-3xl font-bold text-[#012765]">94.2%</p>
+                                <p className="text-3xl font-bold text-[#012765]">{completionRate}</p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-orange-500"/>
                         </div>

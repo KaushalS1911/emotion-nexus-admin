@@ -315,7 +315,7 @@ export const FeedbackTracking = () => {
                       <p className="font-medium text-gray-900">{feedback.userName}</p>
                       <p className="text-sm text-gray-500">{feedback.userEmail}</p>
                     </div>
-                    <Badge className={getCategoryColor(feedback.category)}>
+                    <Badge className={getCategoryColor(feedback.category) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                       {feedback.category}
                     </Badge>
                   </div>
@@ -323,7 +323,7 @@ export const FeedbackTracking = () => {
                     <div className="flex items-center space-x-1">
                       {getRatingStars(feedback.rating)}
                     </div>
-                    <Badge className={getStatusColor(feedback.status)}>
+                    <Badge className={getStatusColor(feedback.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                       {feedback.status}
                     </Badge>
                   </div>

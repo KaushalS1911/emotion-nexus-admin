@@ -354,7 +354,7 @@ export const NotificationsCenter = () => {
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      <Badge className={getTypeColor(notification.type)}>
+                      <Badge className={getTypeColor(notification.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                         <div className="flex items-center space-x-1">
                           {getTypeIcon(notification.type)}
                           <span>{notification.type}</span>
@@ -371,7 +371,7 @@ export const NotificationsCenter = () => {
                       {new Date(notification.sentDate).toLocaleDateString()}
                     </td>
                     <td className="py-4 px-2">
-                      <Badge className={getStatusColor(notification.status)}>
+                      <Badge className={getStatusColor(notification.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                         <div className="flex items-center space-x-1">
                           {getStatusIcon(notification.status)}
                           <span>{notification.status}</span>

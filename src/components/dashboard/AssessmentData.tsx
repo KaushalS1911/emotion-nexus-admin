@@ -549,10 +549,12 @@ export const AssessmentData = () => {
                                     {/*</td>*/}
                                     <td className="py-3 px-2">
                                         <Badge
-                                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">{assessment.maxAge && assessment.maxAge !== assessment.minAge ? `${assessment.minAge}-${assessment.maxAge} age group` : `${assessment.minAge} age group`}</Badge>
+                                            className="bg-blue-100 text-[#012765] px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                            {assessment.maxAge && assessment.maxAge !== assessment.minAge ? `${assessment.minAge}-${assessment.maxAge} age group` : `${assessment.minAge} age group`}
+                                        </Badge>
                                     </td>
                                     <td className="py-3 px-2">
-                                        <Badge className={getScoreColor(assessment.score)}>
+                                        <Badge className={getScoreColor(assessment.score) + " transition-colors duration-150 hover:bg-transition-colors hover:text-blue-950"}>
                                             {assessment.score}
                                         </Badge>
                                     </td>

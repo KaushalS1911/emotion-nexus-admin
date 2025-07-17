@@ -796,13 +796,13 @@ export const ResourceManager = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-600">Type:</span>
-                        <Badge className={getTypeColor(viewingResource.type)}>
+                        <Badge className={getTypeColor(viewingResource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                           {viewingResource.type}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-600">Category:</span>
-                        <Badge className="bg-purple-100 text-purple-800">
+                        <Badge className="bg-purple-100 text-purple-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">
                           {viewingResource.category
                               .replace("-", " ")
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -810,7 +810,7 @@ export const ResourceManager = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-600">Status:</span>
-                        <Badge className={getStatusColor(viewingResource.status)}>
+                        <Badge className={getStatusColor(viewingResource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                           {viewingResource.status}
                         </Badge>
                       </div>
@@ -879,13 +879,13 @@ export const ResourceManager = () => {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-2">
-                      <Badge className={getTypeColor(resource.type)}>
+                      <Badge className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                         <div className="flex items-center space-x-1">
                           {getTypeIcon(resource.type)}
                           <span>{resource.type}</span>
                         </div>
                       </Badge>
-                      <Badge className={getStatusColor(resource.status)}>
+                      <Badge className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                         {resource.status}
                       </Badge>
                     </div>

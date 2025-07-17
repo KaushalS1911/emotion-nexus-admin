@@ -222,7 +222,7 @@ export const InquiriesManagement = () => {
                       <td className="py-4 px-2">{inquiry.email}</td>
                       <td className="py-4 px-2">{inquiry.mobile || "-"}</td>
                       <td className="py-4 px-2">
-                        <Badge className="bg-blue-100 text-blue-800">{inquiry.enquiry_type}</Badge>
+                        <Badge className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
                       </td>
                       <td className="py-4 px-2 max-w-xs truncate" title={inquiry.message}>{inquiry.message}</td>
                       <td className="py-4 px-2">

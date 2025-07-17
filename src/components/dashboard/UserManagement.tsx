@@ -224,7 +224,7 @@ export const UserManagement = () => {
                     <td className="py-4 px-2 text-gray-600">{user.assessmentName}</td>
                     <td className="py-4 px-2 text-gray-600">{new Date(user.joinDate).toLocaleDateString()}</td>
                     <td className="py-4 px-2">
-                      <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
+                      <Badge className={getStatusColor(user.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>{user.status}</Badge>
                     </td>
                     <td className="py-4 px-2">
                       <DropdownMenu>
@@ -325,7 +325,7 @@ export const UserManagement = () => {
                 <div className="bg-gray-50 rounded px-2 py-1">{new Date(viewUser.joinDate).toLocaleDateString()}</div>
                 <div className="font-medium text-gray-600">Status</div>
                 <div className="bg-gray-50 rounded px-2 py-1">
-                  <Badge className={getStatusColor(viewUser.status)}>{viewUser.status}</Badge>
+                  <Badge className={getStatusColor(viewUser.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>{viewUser.status}</Badge>
                 </div>
               </div>
             </div>

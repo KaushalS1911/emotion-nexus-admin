@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Calendar as UiCalendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 type ResourceFormErrors = {
   title?: string;
@@ -200,6 +203,7 @@ export const ResourceManager = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [form, setForm] = useState(getInitialForm());
   const [tagInput, setTagInput] = useState("");
@@ -212,6 +216,7 @@ export const ResourceManager = () => {
   const [errors, setErrors] = useState<ResourceFormErrors>({});
   const fileInputRef = useRef();
   const emptyInputRef = useRef();
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
 
   // Validation function
   const validateForm = () => {
@@ -351,7 +356,19 @@ export const ResourceManager = () => {
     const matchesCategory =
         categoryFilter === "all" || resource.category === categoryFilter;
     const matchesStatus = statusFilter === "all" || resource.status === statusFilter;
-    return matchesSearch && matchesType && matchesCategory && matchesStatus;
+    const matchesPlatform = platformFilter === "all" || resource.platform === platformFilter;
+    let matchesDate = true;
+    if (dateRange.from && dateRange.to) {
+      const d = new Date(resource.publishDate);
+      matchesDate = d >= dateRange.from && d <= dateRange.to;
+    } else if (dateRange.from) {
+      const d = new Date(resource.publishDate);
+      matchesDate = d >= dateRange.from;
+    } else if (dateRange.to) {
+      const d = new Date(resource.publishDate);
+      matchesDate = d <= dateRange.to;
+    }
+    return matchesSearch && matchesType && matchesCategory && matchesStatus && matchesPlatform && matchesDate;
   });
 
   const getTypeIcon = (type: string) => {
@@ -769,19 +786,67 @@ export const ResourceManager = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-32">
-                  <SelectValue placeholder="Status" />
+              {/* Platform filter */}
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger className="w-full md:w-40">
+                  <SelectValue placeholder="Platform" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {statusOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
+                  <SelectItem value="all">All Platforms</SelectItem>
+                  {platformOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {/* Status filter */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-40">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {statusOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Add date range filter here */}
+             <div className="w-full md:w-80 flex flex-col justify-center">
+               {/*<label className="text-xs font-medium text-gray-600 mb-1">Published Date Range</label>*/}
+               <div className="flex items-center gap-2">
+                 <Popover>
+                   <PopoverTrigger asChild>
+                     <Button variant="outline" className="w-full justify-start text-left">
+                       {dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "From"}
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent align="start" className="p-0">
+                     <UiCalendar
+                       mode="single"
+                       selected={dateRange.from ?? undefined}
+                       onSelect={(date) => setDateRange(r => ({ ...r, from: date ?? null }))}
+                       initialFocus
+                     />
+                   </PopoverContent>
+                 </Popover>
+                 <span className="mx-1">-</span>
+                 <Popover>
+                   <PopoverTrigger asChild>
+                     <Button variant="outline" className="w-full justify-start text-left">
+                       {dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "To"}
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent align="start" className="p-0">
+                     <UiCalendar
+                       mode="single"
+                       selected={dateRange.to ?? undefined}
+                       onSelect={(date) => setDateRange(r => ({ ...r, to: date ?? null }))}
+                       initialFocus
+                     />
+                   </PopoverContent>
+                 </Popover>
+               </div>
+             </div>
             </div>
           </CardContent>
         </Card>

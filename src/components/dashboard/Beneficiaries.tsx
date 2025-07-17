@@ -7,6 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Download, MoreHorizontal, Eye, Trash2, FileText, TrendingUp, Calendar } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as UiCalendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 type BeneficiaryStatus = "active" | "inactive";
 interface Beneficiary {
@@ -95,12 +98,13 @@ export const Beneficiaries = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
 
   useEffect(() => {
     localStorage.setItem("beneficiaries", JSON.stringify(beneficiaries));
   }, [beneficiaries]);
 
-  useEffect(() => { setPage(0); }, [searchTerm, statusFilter]);
+  useEffect(() => { setPage(0); }, [searchTerm, statusFilter, dateRange]);
 
   const filteredBeneficiaries = beneficiaries.filter((beneficiary) => {
     const term = searchTerm.toLowerCase();
@@ -109,7 +113,18 @@ export const Beneficiaries = () => {
       beneficiary.email.toLowerCase().includes(term) ||
       beneficiary.assessmentName.toLowerCase().includes(term);
     const matchesStatus = statusFilter === "all" || beneficiary.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    let matchesDate = true;
+    if (dateRange.from && dateRange.to) {
+      const join = new Date(beneficiary.joinDate);
+      matchesDate = join >= dateRange.from && join <= dateRange.to;
+    } else if (dateRange.from) {
+      const join = new Date(beneficiary.joinDate);
+      matchesDate = join >= dateRange.from;
+    } else if (dateRange.to) {
+      const join = new Date(beneficiary.joinDate);
+      matchesDate = join <= dateRange.to;
+    }
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const paginatedBeneficiaries = filteredBeneficiaries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -229,6 +244,42 @@ export const Beneficiaries = () => {
                     <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="w-full md:w-80 flex flex-col justify-center">
+                {/* <label className="text-xs font-medium text-gray-600 mb-1">Join Date Range</label> */}
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left">
+                        {dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "From"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="p-0">
+                      <UiCalendar
+                        mode="single"
+                        selected={dateRange.from ?? undefined}
+                        onSelect={(date) => setDateRange(r => ({ ...r, from: date ?? null }))}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <span className="mx-1">-</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left">
+                        {dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "To"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="p-0">
+                      <UiCalendar
+                        mode="single"
+                        selected={dateRange.to ?? undefined}
+                        onSelect={(date) => setDateRange(r => ({ ...r, to: date ?? null }))}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
           </CardContent>

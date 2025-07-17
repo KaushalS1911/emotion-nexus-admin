@@ -37,6 +37,9 @@ import {
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { Calendar as UiCalendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 interface Assessment {
     id: number;
@@ -186,6 +189,7 @@ export const AssessmentData = () => {
     const navigate = useNavigate();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
 
     const filteredAssessments = assessments.filter((assessment) => {
         const matchesSearch =
@@ -193,7 +197,18 @@ export const AssessmentData = () => {
             assessment.userId.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory =
             categoryFilter === "all" || assessment.category === categoryFilter;
-        return matchesSearch && matchesCategory && assessment.active !== false;
+        let matchesDate = true;
+        if (dateRange.from && dateRange.to) {
+            const d = new Date(assessment.date);
+            matchesDate = d >= dateRange.from && d <= dateRange.to;
+        } else if (dateRange.from) {
+            const d = new Date(assessment.date);
+            matchesDate = d >= dateRange.from;
+        } else if (dateRange.to) {
+            const d = new Date(assessment.date);
+            matchesDate = d <= dateRange.to;
+        }
+        return matchesSearch && matchesCategory && assessment.active !== false && matchesDate;
     });
 
     useEffect(() => { setPage(0); }, [searchTerm, categoryFilter]);
@@ -506,11 +521,47 @@ export const AssessmentData = () => {
                         {/*    <SelectContent>*/}
                         {/*        <SelectItem value="all">All Categories</SelectItem>*/}
                         {/*        <SelectItem value="K12">K12 Students</SelectItem>*/}
-                        {/*        <SelectItem value="Primary">Primary Students</SelectItem>*/}
-                        {/*        <SelectItem value="Aspirant">Aspirants</SelectItem>*/}
-                        {/*        <SelectItem value="Employee">Employees</SelectItem>*/}
+                        {/*        <SelectItem value="Primary">Primary Students*/}
+                        {/*        <SelectItem value="Aspirant">Aspirants*/}
+                        {/*        <SelectItem value="Employee">Employees*/}
                         {/*    </SelectContent>*/}
                         {/*</Select>*/}
+                        <div className="w-full md:w-80 flex flex-col justify-center">
+                            {/* <label className="text-xs font-medium text-gray-600 mb-1">Assessment Date Range</label> */}
+                            <div className="flex items-center gap-2">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-start text-left">
+                                            {dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "From"}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="start" className="p-0">
+                                        <UiCalendar
+                                            mode="single"
+                                            selected={dateRange.from ?? undefined}
+                                            onSelect={(date) => setDateRange(r => ({ ...r, from: date ?? null }))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <span className="mx-1">-</span>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-start text-left">
+                                            {dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "To"}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="start" className="p-0">
+                                        <UiCalendar
+                                            mode="single"
+                                            selected={dateRange.to ?? undefined}
+                                            onSelect={(date) => setDateRange(r => ({ ...r, to: date ?? null }))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

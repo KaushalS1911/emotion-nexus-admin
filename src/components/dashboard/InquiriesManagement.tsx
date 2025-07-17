@@ -95,6 +95,7 @@ export const InquiriesManagement = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
 
 
@@ -121,16 +122,24 @@ export const InquiriesManagement = () => {
     }
   }, [selectedInquiryId]);
 
-  useEffect(() => { setPage(0); }, [searchTerm, typeFilter, inquiries]);
+  useEffect(() => { setPage(0); }, [searchTerm, typeFilter, statusFilter, inquiries]);
 
 
+  // Adjusted status filtering logic
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch =
       (inquiry.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inquiry.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inquiry.message || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || (inquiry.enquiry_type || "").toLowerCase() === typeFilter.toLowerCase();
-    return matchesSearch && matchesType;
+    // Only 'resolved' and 'unresolved' statuses
+    let matchesStatus = true;
+    if (statusFilter === "resolved") {
+      matchesStatus = String(inquiry.status).toLowerCase() === "resolved";
+    } else if (statusFilter === "unresolved") {
+      matchesStatus = String(inquiry.status).toLowerCase() !== "resolved";
+    }
+    return matchesSearch && matchesType && matchesStatus;
   });
 
 
@@ -141,7 +150,8 @@ export const InquiriesManagement = () => {
 
   // Dynamic summary values
   const totalInquiries = filteredInquiries.length;
-  const activeInquiries = filteredInquiries.filter(i => i.status === 'active').length;
+  // Active = unresolved
+  const activeInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
   const thisWeekCount = filteredInquiries.filter(i => {
     const d = new Date(i.date);
     const startOfWeek = new Date();
@@ -254,6 +264,18 @@ export const InquiriesManagement = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="w-full md:w-48">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="unresolved">Unresolved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -292,12 +314,11 @@ export const InquiriesManagement = () => {
                       <td className="py-4 px-2 max-w-xs truncate" title={inquiry.message}>{inquiry.message}</td>
                       <td className="py-4 px-2">
                         <Badge className={
-                          inquiry.status === 'resolved'
+                          String(inquiry.status).toLowerCase() === 'resolved'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-yellow-100 text-yellow-800'
                         }>
-                          {/* {inquiry?.status} */}
-                          Unesolved
+                          {String(inquiry.status).toLowerCase() === 'resolved' ? 'Resolved' : 'Unresolved'}
                         </Badge>
                       </td>
                       <td className="py-4 px-2">

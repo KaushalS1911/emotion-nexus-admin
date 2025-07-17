@@ -54,7 +54,7 @@ export default function Login() {
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@gmail.com"
+                placeholder="Enter your email"
                 required
             />
           </div>
@@ -67,7 +67,7 @@ export default function Login() {
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="admin@123"
+                placeholder="Enter your password"
                 required
             />
           </div>

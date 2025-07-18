@@ -36,10 +36,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
-import { useNavigate } from "react-router-dom";
-import { Calendar as UiCalendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import {useNavigate} from "react-router-dom";
+import {Calendar as UiCalendar} from "@/components/ui/calendar";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {format} from "date-fns";
 
 interface Assessment {
     id: number;
@@ -189,7 +189,7 @@ export const AssessmentData = () => {
     const navigate = useNavigate();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
+    const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
 
     const filteredAssessments = assessments.filter((assessment) => {
         const matchesSearch =
@@ -211,7 +211,9 @@ export const AssessmentData = () => {
         return matchesSearch && matchesCategory && assessment.active !== false && matchesDate;
     });
 
-    useEffect(() => { setPage(0); }, [searchTerm, categoryFilter]);
+    useEffect(() => {
+        setPage(0);
+    }, [searchTerm, categoryFilter]);
 
     const paginatedAssessments = filteredAssessments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const totalPages = Math.ceil(filteredAssessments.length / rowsPerPage);
@@ -240,7 +242,7 @@ export const AssessmentData = () => {
         const updatedAssessments = assessments.filter(assessment => assessment.id !== assessmentId);
         setAssessments(updatedAssessments);
         localStorage.setItem("assessments", JSON.stringify(updatedAssessments));
-        setToast({ type: "success", message: "Assessment deactivated successfully." });
+        setToast({type: "success", message: "Assessment deactivated successfully."});
     };
 
     useEffect(() => {
@@ -289,14 +291,16 @@ export const AssessmentData = () => {
             <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
                 <DialogContent className="max-w-2xl p-0">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-[#012765] mb-2 px-8 pt-8">Assessment Details :</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-[#012765] mb-2 px-8 pt-8">Assessment Details
+                            :</DialogTitle>
                     </DialogHeader>
                     <hr className="my-2 border-gray-200"/>
                     {viewing && (
                         <div className="space-y-8 px-8 pb-8 pt-2 overflow-y-auto" style={{maxHeight: '80vh'}}>
                             <div>
                                 <div className="font-semibold text-lg mb-2 text-[#012765]">Main Info :</div>
-                                <div className="bg-[#181f2a] p-5 rounded-lg text-sm font-mono text-left space-y-1 w-full">
+                                <div
+                                    className="bg-[#181f2a] p-5 rounded-lg text-sm font-mono text-left space-y-1 w-full">
                                     <div>
                                         <span className="text-pink-400 font-semibold">Assessment Name :</span>
                                         <span className="text-teal-300 ml-2">{viewing.userName}</span>
@@ -307,7 +311,8 @@ export const AssessmentData = () => {
                                     {/*</div>*/}
                                     <div>
                                         <span className="text-pink-400 font-semibold">Date :</span>
-                                        <span className="text-teal-300 ml-2">{new Date(viewing.date).toLocaleDateString()}</span>
+                                        <span
+                                            className="text-teal-300 ml-2">{new Date(viewing.date).toLocaleDateString()}</span>
                                     </div>
                                     <div>
                                         <span className="text-pink-400 font-semibold">Score :</span>
@@ -335,7 +340,8 @@ export const AssessmentData = () => {
                                 }
                                     {viewing.questions.map((q, qIdx) => (
                                         <div key={qIdx} className="border rounded-lg p-3 bg-gray-50">
-                                            <div className="font-semibold mb-3 text-[#FF7119]">Q{qIdx + 1} : {q.text}</div>
+                                            <div
+                                                className="font-semibold mb-3 text-[#FF7119]">Q{qIdx + 1} : {q.text}</div>
                                             <div className="flex flex-wrap gap-2">{q.options.map((opt, oIdx) => (
                                                 <Badge key={oIdx}
                                                        className="bg-gray-100 text-gray-700">{opt}</Badge>))}
@@ -352,9 +358,11 @@ export const AssessmentData = () => {
                                         <div className="text-gray-400">No recommendations added.</div>
                                     }
                                     {viewing.recommendations.map((rec, rIdx) => (
-                                        <div key={rIdx} className="rounded-lg px-4 py-3 bg-[#e6faee] flex items-start min-h-[44px] w-full">
+                                        <div key={rIdx}
+                                             className="rounded-lg px-4 py-3 bg-[#e6faee] flex items-start min-h-[44px] w-full">
                                             <span className="text-green-900 font-semibold text-base mt-1">•</span>
-                                            <span className="ml-2 text-green-900 font-medium break-words whitespace-pre-line w-full">{rec}</span>
+                                            <span
+                                                className="ml-2 text-green-900 font-medium break-words whitespace-pre-line w-full">{rec}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -367,9 +375,11 @@ export const AssessmentData = () => {
                                         <div className="text-gray-400">No issues added.</div>
                                     }
                                     {viewing.issues.map((issue, iIdx) => (
-                                        <div key={iIdx} className="rounded-lg px-4 py-3 bg-[#fdeaea] flex items-start min-h-[44px] w-full">
+                                        <div key={iIdx}
+                                             className="rounded-lg px-4 py-3 bg-[#fdeaea] flex items-start min-h-[44px] w-full">
                                             <span className="text-red-700 font-semibold text-base mt-1">•</span>
-                                            <span className="ml-2 text-red-900 font-medium break-words whitespace-pre-line w-full">{issue}</span>
+                                            <span
+                                                className="ml-2 text-red-900 font-medium break-words whitespace-pre-line w-full">{issue}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -396,7 +406,8 @@ export const AssessmentData = () => {
                     </p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/assessments/new")}>+ Add Assessment</Button>
+                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/assessments/new")}>+ Add
+                        Assessment</Button>
                 </div>
             </div>
 
@@ -539,7 +550,7 @@ export const AssessmentData = () => {
                                         <UiCalendar
                                             mode="single"
                                             selected={dateRange.from ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({ ...r, from: date ?? null }))}
+                                            onSelect={(date) => setDateRange(r => ({...r, from: date ?? null}))}
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -555,7 +566,7 @@ export const AssessmentData = () => {
                                         <UiCalendar
                                             mode="single"
                                             selected={dateRange.to ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({ ...r, to: date ?? null }))}
+                                            onSelect={(date) => setDateRange(r => ({...r, to: date ?? null}))}
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -605,7 +616,8 @@ export const AssessmentData = () => {
                                         </Badge>
                                     </td>
                                     <td className="py-3 px-2">
-                                        <Badge className={getScoreColor(assessment.score) + " transition-colors duration-150 hover:bg-transition-colors hover:text-blue-950"}>
+                                        <Badge
+                                            className={getScoreColor(assessment.score) + " transition-colors duration-150 hover:bg-transition-colors hover:text-blue-950"}>
                                             {assessment.score}
                                         </Badge>
                                     </td>
@@ -627,8 +639,9 @@ export const AssessmentData = () => {
                                                                   className="flex items-center gap-2">
                                                     <Eye className="h-4 w-4"/> View Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => navigate(`/assessments/edit/${assessment.id}`)}
-                                                                  className="flex items-center gap-2">
+                                                <DropdownMenuItem
+                                                    onClick={() => navigate(`/assessments/edit/${assessment.id}`)}
+                                                    className="flex items-center gap-2">
                                                     <Pencil className="h-4 w-4"/> Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600 flex items-center gap-2"
@@ -659,9 +672,11 @@ export const AssessmentData = () => {
                             >
                                 &#60;
                             </button>
-                            <span className="font-medium">{filteredAssessments.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredAssessments.length)}</span>
+                            <span
+                                className="font-medium">{filteredAssessments.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredAssessments.length)}</span>
                             <span className="text-gray-400">of</span>
-                            <span className="font-semibold text-[#012765] text-base ml-2">{filteredAssessments.length}</span>
+                            <span
+                                className="font-semibold text-[#012765] text-base ml-2">{filteredAssessments.length}</span>
                             <button
                                 className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
                                 onClick={() => setPage(page + 1)}
@@ -671,23 +686,29 @@ export const AssessmentData = () => {
                                 &#62;
                             </button>
                             <span className="text-sm text-gray-500 ml-4">Rows per page:</span>
-                            <Select value={rowsPerPage === filteredAssessments.length ? 'All' : String(rowsPerPage)} onValueChange={val => {
-                                if (val === 'All') {
-                                    setRowsPerPage(filteredAssessments.length || 1);
-                                    setPage(0);
-                                } else {
-                                    setRowsPerPage(Number(val));
-                                    setPage(0);
-                                }
-                            }}>
-                                <SelectTrigger className="w-16 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2 ">
-                                    <SelectValue />
+                            <Select value={rowsPerPage === filteredAssessments.length ? 'All' : String(rowsPerPage)}
+                                    onValueChange={val => {
+                                        if (val === 'All') {
+                                            setRowsPerPage(filteredAssessments.length || 1);
+                                            setPage(0);
+                                        } else {
+                                            setRowsPerPage(Number(val));
+                                            setPage(0);
+                                        }
+                                    }}>
+                                <SelectTrigger
+                                    className="w-16 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2 ">
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent className="w-16 rounded-md shadow-lg border-gray-200">
-                                    <SelectItem value="5" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">5</SelectItem>
-                                    <SelectItem value="10" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">10</SelectItem>
-                                    <SelectItem value="25" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">25</SelectItem>
-                                    <SelectItem value="All" className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">All</SelectItem>
+                                    <SelectItem value="5"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">5</SelectItem>
+                                    <SelectItem value="10"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">10</SelectItem>
+                                    <SelectItem value="25"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">25</SelectItem>
+                                    <SelectItem value="All"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden">All</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

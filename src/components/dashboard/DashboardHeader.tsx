@@ -156,7 +156,7 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
 
             {/* Mobile Search Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-md p-6">
+                <DialogContent className="sm:max-w-md p-10 rounded-3xl ">
                     <DialogHeader className="mb-2 text-center font-semibold text-lg">
                         Search
                     </DialogHeader>

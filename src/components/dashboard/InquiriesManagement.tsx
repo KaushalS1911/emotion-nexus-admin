@@ -270,7 +270,7 @@ export const InquiriesManagement = () => {
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
                   <SelectItem value="unresolved">Unresolved</SelectItem>
                 </SelectContent>

@@ -1271,7 +1271,7 @@ export const ResourceManager = () => {
                     </Badge>
                   </td>
                   <td className="px-4 py-2">
-                    <Badge className="bg-gray-100 text-gray-800">
+                    <Badge className="bg-gray-100 text-gray-800 hover:bg-[#012765] hover:text-white">
                       {platformOptions.find((p) => p.value === resource.platform)?.label || resource.platform}
                     </Badge>
                   </td>

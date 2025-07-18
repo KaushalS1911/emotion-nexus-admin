@@ -5,7 +5,19 @@ import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {Textarea} from "@/components/ui/textarea";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Search, Plus, Eye, Heart, BookOpen, Video, FileText, Edit, Trash2, MoreVertical} from "lucide-react";
+import {
+    Search,
+    Plus,
+    Eye,
+    Heart,
+    BookOpen,
+    Video,
+    FileText,
+    Edit,
+    Trash2,
+    MoreVertical,
+    TrendingUp, FilePen
+} from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -335,6 +347,79 @@ export const ResourceManager = () => {
         setEditDialogOpen(true);
     };
 
+    // Helper for average rate (likes per resource)
+    const getAverageRate = () => {
+        if (resources.length === 0) return 0;
+        return (resources.reduce((sum, r) => sum + (r.likes || 0), 0) / resources.length).toFixed(2);
+    };
+
+    // Add handler for Save Draft (Add dialog)
+    const handleSaveDraft = () => {
+        if (!form.title.trim()) {
+            setErrors((prev) => ({ ...prev, title: "Title is required" }));
+            return;
+        }
+        const newResource = {
+            id: Date.now(),
+            title: form.title,
+            author: form.author,
+            type: form.type,
+            category: form.category,
+            description: form.description,
+            tags: form.tags,
+            status: form.status, // use selected status
+            publishDate: new Date().toISOString(),
+            views: 0,
+            likes: 0,
+            thumbnail: thumbPreview,
+            emptyImage: emptyPreview,
+            platform: form.platform,
+            age: form.age,
+        };
+        setResources((prev) => [newResource, ...prev]);
+        setIsAddDialogOpen(false);
+        setForm(getInitialForm());
+        setTagInput("");
+        setThumbPreview(null);
+        setEmptyPreview(null);
+        setErrors({});
+    };
+
+    // Add handler for Save Draft (Edit dialog)
+    const handleEditSaveDraft = () => {
+        if (!form.title.trim()) {
+            setErrors((prev) => ({ ...prev, title: "Title is required" }));
+            return;
+        }
+        setResources((prev) =>
+            prev.map((r) =>
+                r.id === editingResource.id
+                    ? {
+                        ...r,
+                        title: form.title,
+                        author: form.author,
+                        type: form.type,
+                        category: form.category,
+                        description: form.description,
+                        tags: form.tags,
+                        thumbnail: thumbPreview,
+                        emptyImage: emptyPreview,
+                        platform: form.platform,
+                        age: form.age,
+                        status: "draft",
+                    }
+                    : r
+            )
+        );
+        setEditDialogOpen(false);
+        setEditingResource(null);
+        setForm(getInitialForm());
+        setTagInput("");
+        setThumbPreview(null);
+        setEmptyPreview(null);
+        setErrors({});
+    };
+
     // 7. Update handlePublish and handleEditSave to use array tags
     const handlePublish = () => {
         if (!validateForm()) return;
@@ -346,7 +431,7 @@ export const ResourceManager = () => {
             category: form.category,
             description: form.description,
             tags: form.tags,
-            status: form.status || "live",
+            status: form.status, // use selected status
             publishDate: new Date().toISOString(),
             views: 0,
             likes: 0,
@@ -375,7 +460,12 @@ export const ResourceManager = () => {
             resource.tags.some((tag) =>
                 tag.toLowerCase().includes(searchTerm.toLowerCase())
             );
-        const matchesType = typeFilter === "all" || resource.type === typeFilter;
+        let matchesType = true;
+        if (typeFilter === 'published') {
+            matchesType = resource.status === 'live';
+        } else if (typeFilter !== 'all') {
+            matchesType = resource.type === typeFilter;
+        }
         const matchesCategory =
             categoryFilter === "all" || resource.category === categoryFilter;
         const matchesStatus = statusFilter === "all" || resource.status === statusFilter;
@@ -720,9 +810,7 @@ export const ResourceManager = () => {
                                 >
                                     Cancel
                                 </Button>
-                                <Button onClick={() => setIsAddDialogOpen(false)}>
-                                    Save Draft
-                                </Button>
+                                <Button onClick={handleSaveDraft}>Save Draft</Button>
                                 <Button onClick={handlePublish}>Publish</Button>
                             </div>
                         </div>
@@ -731,7 +819,7 @@ export const ResourceManager = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6"> {/* changed from 4 to 5 */}
                 <Card className="border-0 shadow-lg bg-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -762,20 +850,20 @@ export const ResourceManager = () => {
                             <div>
                                 <p className="text-sm font-medium text-[#012765]">Draft</p>
                                 <p className="text-3xl font-bold text-[#012765]">{draftCount}</p>
+                                <p className="text-xs text-gray-500 mt-1">{draftCount} draft(s) saved</p>
                             </div>
-                            <FileText className="h-8 w-8 text-yellow-500"/>
+                            <FilePen className="h-8 w-8 text-yellow-500" />
                         </div>
                     </CardContent>
                 </Card>
-
                 <Card className="border-0 shadow-lg bg-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">Live</p>
-                                <p className="text-3xl font-bold text-[#012765]">{liveCount}</p>
+                                <p className="text-sm font-medium text-[#012765]">Rate</p>
+                                <p className="text-3xl font-bold text-[#012765]">{getAverageRate()}%</p>
                             </div>
-                            <Heart className="h-8 w-8 text-pink-500"/>
+                            <TrendingUp className="h-8 w-8 text-orange-500"/>
                         </div>
                     </CardContent>
                 </Card>
@@ -880,6 +968,7 @@ export const ResourceManager = () => {
                 <div className="flex items-center gap-2 md:gap-4 bg-white rounded-lg px-2 py-2 border border-gray-100">
                     {[
                         {label: 'All', value: 'all', color: 'bg-gray-400 text-white', count: resources.length},
+                        {label: 'Published', value: 'published', color: 'bg-green-50 text-green-800', count: publishedCount},
                         ...resourceTypes.map(rt => ({
                             label: rt.label,
                             value: rt.value,
@@ -1120,6 +1209,7 @@ export const ResourceManager = () => {
                             >
                                 Cancel
                             </Button>
+                            <Button onClick={handleEditSaveDraft}>Save Draft</Button>
                             <Button onClick={handleEditSave}>Save Changes</Button>
                         </div>
                     </div>

@@ -172,7 +172,9 @@ export const InquiriesManagement = () => {
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         return d >= startOfWeek && d <= endOfWeek;
     }).length;
-    const completionRate = totalInquiries > 0 ? ((activeInquiries / totalInquiries) * 100).toFixed(0) : '0';
+    const resolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() === 'resolved').length;
+    const unresolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
+    const completionRate = totalInquiries > 0 ? ((resolvedInquiries / totalInquiries) * 100).toFixed(0) : '0';
 
     return (
         <div className="space-y-6">
@@ -201,10 +203,10 @@ export const InquiriesManagement = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">Active Inquiries</p>
-                                <p className="text-3xl font-bold text-[#012765]">{activeInquiries}</p>
+                                <p className="text-sm font-medium text-[#012765]">Unresolved</p>
+                                <p className="text-3xl font-bold text-[#012765]">{unresolvedInquiries}</p>
                             </div>
-                            <TrendingUp className="h-8 w-8 text-green-500"/>
+                            <AlertCircle className="h-8 w-8 text-yellow-500"/>
                         </div>
                     </CardContent>
                 </Card>
@@ -212,10 +214,10 @@ export const InquiriesManagement = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">This Week</p>
-                                <p className="text-3xl font-bold text-[#012765]">{thisWeekCount}</p>
+                                <p className="text-sm font-medium text-[#012765]">Resolved</p>
+                                <p className="text-3xl font-bold text-[#012765]">{resolvedInquiries}</p>
                             </div>
-                            <Calendar className="h-8 w-8 text-purple-500"/>
+                            <CheckCircle className="h-8 w-8 text-green-500"/>
                         </div>
                     </CardContent>
                 </Card>

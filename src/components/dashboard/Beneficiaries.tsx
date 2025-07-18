@@ -176,52 +176,52 @@ export const Beneficiaries = () => {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-[#012765]">Total Beneficiaries</p>
-                                <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.length}</p>
-                            </div>
-                            <FileText className="h-8 w-8 text-blue-500"/>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-[#012765]">Active Beneficiaries</p>
-                                <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.filter(b => b.status === 'active').length}</p>
-                            </div>
-                            <TrendingUp className="h-8 w-8 text-green-500"/>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-[#012765]">This Week</p>
-                                <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.filter(b => new Date(b.joinDate).getTime() >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime()).length}</p>
-                            </div>
-                            <Calendar className="h-8 w-8 text-purple-500"/>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-[#012765]">Completion Rate</p>
-                                <p className="text-3xl font-bold text-[#012765]">{(filteredBeneficiaries.length > 0 ? (filteredBeneficiaries.filter(b => b.status === 'active').length / filteredBeneficiaries.length) * 100 : 0).toFixed(0)}%</p>
-                            </div>
-                            <TrendingUp className="h-8 w-8 text-orange-500"/>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            {/*<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">*/}
+            {/*    <Card className="border-0 shadow-lg bg-white">*/}
+            {/*        <CardContent className="p-6">*/}
+            {/*            <div className="flex items-center justify-between">*/}
+            {/*                <div>*/}
+            {/*                    <p className="text-sm font-medium text-[#012765]">Total Beneficiaries</p>*/}
+            {/*                    <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.length}</p>*/}
+            {/*                </div>*/}
+            {/*                <FileText className="h-8 w-8 text-blue-500"/>*/}
+            {/*            </div>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*    <Card className="border-0 shadow-lg bg-white">*/}
+            {/*        <CardContent className="p-6">*/}
+            {/*            <div className="flex items-center justify-between">*/}
+            {/*                <div>*/}
+            {/*                    <p className="text-sm font-medium text-[#012765]">Active Beneficiaries</p>*/}
+            {/*                    <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.filter(b => b.status === 'active').length}</p>*/}
+            {/*                </div>*/}
+            {/*                <TrendingUp className="h-8 w-8 text-green-500"/>*/}
+            {/*            </div>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*    <Card className="border-0 shadow-lg bg-white">*/}
+            {/*        <CardContent className="p-6">*/}
+            {/*            <div className="flex items-center justify-between">*/}
+            {/*                <div>*/}
+            {/*                    <p className="text-sm font-medium text-[#012765]">This Week</p>*/}
+            {/*                    <p className="text-3xl font-bold text-[#012765]">{filteredBeneficiaries.filter(b => new Date(b.joinDate).getTime() >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime()).length}</p>*/}
+            {/*                </div>*/}
+            {/*                <Calendar className="h-8 w-8 text-purple-500"/>*/}
+            {/*            </div>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*    <Card className="border-0 shadow-lg bg-white">*/}
+            {/*        <CardContent className="p-6">*/}
+            {/*            <div className="flex items-center justify-between">*/}
+            {/*                <div>*/}
+            {/*                    <p className="text-sm font-medium text-[#012765]">Completion Rate</p>*/}
+            {/*                    <p className="text-3xl font-bold text-[#012765]">{(filteredBeneficiaries.length > 0 ? (filteredBeneficiaries.filter(b => b.status === 'active').length / filteredBeneficiaries.length) * 100 : 0).toFixed(0)}%</p>*/}
+            {/*                </div>*/}
+            {/*                <TrendingUp className="h-8 w-8 text-orange-500"/>*/}
+            {/*            </div>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*</div>*/}
 
             {/* Filters */}
             <Card className="border-0 shadow-lg">

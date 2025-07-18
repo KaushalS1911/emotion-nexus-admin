@@ -218,6 +218,29 @@ export const ResourceManager = () => {
     const emptyInputRef = useRef();
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
 
+    // --- STATS ---
+    const draftCount = resources.filter((r) => r.status === "draft").length;
+    const liveCount = resources.filter((r) => r.status === "live").length;
+    // Image upload for stats area
+    const [statsImage, setStatsImage] = useState(null);
+    const [statsImagePreview, setStatsImagePreview] = useState(null);
+    const statsImageInputRef = useRef();
+    const handleStatsImage = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+            if (!allowedTypes.includes(file.type)) {
+                return;
+            }
+            if (file.size > 1024 * 1024) {
+                return;
+            }
+            const base64 = await fileToBase64(file);
+            setStatsImage(base64);
+            setStatsImagePreview(base64);
+        }
+    };
+
     // Validation function
     const validateForm = () => {
         const newErrors: ResourceFormErrors = {};
@@ -713,12 +736,8 @@ export const ResourceManager = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">
-                                    Total Resources
-                                </p>
-                                <p className="text-3xl font-bold text-[#012765]">
-                                    {resources.length}
-                                </p>
+                                <p className="text-sm font-medium text-[#012765]">Total Resources</p>
+                                <p className="text-3xl font-bold text-[#012765]">{resources.length}</p>
                             </div>
                             <BookOpen className="h-8 w-8 text-blue-500"/>
                         </div>
@@ -730,9 +749,7 @@ export const ResourceManager = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-[#012765]">Published</p>
-                                <p className="text-3xl font-bold text-[#012765]">
-                                    {publishedCount}
-                                </p>
+                                <p className="text-3xl font-bold text-[#012765]">{publishedCount}</p>
                             </div>
                             <FileText className="h-8 w-8 text-green-500"/>
                         </div>
@@ -743,14 +760,10 @@ export const ResourceManager = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">
-                                    Total Views
-                                </p>
-                                <p className="text-3xl font-bold text-[#012765]">
-                                    {totalViews.toLocaleString()}
-                                </p>
+                                <p className="text-sm font-medium text-[#012765]">Draft</p>
+                                <p className="text-3xl font-bold text-[#012765]">{draftCount}</p>
                             </div>
-                            <Eye className="h-8 w-8 text-purple-500"/>
+                            <FileText className="h-8 w-8 text-yellow-500"/>
                         </div>
                     </CardContent>
                 </Card>
@@ -759,15 +772,14 @@ export const ResourceManager = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">Total Likes</p>
-                                <p className="text-3xl font-bold text-[#012765]">{totalLikes}</p>
+                                <p className="text-sm font-medium text-[#012765]">Live</p>
+                                <p className="text-3xl font-bold text-[#012765]">{liveCount}</p>
                             </div>
                             <Heart className="h-8 w-8 text-pink-500"/>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-
 
             {/* Filters */}
             <Card className="border-0 shadow-lg">

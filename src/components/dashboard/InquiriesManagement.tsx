@@ -107,6 +107,8 @@ export const InquiriesManagement = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const navigate = useNavigate();
+    // Add a state for topCardFilter to control which card is active
+    const [topCardFilter, setTopCardFilter] = useState<'all' | 'unresolved' | 'resolved'>('all');
 
 
     useEffect(() => {
@@ -144,9 +146,13 @@ export const InquiriesManagement = () => {
             (inquiry.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
             (inquiry.message || "").toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = typeFilter === "all" || (inquiry.enquiry_type || "").toLowerCase() === typeFilter.toLowerCase();
-        // Only 'resolved' and 'unresolved' statuses
+        // Use topCardFilter for status filtering
         let matchesStatus = true;
-        if (statusFilter === "resolved") {
+        if (topCardFilter === 'resolved') {
+            matchesStatus = String(inquiry.status).toLowerCase() === "resolved";
+        } else if (topCardFilter === 'unresolved') {
+            matchesStatus = String(inquiry.status).toLowerCase() !== "resolved";
+        } else if (statusFilter === "resolved") {
             matchesStatus = String(inquiry.status).toLowerCase() === "resolved";
         } else if (statusFilter === "unresolved") {
             matchesStatus = String(inquiry.status).toLowerCase() !== "resolved";
@@ -188,7 +194,11 @@ export const InquiriesManagement = () => {
 
             {/* Summary Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <Card className="border-0 shadow-lg bg-white">
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'all' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('all')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -198,8 +208,12 @@ export const InquiriesManagement = () => {
                             <FileText className="h-8 w-8 text-blue-500"/>
                         </div>
                     </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'unresolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('unresolved')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -209,8 +223,12 @@ export const InquiriesManagement = () => {
                             <AlertCircle className="h-8 w-8 text-yellow-500"/>
                         </div>
                     </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'resolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('resolved')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -220,8 +238,8 @@ export const InquiriesManagement = () => {
                             <CheckCircle className="h-8 w-8 text-green-500"/>
                         </div>
                     </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <div className="border-0 shadow-lg bg-white rounded-lg">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -231,7 +249,7 @@ export const InquiriesManagement = () => {
                             <TrendingUp className="h-8 w-8 text-orange-500"/>
                         </div>
                     </CardContent>
-                </Card>
+                </div>
             </div>
 
             {/* Filters */}

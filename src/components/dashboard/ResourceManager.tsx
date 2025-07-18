@@ -229,6 +229,8 @@ export const ResourceManager = () => {
     const fileInputRef = useRef();
     const emptyInputRef = useRef();
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
+    // Add a state for topCardFilter to control which card is active
+    const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
 
     // --- STATS ---
     const draftCount = resources.filter((r) => r.status === "draft").length;
@@ -453,6 +455,7 @@ export const ResourceManager = () => {
         setResources((prev) => prev.filter((r) => r.id !== id));
     };
 
+    // Update filteredResources logic to use topCardFilter if set
     const filteredResources = resources.filter((resource) => {
         const matchesSearch =
             resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -461,7 +464,12 @@ export const ResourceManager = () => {
                 tag.toLowerCase().includes(searchTerm.toLowerCase())
             );
         let matchesType = true;
-        if (typeFilter === 'published') {
+        // Use topCardFilter for status filtering
+        if (topCardFilter === 'published') {
+            matchesType = resource.status === 'live';
+        } else if (topCardFilter === 'draft') {
+            matchesType = resource.status === 'draft';
+        } else if (typeFilter === 'published') {
             matchesType = resource.status === 'live';
         } else if (typeFilter !== 'all') {
             matchesType = resource.type === typeFilter;
@@ -819,8 +827,12 @@ export const ResourceManager = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6"> {/* changed from 4 to 5 */}
-                <Card className="border-0 shadow-lg bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'all' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('all')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -830,9 +842,12 @@ export const ResourceManager = () => {
                             <BookOpen className="h-8 w-8 text-blue-500"/>
                         </div>
                     </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'published' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('published')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -842,9 +857,12 @@ export const ResourceManager = () => {
                             <FileText className="h-8 w-8 text-green-500"/>
                         </div>
                     </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <button
+                    className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'draft' ? 'ring-[#012765]' : 'ring-transparent'}`}
+                    onClick={() => setTopCardFilter('draft')}
+                    style={{ textAlign: 'left' }}
+                >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -855,8 +873,8 @@ export const ResourceManager = () => {
                             <FilePen className="h-8 w-8 text-yellow-500" />
                         </div>
                     </CardContent>
-                </Card>
-                <Card className="border-0 shadow-lg bg-white">
+                </button>
+                <div className="border-0 shadow-lg bg-white rounded-lg">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -866,7 +884,7 @@ export const ResourceManager = () => {
                             <TrendingUp className="h-8 w-8 text-orange-500"/>
                         </div>
                     </CardContent>
-                </Card>
+                </div>
             </div>
 
             {/* Filters */}

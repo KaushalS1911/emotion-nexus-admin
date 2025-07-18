@@ -816,7 +816,7 @@ export const ResourceManager = () => {
                                 <SelectValue placeholder="Status"/>
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="all">All Status</SelectItem>
                                 {statusOptions.map((opt) => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                 ))}

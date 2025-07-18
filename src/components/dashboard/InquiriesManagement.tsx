@@ -308,6 +308,7 @@ export const InquiriesManagement = () => {
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Date</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Inquiry Type</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Message</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Status</th>
@@ -324,7 +325,11 @@ export const InquiriesManagement = () => {
                                         <td className="py-4 px-2">{inquiry.email}</td>
                                         <td className="py-4 px-2">{inquiry.mobile || "-"}</td>
                                         <td className="py-4 px-2">
-                                            <Badge
+                                            {new Date(inquiry.created_at).toLocaleDateString("en-GB")}
+                                        </td>
+
+                                        <td className="py-4 px-2">
+                                        <Badge
                                                 className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
                                         </td>
                                         <td className="py-4 px-2 max-w-xs truncate"

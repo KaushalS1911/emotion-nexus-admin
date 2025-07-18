@@ -36,6 +36,10 @@ const App = () => (
                         </PrivateRoute>
                     }
                 >
+                    {/*
+                  The redirect from / to /dashboard only happens if the user is on the root path.
+                  The loading state in UserProvider prevents unwanted redirects on reload.
+                */}
                     <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
                     <Route path="/dashboard" element={<DashboardOverview/>}/>
                     <Route path="/beneficieries" element={<Beneficiaries/>}/>

@@ -24,6 +24,7 @@ const DUMMY_USER = {
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const [user, setUserState] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // On mount, check sessionStorage for token
     useEffect(() => {
@@ -31,6 +32,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}
         if (token) {
             setUserState(DUMMY_USER);
         }
+        setLoading(false);
     }, []);
 
     const setUser = (user: User | null) => {
@@ -52,7 +54,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}
 
     return (
         <UserContext.Provider value={{user, setUser, updateUser, logout}}>
-            {children}
+            {loading ? null : children}
         </UserContext.Provider>
     );
 };

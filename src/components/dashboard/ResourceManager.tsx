@@ -358,7 +358,7 @@ export const ResourceManager = () => {
     // Add handler for Save Draft (Add dialog)
     const handleSaveDraft = () => {
         if (!form.title.trim()) {
-            setErrors((prev) => ({ ...prev, title: "Title is required" }));
+            setErrors((prev) => ({...prev, title: "Title is required"}));
             return;
         }
         const newResource = {
@@ -390,7 +390,7 @@ export const ResourceManager = () => {
     // Add handler for Save Draft (Edit dialog)
     const handleEditSaveDraft = () => {
         if (!form.title.trim()) {
-            setErrors((prev) => ({ ...prev, title: "Title is required" }));
+            setErrors((prev) => ({...prev, title: "Title is required"}));
             return;
         }
         setResources((prev) =>
@@ -831,7 +831,7 @@ export const ResourceManager = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'all' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('all')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -846,7 +846,7 @@ export const ResourceManager = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'published' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('published')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -861,7 +861,7 @@ export const ResourceManager = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'draft' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('draft')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -870,7 +870,7 @@ export const ResourceManager = () => {
                                 <p className="text-3xl font-bold text-[#012765]">{draftCount}</p>
                                 <p className="text-xs text-gray-500 mt-1">{draftCount} draft(s) saved</p>
                             </div>
-                            <FilePen className="h-8 w-8 text-yellow-500" />
+                            <FilePen className="h-8 w-8 text-yellow-500"/>
                         </div>
                     </CardContent>
                 </button>
@@ -986,7 +986,12 @@ export const ResourceManager = () => {
                 <div className="flex items-center gap-2 md:gap-4 bg-white rounded-lg px-2 py-2 border border-gray-100">
                     {[
                         {label: 'All', value: 'all', color: 'bg-gray-400 text-white', count: resources.length},
-                        {label: 'Published', value: 'published', color: 'bg-green-50 text-green-800', count: publishedCount},
+                        {
+                            label: 'Published',
+                            value: 'published',
+                            color: 'bg-green-50 text-green-800',
+                            count: publishedCount
+                        },
                         ...resourceTypes.map(rt => ({
                             label: rt.label,
                             value: rt.value,

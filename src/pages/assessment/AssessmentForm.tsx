@@ -31,7 +31,11 @@ export default function AssessmentForm() {
     const [showQuestionDialog, setShowQuestionDialog] = useState(false);
     const [editingQuestionIdx, setEditingQuestionIdx] = useState(null);
     const [questionText, setQuestionText] = useState("");
-    const [questionOptions, setQuestionOptions] = useState(["", ""]);
+    // Change questionOptions to be an array of objects: { text: string, score: number }
+    const [questionOptions, setQuestionOptions] = useState([
+      { text: "", score: 0 },
+      { text: "", score: 0 }
+    ]);
     const [showRecommendationDialog, setShowRecommendationDialog] = useState(false);
     const [editingRecommendationIdx, setEditingRecommendationIdx] = useState(null);
     const [recommendationText, setRecommendationText] = useState("");
@@ -112,7 +116,14 @@ export default function AssessmentForm() {
     const handleEditQuestion = (idx) => {
         setEditingQuestionIdx(idx);
         setQuestionText(form.questions[idx].text);
-        setQuestionOptions(form.questions[idx].options.length > 0 ? form.questions[idx].options : ["", ""]);
+        // If options are objects, use as is; if strings (old data), convert
+        const opts = form.questions[idx].options.length > 0 && typeof form.questions[idx].options[0] === 'object'
+            ? form.questions[idx].options
+            : form.questions[idx].options.map(opt => ({ text: String(opt), score: 0 }));
+        setQuestionOptions(opts.length > 0 ? opts : [
+          { text: "", score: 0 },
+          { text: "", score: 0 }
+        ]);
         setShowQuestionDialog(true);
     };
 
@@ -122,12 +133,15 @@ export default function AssessmentForm() {
         setShowQuestionDialog(false);
         setEditingQuestionIdx(null);
         setQuestionText("");
-        setQuestionOptions(["", ""]);
+        setQuestionOptions([
+          { text: "", score: 0 },
+          { text: "", score: 0 }
+        ]);
         setToast({type: "success", message: "Question deleted."});
     };
 
     const handleSaveQuestion = () => {
-        if (!questionText || questionOptions.length < 2) {
+        if (!questionText || questionOptions.length < 2 || questionOptions.some(opt => !opt.text)) {
             setToast({type: "error", message: "Please fill all required fields."});
             return;
         }
@@ -237,7 +251,7 @@ export default function AssessmentForm() {
     };
 
     const handleAddOption = () => {
-        setQuestionOptions([...questionOptions, `Option ${questionOptions.length + 1}`]);
+        setQuestionOptions([...questionOptions, { text: `Option ${questionOptions.length + 1}`, score: 0 }]);
     };
 
     const handleRemoveOption = (idx) => {
@@ -246,7 +260,12 @@ export default function AssessmentForm() {
     };
 
     const handleOptionChange = (idx, value) => {
-        const updatedOptions = questionOptions.map((opt, i) => i === idx ? value : opt);
+        const updatedOptions = questionOptions.map((opt, i) => i === idx ? { ...opt, text: value } : opt);
+        setQuestionOptions(updatedOptions);
+    };
+
+    const handleOptionScoreChange = (idx, value) => {
+        const updatedOptions = questionOptions.map((opt, i) => i === idx ? { ...opt, score: Number(value) } : opt);
         setQuestionOptions(updatedOptions);
     };
 
@@ -254,7 +273,10 @@ export default function AssessmentForm() {
         setShowQuestionDialog(false);
         setEditingQuestionIdx(null);
         setQuestionText("");
-        setQuestionOptions(["", ""]);
+        setQuestionOptions([
+          { text: "", score: 0 },
+          { text: "", score: 0 }
+        ]);
     };
 
     const handleCloseRecommendationDialog = () => {
@@ -268,6 +290,8 @@ export default function AssessmentForm() {
         setEditingIssueIdx(null);
         setIssueText("");
     };
+
+    console.log(form)
 
     return (
         <div className="max-w-3xl mx-auto p-6 space-y-8 bg-white rounded-xl shadow-lg border border-gray-100">
@@ -333,7 +357,7 @@ export default function AssessmentForm() {
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {q.options.map((opt, oIdx) => (
                                         <span key={oIdx}
-                                              className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">{opt}</span>
+                                              className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">{typeof opt === 'object' ? `${opt.text} (Score: ${opt.score})` : opt}</span>
                                     ))}
                                 </div>
                             </div>
@@ -350,7 +374,10 @@ export default function AssessmentForm() {
                     setShowQuestionDialog(true);
                     setEditingQuestionIdx(null);
                     setQuestionText("");
-                    setQuestionOptions(["", ""]);
+                    setQuestionOptions([
+                      { text: "", score: 0 },
+                      { text: "", score: 0 }
+                    ]);
                 }}>+ Add Question</Button>
             </div>
 
@@ -427,9 +454,11 @@ export default function AssessmentForm() {
                         <div className="mb-4">
                             <Label>Options</Label>
                             {questionOptions.map((opt, i) => (
-                                <div key={i} className="flex gap-2 mb-2">
-                                    <Input value={opt} onChange={e => handleOptionChange(i, e.target.value)}
+                                <div key={i} className="flex gap-2 mb-2 items-center">
+                                    <Input value={opt.text} onChange={e => handleOptionChange(i, e.target.value)}
                                            placeholder={`Option ${i + 1}`}/>
+                                    <Input type="number" min="0" className="w-24" value={opt.score} onChange={e => handleOptionScoreChange(i, e.target.value)}
+                                           placeholder="Score"/>
                                     <Button size="sm" variant="destructive" onClick={() => handleRemoveOption(i)}
                                             disabled={questionOptions.length <= 1}>Remove</Button>
                                 </div>

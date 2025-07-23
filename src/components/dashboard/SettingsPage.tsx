@@ -208,32 +208,48 @@ export const SettingsPage = () => {
     );
 };
 
+// --- User Data Helpers (API-ready) ---
+function getUsers() {
+    // TODO: Replace with API call
+    return JSON.parse(localStorage.getItem("users") || "[]");
+}
+function addUser(user: any) {
+    // TODO: Replace with API call
+    const users = getUsers();
+    users.push(user);
+    localStorage.setItem("users", JSON.stringify(users));
+}
+
 function AddUserForm() {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [role, setRole] = useState("");
+    const [profilePic, setProfilePic] = useState<string | null>(null);
+    const [name, setName] = useState("");
+    const [expertise, setExpertise] = useState("");
+    const [experience, setExperience] = useState("");
+    const [education, setEducation] = useState("");
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [added, setAdded] = useState(false);
     const {toast} = useToast();
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!firstName.trim()) newErrors.firstName = "First Name is required";
-        if (!lastName.trim()) newErrors.lastName = "Last Name is required";
-        if (!email.trim()) newErrors.email = "Email is required";
-        else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) newErrors.email = "Invalid email";
-        if (!role) newErrors.role = "Role is required";
+        if (!name.trim()) newErrors.name = "Name is required";
+        if (!expertise.trim()) newErrors.expertise = "Expertise is required";
+        if (!experience.trim()) newErrors.experience = "Experience is required";
+        if (!education.trim()) newErrors.education = "Education is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const roleOptions = [
-        {value: "Super Admin", label: "Super Admin"},
-        {value: "Admin", label: "Admin"},
-        {value: "Wellness Coach", label: "Wellness Coach"},
-        {value: "Support Staff", label: "Support Staff"},
-    ];
+    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfilePic(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -242,20 +258,21 @@ function AddUserForm() {
         const users = JSON.parse(localStorage.getItem("users") || "[]");
         const newUser = {
             id: Date.now(),
-            name: `${firstName} ${lastName}`.trim(),
-            firstName,
-            lastName,
-            email,
-            role,
+            profilePic,
+            name,
+            expertise,
+            experience,
+            education,
             status: "active",
             joinDate: new Date().toISOString().slice(0, 10),
         };
         users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setRole("");
+        setProfilePic(null);
+        setName("");
+        setExpertise("");
+        setExperience("");
+        setEducation("");
         setAdded(true);
         setTimeout(() => setAdded(false), 3000);
     };
@@ -263,45 +280,43 @@ function AddUserForm() {
     return (
         <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-                <Label htmlFor="add-user-firstName">First Name</Label>
-                <Input id="add-user-firstName" value={firstName} onChange={e => {
-                    setFirstName(e.target.value);
-                    setAdded(false);
-                }} placeholder="Enter first name"/>
-                {errors.firstName && <div className="text-red-500 text-xs mt-1">{errors.firstName}</div>}
+                <Label htmlFor="add-user-profile-pic">Profile Picture</Label>
+                <Input id="add-user-profile-pic" type="file" accept="image/*" onChange={handleProfilePicChange} />
+                {profilePic && (
+                    <img src={profilePic} alt="Profile Preview" className="mt-2 w-16 h-16 rounded-full object-cover" />
+                )}
             </div>
             <div>
-                <Label htmlFor="add-user-lastName">Last Name</Label>
-                <Input id="add-user-lastName" value={lastName} onChange={e => {
-                    setLastName(e.target.value);
+                <Label htmlFor="add-user-name">Name</Label>
+                <Input id="add-user-name" value={name} onChange={e => {
+                    setName(e.target.value);
                     setAdded(false);
-                }} placeholder="Enter last name"/>
-                {errors.lastName && <div className="text-red-500 text-xs mt-1">{errors.lastName}</div>}
+                }} placeholder="Enter name" />
+                {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
             </div>
             <div>
-                <Label htmlFor="add-user-email">Email</Label>
-                <Input id="add-user-email" type="email" value={email} onChange={e => {
-                    setEmail(e.target.value);
+                <Label htmlFor="add-user-expertise">Expertise</Label>
+                <Input id="add-user-expertise" value={expertise} onChange={e => {
+                    setExpertise(e.target.value);
                     setAdded(false);
-                }} placeholder="Enter email address"/>
-                {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
+                }} placeholder="Enter expertise" />
+                {errors.expertise && <div className="text-red-500 text-xs mt-1">{errors.expertise}</div>}
             </div>
             <div>
-                <Label htmlFor="add-user-role">Role</Label>
-                <Select value={role} onValueChange={val => {
-                    setRole(val);
+                <Label htmlFor="add-user-experience">Experience</Label>
+                <Input id="add-user-experience" value={experience} onChange={e => {
+                    setExperience(e.target.value);
                     setAdded(false);
-                }}>
-                    <SelectTrigger id="add-user-role">
-                        <SelectValue placeholder="Select role"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {roleOptions.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {errors.role && <div className="text-red-500 text-xs mt-1">{errors.role}</div>}
+                }} placeholder="Enter experience" />
+                {errors.experience && <div className="text-red-500 text-xs mt-1">{errors.experience}</div>}
+            </div>
+            <div>
+                <Label htmlFor="add-user-education">Education</Label>
+                <Input id="add-user-education" value={education} onChange={e => {
+                    setEducation(e.target.value);
+                    setAdded(false);
+                }} placeholder="Enter education" />
+                {errors.education && <div className="text-red-500 text-xs mt-1">{errors.education}</div>}
             </div>
             <Button type="submit" className="bg-[#012765] text-white w-full">Add User</Button>
             {added && <div className="text-green-600 text-sm mt-2">User Added</div>}

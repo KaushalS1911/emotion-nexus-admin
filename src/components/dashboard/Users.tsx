@@ -9,13 +9,13 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 
 interface User {
     id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: string;
+    profilePic?: string | null;
+    name: string;
+    expertise: string;
+    experience: string;
+    education: string;
     status?: string;
     joinDate?: string;
-
     [key: string]: any;
 }
 
@@ -33,6 +33,17 @@ const FIXED_ROLES = [
     "Wellness Coach",
     "Support Staff"
 ];
+
+// --- User Data Helpers (API-ready) ---
+function getUsers() {
+    // TODO: Replace with API call
+    return JSON.parse(localStorage.getItem("users") || "[]");
+}
+function deleteUser(id: number) {
+    // TODO: Replace with API call
+    const users = getUsers().filter((u: any) => u.id !== id);
+    localStorage.setItem("users", JSON.stringify(users));
+}
 
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
@@ -198,10 +209,11 @@ export default function Users() {
                                 <thead>
                                 <tr className="border-b border-gray-100">
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">First Name</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Last Name</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Role</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Experience</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Education</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
                                 </tr>
                                 </thead>
@@ -210,10 +222,19 @@ export default function Users() {
                                     <tr key={user.id}
                                         className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
-                                        <td className="py-4 px-2">{user.firstName}</td>
-                                        <td className="py-4 px-2">{user.lastName}</td>
-                                        <td className="py-4 px-2">{user.email}</td>
-                                        <td className="py-4 px-2">{user.role}</td>
+                                        <td className="py-4 px-2">
+                                            {user.profilePic ? (
+                                                <img src={user.profilePic} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold text-lg">
+                                                    {user.name?.[0] || "?"}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="py-4 px-2">{user.name}</td>
+                                        <td className="py-4 px-2">{user.expertise}</td>
+                                        <td className="py-4 px-2">{user.experience}</td>
+                                        <td className="py-4 px-2">{user.education}</td>
                                         <td className="py-4 px-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -292,21 +313,24 @@ export default function Users() {
                             {viewUser && (
                                 <div className="space-y-6">
                                     <div className="flex items-center space-x-3">
-                                        <div
-                                            className="w-12 h-12 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-xl">
-                                            {viewUser.firstName?.[0]}{viewUser.lastName?.[0]}
-                                        </div>
-                                        <span
-                                            className="text-lg font-semibold text-gray-900">{viewUser.firstName} {viewUser.lastName}</span>
+                                        {viewUser.profilePic ? (
+                                            <img src={viewUser.profilePic} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-xl">
+                                                {viewUser.name?.[0] || "?"}
+                                            </div>
+                                        )}
+                                        <span className="text-lg font-semibold text-gray-900">{viewUser.name}</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="font-medium text-gray-600">Email</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.email}</div>
-                                        <div className="font-medium text-gray-600">Role</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.role}</div>
+                                        <div className="font-medium text-gray-600">Expertise</div>
+                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.expertise}</div>
+                                        <div className="font-medium text-gray-600">Experience</div>
+                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.experience}</div>
+                                        <div className="font-medium text-gray-600">Education</div>
+                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.education}</div>
                                         <div className="font-medium text-gray-600">Join Date</div>
-                                        <div
-                                            className="bg-gray-50 rounded px-2 py-1">{viewUser.joinDate ? new Date(viewUser.joinDate).toLocaleDateString() : "-"}</div>
+                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.joinDate ? new Date(viewUser.joinDate).toLocaleDateString() : "-"}</div>
                                     </div>
                                 </div>
                             )}

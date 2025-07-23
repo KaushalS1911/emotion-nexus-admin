@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Restore calendar grid lines for react-big-calendar */
+.rbc-month-view, .rbc-month-row, .rbc-date-cell, .rbc-day-bg {
+  border-color: #e5e7eb !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+.rbc-day-bg {
+  background: #fff !important;
+}

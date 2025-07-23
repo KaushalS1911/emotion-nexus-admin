@@ -1,30 +1,49 @@
-import React, {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
-import {useUserContext} from "@/UserContext";
-import logo from "../../public/Emotionally Yours Logo.png"
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserContext } from "@/UserContext";
+import logo from "../../public/Emotionally Yours Logo.png";
 
-const DUMMY_EMAIL = "admin@gmail.com";
-const DUMMY_PASSWORD = "admin@123";
+const DUMMY_USERS = [
+    {
+        id: "1",
+        name: "Admin",
+        email: "admin@example.com",
+        password: "admin123",
+        role: "admin" as const,
+    },
+    {
+        id: "2",
+        name: "Counsellor",
+        email: "counsellor@example.com",
+        password: "counsellor123",
+        role: "counsellor" as const,
+    },
+];
 
 export default function Login() {
-    const {setUser} = useUserContext();
+    const { setUser } = useUserContext();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (sessionStorage.getItem("admin-token")) {
-            navigate("/dashboard", {replace: true});
+        if (sessionStorage.getItem("user-token")) {
+            const role = sessionStorage.getItem("user-role");
+            if (role === "admin") navigate("/dashboard", { replace: true });
+            else if (role === "counsellor") navigate("/slot", { replace: true });
         }
     }, [navigate]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (email === DUMMY_EMAIL && password === DUMMY_PASSWORD) {
-            setUser({id: "1", name: "Admin", email});
-            sessionStorage.setItem("admin-token", "1");
-            navigate("/dashboard");
+        const found = DUMMY_USERS.find(u => u.email === email && u.password === password);
+        if (found) {
+            setUser({ id: found.id, name: found.name, email: found.email, role: found.role });
+            sessionStorage.setItem("user-token", found.id);
+            sessionStorage.setItem("user-role", found.role);
+            if (found.role === "admin") navigate("/dashboard");
+            else if (found.role === "counsellor") navigate("/slot");
         } else {
             setError("Invalid email or password");
         }

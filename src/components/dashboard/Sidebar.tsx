@@ -16,6 +16,7 @@ import {
 import logo from "../../../public/Emotionally Yours Logo.png";
 import logo1 from "../../../public/logo.jpg";
 import {Link, NavLink} from "react-router-dom";
+import { useUserContext } from "@/UserContext";
 
 interface SidebarProps {
     collapsed: boolean;
@@ -44,6 +45,13 @@ const menuItems: MenuItem[] = [
     {id: "settings", label: "Settings", icon: Settings, route: "/settings"},
 ];
 
+const slotMenuItem = {
+    id: "slot",
+    label: "Slot",
+    icon: FileText,
+    route: "/slot",
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
                                                     collapsed,
                                                     setCollapsed,
@@ -51,6 +59,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     mobileOpen = false,
                                                     setMobileOpen,
                                                 }) => {
+    const { user } = useUserContext();
+    const isCounsellor = user?.role === "counsellor";
+    const filteredMenuItems = isCounsellor ? [slotMenuItem] : menuItems;
+    const dashboardLabel = isCounsellor ? "Counsellor Dashboard" : "Admin Dashboard";
 
     if (isMobile) {
         return (
@@ -90,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     {/* Menu Items */}
                     <nav className="mt-6">
-                        {menuItems.map((item) => {
+                        {filteredMenuItems.map((item) => {
                             const Icon = item.icon;
                             return (
                                 <NavLink
@@ -116,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div
                         className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                         <div className="text-sm text-blue-950">
-                            <p className="font-medium">Admin Dashboard</p>
+                            <p className="font-medium">{dashboardLabel}</p>
                             <p className="text-xs">Wellness Management System</p>
                         </div>
                     </div>
@@ -167,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Menu Items */}
             <nav className="mt-6">
-                {menuItems.map((item) => {
+                {filteredMenuItems.map((item) => {
                     const Icon = item.icon;
                     return (
                         <NavLink
@@ -198,7 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div
                     className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                     <div className="text-sm text-blue-950">
-                        <p className="font-medium">Admin Dashboard</p>
+                        <p className="font-medium">{dashboardLabel}</p>
                         <p className="text-xs">Wellness Management System</p>
                     </div>
                 </div>

@@ -1,9 +1,10 @@
-import React, {createContext, useContext, useState, useEffect} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type User = {
     id: string;
     name: string;
     email: string;
+    role: 'admin' | 'counsellor';
     settings?: Record<string, any>;
 };
 
@@ -16,21 +17,31 @@ export type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const DUMMY_USER = {
-    id: "1",
-    name: "Admin",
-    email: "admin@gmail.com",
-};
+const DUMMY_USERS = [
+    {
+        id: "1",
+        name: "Admin",
+        email: "admin@example.com",
+        role: "admin" as const,
+    },
+    {
+        id: "2",
+        name: "Counsellor",
+        email: "counsellor@example.com",
+        role: "counsellor" as const,
+    },
+];
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUserState] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // On mount, check sessionStorage for token
     useEffect(() => {
-        const token = sessionStorage.getItem("admin-token");
-        if (token) {
-            setUserState(DUMMY_USER);
+        const token = sessionStorage.getItem("user-token");
+        const role = sessionStorage.getItem("user-role");
+        if (token && role) {
+            const found = DUMMY_USERS.find(u => u.role === role);
+            if (found) setUserState(found);
         }
         setLoading(false);
     }, []);
@@ -38,14 +49,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}
     const setUser = (user: User | null) => {
         setUserState(user);
         if (user) {
-            sessionStorage.setItem("admin-token", "1");
+            sessionStorage.setItem("user-token", user.id);
+            sessionStorage.setItem("user-role", user.role);
         } else {
-            sessionStorage.removeItem("admin-token");
+            sessionStorage.removeItem("user-token");
+            sessionStorage.removeItem("user-role");
         }
     };
 
     const updateUser = (fields: Partial<User>) => {
-        setUserState((prev) => (prev ? {...prev, ...fields} : prev));
+        setUserState((prev) => (prev ? { ...prev, ...fields } : prev));
     };
 
     const logout = () => {
@@ -53,7 +66,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({children}
     };
 
     return (
-        <UserContext.Provider value={{user, setUser, updateUser, logout}}>
+        <UserContext.Provider value={{ user, setUser, updateUser, logout }}>
             {loading ? null : children}
         </UserContext.Provider>
     );

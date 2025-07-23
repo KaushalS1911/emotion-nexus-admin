@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {useNavigate} from "react-router-dom"
+import { useUserContext } from "@/UserContext";
 
 interface DashboardHeaderProps {
     toggleSidebar: () => void
@@ -42,6 +43,7 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
     const [filteredPages, setFilteredPages] = useState<typeof pages>([])
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const navigate = useNavigate()
+    const { user, logout } = useUserContext();
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value
@@ -129,9 +131,9 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
                         <DropdownMenuContent className="w-56" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal">
                                 <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">Admin User</p>
+                                    <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        admin@emotionallyyours.com
+                                        {user?.email || ""}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>
@@ -143,8 +145,8 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
                             <DropdownMenuItem
                                 className="cursor-pointer"
                                 onClick={() => {
-                                    sessionStorage.removeItem("admin-token")
-                                    navigate("/login")
+                                    logout();
+                                    navigate("/login");
                                 }}
                             >
                                 Log out

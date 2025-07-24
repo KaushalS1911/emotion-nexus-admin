@@ -43,6 +43,7 @@ export default function NewUserPage() {
           mode={isEdit ? "edit" : "add"}
           initialValues={initialValues}
           onSubmit={handleSubmit}
+          onCancel={() => navigate("/users")}
         />
         </div>
       </div>

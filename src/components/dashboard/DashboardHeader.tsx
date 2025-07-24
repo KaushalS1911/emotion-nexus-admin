@@ -18,7 +18,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {Avatar, AvatarFallback} from "@/components/ui/avatar"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useLocation} from "react-router-dom"
 import { useUserContext } from "@/UserContext";
 
 interface DashboardHeaderProps {
@@ -43,6 +43,7 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
     const [filteredPages, setFilteredPages] = useState<typeof pages>([])
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const navigate = useNavigate()
+    const location = useLocation();
     const { user, logout } = useUserContext();
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,9 +139,11 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                                Profile Settings
-                            </DropdownMenuItem>
+                            {location.pathname !== "/settings" && (
+                                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                                    Profile Settings
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator/>
                             <DropdownMenuItem
                                 className="cursor-pointer"

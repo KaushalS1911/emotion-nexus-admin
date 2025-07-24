@@ -74,10 +74,10 @@ export default function Users() {
 
     // Use a hardcoded list of roles for the filter
     const availableRoles = [
-        'counsellor',
-        'wellness-coach',
         'admin',
-        'super admin',
+        'super-admin',
+        'wellness-coach',
+        'counsellor',
         'support staff',
     ];
 
@@ -128,7 +128,7 @@ export default function Users() {
     };
 
     const handleEdit = (user: User) => {
-        navigate(`/newUser?id=${user.id}`);
+        navigate(`/edit-user?id=${user.id}`);
     };
 
     return (
@@ -139,7 +139,7 @@ export default function Users() {
                     <p className="text-gray-600 mt-2 text-[#012765]">List of all users added via the Settings page</p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/newUser")}>Add User</Button>
+                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/new-user")}>Add User</Button>
                 </div>
             </div>
 

@@ -77,56 +77,57 @@ export const SettingsPage = () => {
                         </Button>
                     </CardContent>
                 </Card>
+                <Card className="border-0 shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                            <Bell className="h-5 w-5"/>
+                            <span>Notification Preferences</span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-medium">Email Notifications</p>
+                                <p className="text-sm text-gray-500">Receive email alerts for important events</p>
+                            </div>
+                            <Switch defaultChecked/>
+                        </div>
+
+                        <Separator/>
+
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-medium">New User Registrations</p>
+                                <p className="text-sm text-gray-500">Get notified when new users join</p>
+                            </div>
+                            <Switch defaultChecked/>
+                        </div>
+
+                        <Separator/>
+
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-medium">System Alerts</p>
+                                <p className="text-sm text-gray-500">Critical system notifications</p>
+                            </div>
+                            <Switch defaultChecked/>
+                        </div>
+
+                        <Separator/>
+
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-medium">Weekly Reports</p>
+                                <p className="text-sm text-gray-500">Automated weekly summary reports</p>
+                            </div>
+                            <Switch/>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Notification Preferences */}
-            <Card className="border-0 shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                        <Bell className="h-5 w-5"/>
-                        <span>Notification Preferences</span>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-medium">Email Notifications</p>
-                            <p className="text-sm text-gray-500">Receive email alerts for important events</p>
-                        </div>
-                        <Switch defaultChecked/>
-                    </div>
 
-                    <Separator/>
-
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-medium">New User Registrations</p>
-                            <p className="text-sm text-gray-500">Get notified when new users join</p>
-                        </div>
-                        <Switch defaultChecked/>
-                    </div>
-
-                    <Separator/>
-
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-medium">System Alerts</p>
-                            <p className="text-sm text-gray-500">Critical system notifications</p>
-                        </div>
-                        <Switch defaultChecked/>
-                    </div>
-
-                    <Separator/>
-
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-medium">Weekly Reports</p>
-                            <p className="text-sm text-gray-500">Automated weekly summary reports</p>
-                        </div>
-                        <Switch/>
-                    </div>
-                </CardContent>
-            </Card>
 
             {/* System Configuration */}
             <Card className="border-0 shadow-lg">

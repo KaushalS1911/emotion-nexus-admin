@@ -26,6 +26,7 @@ import {
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
 import {MoreVertical, Eye, Edit} from "lucide-react";
 import {useNavigate} from "react-router-dom";
+import { X } from "lucide-react"
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
@@ -398,6 +399,16 @@ export const InquiriesManagement = () => {
                                                         }
                                                     }}>
                                                 <DialogContent className="max-w-xl">
+                                                    <button
+                                                        onClick={() => {
+                                                            setDialogOpen(false);
+                                                            setSelectedInquiryId(null);
+                                                        }}
+                                                        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                    >
+                                                        <X className="h-5 w-5"/>
+                                                        <span className="sr-only">Close</span>
+                                                    </button>
                                                     <DialogHeader>
                                                         <DialogTitle>Inquiry Details</DialogTitle>
                                                     </DialogHeader>

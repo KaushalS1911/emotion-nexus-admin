@@ -10,6 +10,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Calendar as UiCalendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
+import { X } from "lucide-react"
 
 type BeneficiaryStatus = "active" | "inactive";
 
@@ -418,6 +419,13 @@ export const Beneficiaries = () => {
                     <DialogHeader>
                         <DialogTitle>Beneficiary Details</DialogTitle>
                     </DialogHeader>
+                    <button
+                        onClick={() => setViewDialogOpen(false)}
+                        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                        <X className="h-5 w-5"/>
+                        <span className="sr-only">Close</span>
+                    </button>
                     {viewBeneficiary && (
                         <div className="space-y-6">
                             <div className="flex items-center space-x-3">

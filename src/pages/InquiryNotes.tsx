@@ -6,6 +6,7 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
 
 
 interface Note {
@@ -71,6 +72,10 @@ export default function InquiryNotes() {
 
     return (
         <div className="space-y-6">
+            <Button variant="outline" onClick={() => navigate(-1)}>
+                <ArrowLeft className=" h-4 w-4" />
+                Back
+            </Button>
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">Note</h1>
@@ -161,9 +166,7 @@ export default function InquiryNotes() {
                     </div>
                 </DialogContent>
             </Dialog>
-            <Button variant="outline" onClick={() => navigate(-1)}>
-                Back
-            </Button>
+
         </div>
     );
 } 

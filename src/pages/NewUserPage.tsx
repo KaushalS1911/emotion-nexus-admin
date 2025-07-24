@@ -35,14 +35,16 @@ export default function NewUserPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-start justify-start  py-12 px-12">
-      <div className="w-full bg-white rounded-xl shadow p-10">
+    <div className="w-full min-h-screen flex flex-col items-start justify-">
+      <div className="w-full ">
         <h1 className="text-3xl font-bold text-[#FF7119] mb-8">{isEdit ? "Edit User" : "Add User"}</h1>
+        <div className="bg-white rounded-xl shadow p-10">
         <AddEditUserForm
           mode={isEdit ? "edit" : "add"}
           initialValues={initialValues}
           onSubmit={handleSubmit}
         />
+        </div>
       </div>
     </div>
   );

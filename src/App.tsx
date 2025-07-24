@@ -17,6 +17,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import InquiryNotes from "@/pages/InquiryNotes";
 import SlotPage from "@/pages/SlotPage";
+import NewUserPage from "@/pages/NewUserPage";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
     const { user } = useUserContext();
@@ -58,6 +59,7 @@ const App = () => (
                     <Route path="/dashboard" element={<RoleProtectedRoute allowedRoles={["admin"]}><DashboardOverview /></RoleProtectedRoute>} />
                     <Route path="/beneficieries" element={<RoleProtectedRoute allowedRoles={["admin"]}><Beneficiaries /></RoleProtectedRoute>} />
                     <Route path="/users" element={<RoleProtectedRoute allowedRoles={["admin"]}><Users /></RoleProtectedRoute>} />
+                    <Route path="/newUser" element={<RoleProtectedRoute allowedRoles={["admin"]}><NewUserPage /></RoleProtectedRoute>} />
                     <Route path="/assessments" element={<RoleProtectedRoute allowedRoles={["admin"]}><AssessmentData /></RoleProtectedRoute>} />
                     <Route path="/assessments/new" element={<RoleProtectedRoute allowedRoles={["admin"]}><AssessmentForm /></RoleProtectedRoute>} />
                     <Route path="/assessments/edit/:id" element={<RoleProtectedRoute allowedRoles={["admin"]}><AssessmentForm /></RoleProtectedRoute>} />

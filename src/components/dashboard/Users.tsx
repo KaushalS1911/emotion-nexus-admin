@@ -6,6 +6,9 @@ import {User as UserIcon, TrendingUp, Calendar, CheckCircle, Search, MoreHorizon
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+import AddEditUserForm, { UserFormValues } from "@/components/dashboard/AddEditUserForm";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface User {
     id: number;
@@ -16,6 +19,10 @@ interface User {
     education: string;
     status?: string;
     joinDate?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    role?: string;
     [key: string]: any;
 }
 
@@ -27,12 +34,7 @@ const getStartOfWeek = (date: Date) => {
 };
 
 const ROWS_PER_PAGE = 5;
-const FIXED_ROLES = [
-    "Super Admin",
-    "Admin",
-    "Wellness Coach",
-    "Support Staff"
-];
+// Remove FIXED_ROLES and instead compute available roles from users
 
 // --- User Data Helpers (API-ready) ---
 function getUsers() {
@@ -53,6 +55,7 @@ export default function Users() {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [viewUser, setViewUser] = useState<User | null>(null);
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const stored = localStorage.getItem("users");
@@ -69,12 +72,25 @@ export default function Users() {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
+    // Use a hardcoded list of roles for the filter
+    const availableRoles = [
+        'counsellor',
+        'wellness-coach',
+        'admin',
+        'super admin',
+        'support staff',
+    ];
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch =
-            (user.firstName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-            (user.lastName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-            (user.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+        const search = searchTerm.toLowerCase().trim();
+        let fullName = '';
+        if (user.firstName && user.lastName) {
+            fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        } else if (user.name) {
+            fullName = user.name.toLowerCase();
+        }
+        const email = (user.email || '').toLowerCase();
+        const matchesSearch = fullName.includes(search) || email.includes(search);
         const matchesRole = roleFilter === "all" || user.role === roleFilter;
         return matchesSearch && matchesRole;
     });
@@ -111,12 +127,19 @@ export default function Users() {
         setViewDialogOpen(true);
     };
 
+    const handleEdit = (user: User) => {
+        navigate(`/newUser?id=${user.id}`);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">Users</h1>
                     <p className="text-gray-600 mt-2 text-[#012765]">List of all users added via the Settings page</p>
+                </div>
+                <div className="mt-4 md:mt-0">
+                    <Button className="bg-[#012765] text-white" onClick={() => navigate("/newUser")}>Add User</Button>
                 </div>
             </div>
 
@@ -188,7 +211,7 @@ export default function Users() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Roles</SelectItem>
-                                {FIXED_ROLES.map(role => (
+                                {availableRoles.map(role => (
                                     <SelectItem key={role} value={role}>{role}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -208,33 +231,28 @@ export default function Users() {
                             <table className="w-full">
                                 <thead>
                                 <tr className="border-b border-gray-100">
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Experience</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Education</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Role</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {paginatedUsers.map((user, idx) => (
-                                    <tr key={user.id}
-                                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
+                                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="py-4 px-2">
                                             {user.profilePic ? (
                                                 <img src={user.profilePic} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold text-lg">
-                                                    {user.name?.[0] || "?"}
+                                                <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                    {user.firstName?.[0] || user.name?.[0] || "?"}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="py-4 px-2">{user.name}</td>
-                                        <td className="py-4 px-2">{user.expertise}</td>
-                                        <td className="py-4 px-2">{user.experience}</td>
-                                        <td className="py-4 px-2">{user.education}</td>
+                                        <td className="py-4 px-2">{user.firstName ? `${user.firstName} ${user.lastName}` : user.name}</td>
+                                        <td className="py-4 px-2">{user.email}</td>
+                                        <td className="py-4 px-2">{user.role}</td>
                                         <td className="py-4 px-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -243,8 +261,11 @@ export default function Users() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleView(user)}>
-                                                        <Eye className="h-4 w-4 mr-2 text-blue-600"/> View
+                                                    {/*<DropdownMenuItem onClick={() => handleView(user)}>*/}
+                                                    {/*    <Eye className="h-4 w-4 mr-2 text-blue-600"/> View*/}
+                                                    {/*</DropdownMenuItem>*/}
+                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                        <span className="mr-2">✏️</span> Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="text-red-600"
                                                                       onClick={() => handleDelete(user.id)}>
@@ -305,37 +326,40 @@ export default function Users() {
                         </div>
                     </div>
                     {/* View User Dialog */}
-                    <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-                        <DialogContent className="max-w-md">
-                            <DialogHeader>
-                                <DialogTitle>User Details</DialogTitle>
-                            </DialogHeader>
-                            {viewUser && (
-                                <div className="space-y-6">
-                                    <div className="flex items-center space-x-3">
-                                        {viewUser.profilePic ? (
-                                            <img src={viewUser.profilePic} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
-                                        ) : (
-                                            <div className="w-12 h-12 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-xl">
-                                                {viewUser.name?.[0] || "?"}
-                                            </div>
-                                        )}
-                                        <span className="text-lg font-semibold text-gray-900">{viewUser.name}</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="font-medium text-gray-600">Expertise</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.expertise}</div>
-                                        <div className="font-medium text-gray-600">Experience</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.experience}</div>
-                                        <div className="font-medium text-gray-600">Education</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.education}</div>
-                                        <div className="font-medium text-gray-600">Join Date</div>
-                                        <div className="bg-gray-50 rounded px-2 py-1">{viewUser.joinDate ? new Date(viewUser.joinDate).toLocaleDateString() : "-"}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </DialogContent>
-                    </Dialog>
+                    {/*<Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>*/}
+                    {/*    <DialogContent className="max-w-md p-0 bg-transparent">*/}
+                    {/*        <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">*/}
+                    {/*            {viewUser && (*/}
+                    {/*                <>*/}
+                    {/*                    <Avatar className="h-20 w-20 mb-4">*/}
+                    {/*                        {viewUser.profilePic ? (*/}
+                    {/*                            <img src={viewUser.profilePic} alt="Profile" className="w-20 h-20 rounded-full object-cover" />*/}
+                    {/*                        ) : (*/}
+                    {/*                            <AvatarFallback className="bg-[#012765] text-white text-2xl">*/}
+                    {/*                                {viewUser.firstName?.[0]?.toUpperCase() || viewUser.name?.[0]?.toUpperCase() || "U"}*/}
+                    {/*                            </AvatarFallback>*/}
+                    {/*                        )}*/}
+                    {/*                    </Avatar>*/}
+                    {/*                    <div className="text-center mb-4">*/}
+                    {/*                        <div className="text-xl font-bold text-gray-900">{viewUser.firstName ? `${viewUser.firstName} ${viewUser.lastName}` : viewUser.name}</div>*/}
+                    {/*                        <div className="text-sm text-gray-600 mt-1">{viewUser.email}</div>*/}
+                    {/*                        <div className="text-sm text-gray-500 mt-1">{viewUser.role}</div>*/}
+                    {/*                    </div>*/}
+                    {/*                    {viewUser.role === "counsellor" && (*/}
+                    {/*                        <div className="w-full mt-4">*/}
+                    {/*                            <div className="font-semibold text-gray-700 mb-2">Counsellor Details</div>*/}
+                    {/*                            <div className="grid grid-cols-1 gap-2">*/}
+                    {/*                                <div><span className="font-medium">Expertise:</span> {viewUser.expertise}</div>*/}
+                    {/*                                <div><span className="font-medium">Experience:</span> {viewUser.experience}</div>*/}
+                    {/*                                <div><span className="font-medium">Education:</span> {viewUser.education}</div>*/}
+                    {/*                            </div>*/}
+                    {/*                        </div>*/}
+                    {/*                    )}*/}
+                    {/*                </>*/}
+                    {/*            )}*/}
+                    {/*        </div>*/}
+                    {/*    </DialogContent>*/}
+                    {/*</Dialog>*/}
                 </CardContent>
             </Card>
         </div>

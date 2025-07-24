@@ -7,18 +7,46 @@ import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {Settings, User, Shield, Bell, Database, Mail} from "lucide-react";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {useToast} from "@/hooks/use-toast";
+import { useUserContext } from "@/UserContext";
 
 export const SettingsPage = () => {
+    const { user, updateUser } = useUserContext();
+    const [firstName, setFirstName] = useState(user?.name?.split(" ")[0] || "");
+    const [lastName, setLastName] = useState(user?.name?.split(" ")[1] || "");
+    const [email, setEmail] = useState(user?.email || "");
+    const [role, setRole] = useState<string>(user?.role || "");
+    const [roleOptions, setRoleOptions] = useState<string[]>([]);
+
+    useEffect(() => {
+        // Fetch users from localStorage and extract unique roles
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const roles = Array.from(new Set(users.map((u: any) => String(u.role)).filter(Boolean)));
+        // If the current user's role is not in the list, add it
+        if (user?.role && !roles.includes(user.role)) {
+            roles.push(user.role);
+        }
+        setRoleOptions(roles as string[]);
+    }, [user]);
+
+    const handleSave = () => {
+        updateUser({
+            name: `${firstName} ${lastName}`,
+            email,
+            role,
+        });
+        // Optionally show a toast
+    };
+
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold text-[#FF7119]">
                     Settings
                 </h1>
-                <p className="text-gray-600 mt-2 text-[#012765]">Manage your admin preferences and system settings</p>
+                <p className="text-gray-600 mt-2 text-[#012765]">Manage your preferences and system settings</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -33,7 +61,7 @@ export const SettingsPage = () => {
                     <CardContent className="space-y-6">
                         <div className="flex items-center space-x-4">
                             <Avatar className="h-20 w-20">
-                                <AvatarFallback className="bg-[#012765] text-white">AD</AvatarFallback>
+                                <AvatarFallback className="bg-[#012765] text-white">{(firstName[0] || "U").toUpperCase()}{(lastName[0] || "").toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <Button variant="outline">Change Avatar</Button>
@@ -44,35 +72,27 @@ export const SettingsPage = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="firstName">First Name</Label>
-                                <Input id="firstName" defaultValue="Admin"/>
+                                <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} />
                             </div>
                             <div>
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input id="lastName" defaultValue="User"/>
+                                <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
                             </div>
                         </div>
 
                         <div>
                             <Label htmlFor="email">Email Address</Label>
-                            <Input id="email" type="email" defaultValue="admin@emotionallyyours.com"/>
+                            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
                         </div>
 
                         <div>
                             <Label htmlFor="role">Role</Label>
-                            <Select defaultValue="super-admin">
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="super-admin">Super Admin</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="wellness-coach">Wellness Coach</SelectItem>
-                                    <SelectItem value="support">Support Staff</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="px-3 py-2 border rounded bg-gray-50 text-gray-700 font-semibold">
+                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </div>
                         </div>
 
-                        <Button className="bg-[#012765] text-white">
+                        <Button className="bg-[#012765] text-white" onClick={handleSave}>
                             Save Changes
                         </Button>
                     </CardContent>

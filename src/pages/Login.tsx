@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/UserContext";
 import logo from "../../public/Emotionally Yours Logo.png";
+import { Eye, EyeOff } from "lucide-react";
 
 const DUMMY_USERS = [
     {
@@ -25,6 +26,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -77,18 +79,21 @@ export default function Login() {
                             required
                         />
                     </div>
-                    <div>
+                    <div className="relative">
                         <label htmlFor="password" className="block text-sm font-medium text-[#012765]">Password</label>
                         <input
                             id="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             autoComplete="current-password"
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765] pr-10"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="Enter your password"
                             required
                         />
+                        <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400" onClick={() => setShowPassword(v => !v)}>
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
                     </div>
                     {error && <div className="text-red-500 text-sm text-center">{error}</div>}
                     <button

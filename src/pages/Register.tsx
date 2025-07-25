@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import logo from "../../public/Emotionally Yours Logo.png"
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
     const [email, setEmail] = useState("");
@@ -9,6 +10,8 @@ export default function Register() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,30 +57,35 @@ export default function Register() {
                             required
                         />
                     </div>
-                    <div>
+                    <div className="relative">
                         <label htmlFor="password" className="block text-sm font-medium text-[#012765]">Password</label>
                         <input
                             id="password"
-                            type="password"
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
+                            type={showPassword ? "text" : "password"}
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765] pr-10"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="Create a password"
                             required
                         />
+                        <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400" onClick={() => setShowPassword(v => !v)}>
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
                     </div>
-                    <div>
-                        <label htmlFor="confirm" className="block text-sm font-medium text-[#012765]">Confirm
-                            Password</label>
+                    <div className="relative">
+                        <label htmlFor="confirm" className="block text-sm font-medium text-[#012765]">Confirm Password</label>
                         <input
                             id="confirm"
-                            type="password"
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
+                            type={showConfirm ? "text" : "password"}
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765] pr-10"
                             value={confirm}
                             onChange={e => setConfirm(e.target.value)}
                             placeholder="Confirm your password"
                             required
                         />
+                        <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400" onClick={() => setShowConfirm(v => !v)}>
+                            {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
                     </div>
                     {error && <div className="text-red-500 text-sm text-center">{error}</div>}
                     {success &&

@@ -2,13 +2,24 @@ import {useEffect, useState} from "react";
 import {Card, CardContent} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {User as UserIcon, TrendingUp, Calendar, CheckCircle, Search, MoreHorizontal, Eye, Trash2, Key} from "lucide-react";
+import {
+    User as UserIcon,
+    TrendingUp,
+    Calendar,
+    CheckCircle,
+    Search,
+    MoreHorizontal,
+    Eye,
+    Trash2,
+    Key,
+    EyeOff
+} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
-import AddEditUserForm, { UserFormValues } from "@/components/dashboard/AddEditUserForm";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {useNavigate} from "react-router-dom";
+import AddEditUserForm, {UserFormValues} from "@/components/dashboard/AddEditUserForm";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 
 interface User {
     id: number;
@@ -22,6 +33,7 @@ interface User {
     education?: string;
     status?: string;
     joinDate?: string;
+
     [key: string]: any;
 }
 
@@ -51,13 +63,14 @@ export default function Users() {
     const navigate = useNavigate();
     const [addCredentialsDialogOpen, setAddCredentialsDialogOpen] = useState(false);
     const [credentialsUser, setCredentialsUser] = useState<User | null>(null);
-    const [credentialsForm, setCredentialsForm] = useState({ username: '', password: '' });
+    const [credentialsForm, setCredentialsForm] = useState({user_id: null, username: '', password: ''});
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         // Fetch users from API
         const fetchUsers = async () => {
             try {
-                const response = await fetch("https://interactapiverse.com/mahadevasth/user");
+                const response = await fetch("https://interactapiverse.com/mahadevasth/counsellors");
                 if (!response.ok) throw new Error("Failed to fetch users");
                 const data = await response.json();
                 // If API returns { data: [...] }, use data.data, else use data
@@ -135,7 +148,8 @@ export default function Users() {
 
     const handleAddCredentials = (user: User) => {
         setCredentialsUser(user);
-        setCredentialsForm({ username: '', password: '' });
+        setCredentialsForm({user_id: null, username: '', password: ''});
+        setShowPassword(false);
         setAddCredentialsDialogOpen(true);
     };
 
@@ -143,10 +157,11 @@ export default function Users() {
         e.preventDefault();
         if (!credentialsUser) return;
         const payload = {
-            user_id: credentialsUser.id,
+            user_id: credentialsUser.user_id,
             username: credentialsForm.username,
             password: credentialsForm.password,
         };
+        console.log(credentialsUser, "cre");
         try {
             const response = await fetch("https://interactapiverse.com/mahadevasth/user/credentials", {
                 method: "POST",
@@ -275,12 +290,15 @@ export default function Users() {
                                 </thead>
                                 <tbody>
                                 {paginatedUsers.map((user, idx) => (
-                                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                    <tr key={user.id}
+                                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="py-4 px-2">
                                             {user.profilePic ? (
-                                                <img src={user.profilePic} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                                                <img src={user.profilePic} alt="Profile"
+                                                     className="w-10 h-10 rounded-full object-cover"/>
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                <div
+                                                    className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
                                                     {user.fullName?.[0] || "?"}
                                                 </div>
                                             )}
@@ -384,18 +402,22 @@ export default function Users() {
                                         required
                                     />
                                 </div>
-                                <div>
+                                <div className="relative">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                                     <input
-                                        type="password"
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                                         value={credentialsForm.password}
                                         onChange={e => setCredentialsForm(f => ({ ...f, password: e.target.value }))}
                                         required
                                     />
+                                    <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400" onClick={() => setShowPassword(v => !v)}>
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
                                 </div>
                                 <div className="flex justify-end gap-2 mt-4">
-                                    <Button type="button" variant="outline" onClick={() => setAddCredentialsDialogOpen(false)}>
+                                    <Button type="button" variant="outline"
+                                            onClick={() => setAddCredentialsDialogOpen(false)}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="bg-[#012765] text-white">

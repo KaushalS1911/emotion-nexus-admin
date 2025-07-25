@@ -18,6 +18,7 @@ import Register from "@/pages/Register";
 import InquiryNotes from "@/pages/InquiryNotes";
 import SlotPage from "@/pages/SlotPage";
 import NewUserPage from "@/pages/NewUserPage";
+import AppointmentPage from "@/pages/AppointmentPage.tsx";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
     const { user } = useUserContext();
@@ -71,6 +72,7 @@ const App = () => (
                     <Route path="/notifications" element={<RoleProtectedRoute allowedRoles={["admin"]}><NotificationsCenter /></RoleProtectedRoute>} />
                     <Route path="/settings" element={<RoleProtectedRoute allowedRoles={["admin"]}><SettingsPage /></RoleProtectedRoute>} />
                     <Route path="/slot" element={<RoleProtectedRoute allowedRoles={["counsellor"]}><SlotPage /></RoleProtectedRoute>} />
+                    <Route path="/appointments" element={<RoleProtectedRoute allowedRoles={["counsellor"]}><AppointmentPage /></RoleProtectedRoute>} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
             </Routes>

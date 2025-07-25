@@ -52,6 +52,13 @@ const slotMenuItem = {
     route: "/slot",
 };
 
+const appointmentMenuItem = {
+    id: "appointments",
+    label: "Appointments",
+    icon: FileText,
+    route: "/appointments",
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
                                                     collapsed,
                                                     setCollapsed,
@@ -61,7 +68,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                 }) => {
     const { user } = useUserContext();
     const isCounsellor = user?.role === "counsellor";
-    const filteredMenuItems = isCounsellor ? [slotMenuItem] : menuItems;
+    const filteredMenuItems = isCounsellor
+        ? [slotMenuItem, appointmentMenuItem]
+        : menuItems;
     const dashboardLabel = isCounsellor ? "Counsellor Dashboard" : "Admin Dashboard";
 
     if (isMobile) {

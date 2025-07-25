@@ -22,16 +22,20 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
+// API slot structure
+interface ApiSlot {
+    user_id: number;
+    slot_date: string;
+    available_slots: string[];
+}
+
+// For calendar rendering
 interface Slot {
-    id: number;
+    id: string;
     date: string; // yyyy-mm-dd
     startTime: string; // HH:mm
     endTime: string; // HH:mm
 }
-
-const SLOT_STORAGE_KEY = "slots";
-const getSlots = (): Slot[] => JSON.parse(localStorage.getItem(SLOT_STORAGE_KEY) || "[]");
-const saveSlots = (slots: Slot[]) => localStorage.setItem(SLOT_STORAGE_KEY, JSON.stringify(slots));
 
 function formatTime12h(time: string) {
     if (!time) return "";
@@ -57,30 +61,45 @@ function SlotPage() {
     const [slots, setSlots] = useState<Slot[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogForceOpen, setDialogForceOpen] = useState(false);
-    const [editSlot, setEditSlot] = useState<Slot | null>(null);
-    const [form, setForm] = useState({ date: "", startTime: "", endTime: "" });
+    const [editSlotDate, setEditSlotDate] = useState<string>("");
+    const [slotTimes, setSlotTimes] = useState<{ startTime: string; endTime: string }[]>([{ startTime: "", endTime: "" }]);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [filterDate, setFilterDate] = useState<string>("");
     const [filterStartTime, setFilterStartTime] = useState<string>("");
     const [filterEndTime, setFilterEndTime] = useState<string>("");
-    const [editDialogMode, setEditDialogMode] = useState<'edit' | 'create'>("create");
     const [multiSlotDialogOpen, setMultiSlotDialogOpen] = useState(false);
     const [multiSlotDate, setMultiSlotDate] = useState<string | null>(null);
     const [timeOfDayFilter, setTimeOfDayFilter] = useState('all');
 
-    useEffect(() => { setSlots(getSlots()); }, []);
-
-    // Helper: get time of day for a slot
-    const getTimeOfDay = (time: string) => {
-        if (!time) return 'other';
-        const [h] = time.split(":");
-        const hour = parseInt(h, 10);
-        if (hour >= 5 && hour < 12) return 'morning';
-        if (hour >= 12 && hour < 17) return 'afternoon';
-        if (hour >= 17 && hour < 21) return 'evening';
-        if (hour >= 21 || hour < 5) return 'night';
-        return 'other';
-    };
+    // Fetch slots from API on mount
+    useEffect(() => {
+        fetch("https://interactapiverse.com/mahadevasth/user/slots?user_id=1")
+            .then(res => res.json())
+            .then((data: ApiSlot[]) => {
+                // Flatten API slots to Slot[] for calendar
+                const flat: Slot[] = [];
+                data.forEach(apiSlot => {
+                    apiSlot.available_slots.forEach(range => {
+                        // Parse "10:00AM-11:00AM" to 24h
+                        const [start, end] = range.split("-");
+                        const parseTime = (t: string) => {
+                            let [h, m] = t.replace(/AM|PM/, '').split(":");
+                            let hour = parseInt(h, 10);
+                            if (/PM/.test(t) && hour !== 12) hour += 12;
+                            if (/AM/.test(t) && hour === 12) hour = 0;
+                            return `${hour.toString().padStart(2, '0')}:${m}`;
+                        };
+                        flat.push({
+                            id: `${apiSlot.slot_date}-${range}`,
+                            date: apiSlot.slot_date,
+                            startTime: parseTime(start),
+                            endTime: parseTime(end),
+                        });
+                    });
+                });
+                setSlots(flat);
+            });
+    }, []);
 
     // Filtering logic (add time of day filter)
     const filteredSlots = useMemo(() => {
@@ -91,7 +110,14 @@ function SlotPage() {
                 const slotEnd = slot.endTime;
                 if (slotEnd < filterStartTime || slotStart > filterEndTime) return false;
             }
-            if (timeOfDayFilter !== 'all' && getTimeOfDay(slot.startTime) !== timeOfDayFilter) return false;
+            if (timeOfDayFilter !== 'all') {
+                const [h] = slot.startTime.split(":");
+                const hour = parseInt(h, 10);
+                if (timeOfDayFilter === 'morning' && !(hour >= 5 && hour < 12)) return false;
+                if (timeOfDayFilter === 'afternoon' && !(hour >= 12 && hour < 17)) return false;
+                if (timeOfDayFilter === 'evening' && !(hour >= 17 && hour < 21)) return false;
+                if (timeOfDayFilter === 'night' && !(hour >= 21 || hour < 5)) return false;
+            }
             return true;
         });
     }, [slots, filterDate, filterStartTime, filterEndTime, timeOfDayFilter]);
@@ -156,66 +182,90 @@ function SlotPage() {
     };
 
     const openCreateDialog = (date?: Date) => {
-        setEditSlot(null);
-        setEditDialogMode('create');
-        setForm({
-            date: date ? format(date, 'yyyy-MM-dd') : "",
-            startTime: "",
-            endTime: ""
-        });
+        setEditSlotDate(date ? format(date, 'yyyy-MM-dd') : "");
+        setSlotTimes([{ startTime: "", endTime: "" }]);
         setErrors({});
         setDialogOpen(true);
     };
 
-    const openEditDialog = (slot: Slot) => {
-        setEditSlot(slot);
-        setEditDialogMode('edit');
-        setForm({ date: slot.date, startTime: slot.startTime, endTime: slot.endTime });
-        setErrors({});
-        setDialogOpen(true);
+    const handleAddTimeRange = () => {
+        setSlotTimes([...slotTimes, { startTime: "", endTime: "" }]);
     };
-
-    const handleDeleteSlot = (slotId: number) => {
-        const updated = slots.filter(s => s.id !== slotId);
-        setSlots(updated);
-        saveSlots(updated);
-        setDialogOpen(false);
-        setEditSlot(null);
-        setEditDialogMode('create');
+    const handleRemoveTimeRange = (idx: number) => {
+        setSlotTimes(slotTimes.filter((_, i) => i !== idx));
+    };
+    const handleTimeChange = (idx: number, field: 'startTime' | 'endTime', value: string) => {
+        setSlotTimes(slotTimes.map((t, i) => i === idx ? { ...t, [field]: value } : t));
     };
 
     const validate = () => {
         const newErrors: { [k: string]: string } = {};
-        if (!form.date) newErrors.date = "Date is required";
-        if (!form.startTime) newErrors.startTime = "Start time is required";
-        if (!form.endTime) newErrors.endTime = "End time is required";
-        if (form.startTime && form.endTime) {
-            const start = new Date(`2000-01-01T${form.startTime}`);
-            const end = new Date(`2000-01-01T${form.endTime}`);
-            if (end <= addMinutes(start, 29)) {
-                newErrors.endTime = "Slot must be at least 30 minutes.";
+        if (!editSlotDate) newErrors.date = "Date is required";
+        slotTimes.forEach((t, idx) => {
+            if (!t.startTime) newErrors[`startTime${idx}`] = "Start time required";
+            if (!t.endTime) newErrors[`endTime${idx}`] = "End time required";
+            if (t.startTime && t.endTime) {
+                const start = new Date(`2000-01-01T${t.startTime}`);
+                const end = new Date(`2000-01-01T${t.endTime}`);
+                if (end <= addMinutes(start, 29)) {
+                    newErrors[`endTime${idx}`] = "Slot must be at least 30 minutes.";
+                }
             }
-        }
+        });
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        let updatedSlots: Slot[];
-        if (editSlot) {
-            updatedSlots = slots.map(s =>
-                s.id === editSlot.id ? { ...s, ...form } : s
-            );
-        } else {
-            updatedSlots = [
-                ...slots,
-                { id: Date.now(), ...form },
-            ];
-        }
-        setSlots(updatedSlots);
-        saveSlots(updatedSlots);
+        // Format available_slots as ["10:00AM-11:00AM", ...]
+        const available_slots = slotTimes.map(t => {
+            const to12h = (time: string) => {
+                let [h, m] = time.split(":");
+                let hour = parseInt(h, 10);
+                const ampm = hour >= 12 ? "PM" : "AM";
+                hour = hour % 12;
+                if (hour === 0) hour = 12;
+                return `${hour}:${m}${ampm}`;
+            };
+            return `${to12h(t.startTime)}-${to12h(t.endTime)}`;
+        });
+        const payload = {
+            user_id: 1,
+            slot_date: editSlotDate,
+            available_slots,
+        };
+        await fetch("https://interactapiverse.com/mahadevasth/user/slots", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        // Refetch slots after save
+        fetch("https://interactapiverse.com/mahadevasth/user/slots?user_id=1")
+            .then(res => res.json())
+            .then((data: ApiSlot[]) => {
+                const flat: Slot[] = [];
+                data.forEach(apiSlot => {
+                    apiSlot.available_slots.forEach(range => {
+                        const [start, end] = range.split("-");
+                        const parseTime = (t: string) => {
+                            let [h, m] = t.replace(/AM|PM/, '').split(":");
+                            let hour = parseInt(h, 10);
+                            if (/PM/.test(t) && hour !== 12) hour += 12;
+                            if (/AM/.test(t) && hour === 12) hour = 0;
+                            return `${hour.toString().padStart(2, '0')}:${m}`;
+                        };
+                        flat.push({
+                            id: `${apiSlot.slot_date}-${range}`,
+                            date: apiSlot.slot_date,
+                            startTime: parseTime(start),
+                            endTime: parseTime(end),
+                        });
+                    });
+                });
+                setSlots(flat);
+            });
         setDialogOpen(false);
     };
 
@@ -332,7 +382,12 @@ function SlotPage() {
                     defaultView="month"
                     onSelectSlot={slotInfo => openCreateDialog(slotInfo.start)}
                     selectable
-                    onSelectEvent={event => openEditDialog(event.slot)}
+                    onSelectEvent={event => {
+                        const slot = event.slot;
+                        setEditSlotDate(slot.date);
+                        setSlotTimes([{ startTime: slot.startTime, endTime: slot.endTime }]);
+                        setDialogOpen(true);
+                    }}
                     popup
                     components={{
                         event: ({event}) => {
@@ -396,7 +451,7 @@ function SlotPage() {
                     <div className="bg-[#012765] px-6 py-4 flex items-center justify-between">
                         <DialogHeader>
                             <DialogTitle
-                                className="text-white text-xl font-bold">{editDialogMode === 'edit' ? "Edit Slot" : "Create Slot"}</DialogTitle>
+                                className="text-white text-xl font-bold">Create Slot</DialogTitle>
                         </DialogHeader>
                         <button
                             type="button"
@@ -414,29 +469,48 @@ function SlotPage() {
                     <form className="space-y-5 px-6 py-6 bg-white relative" onSubmit={handleSubmit}>
                         <div>
                             <label className="block text-sm font-semibold mb-1 text-[#012765]">Date</label>
-                            <Input type="date" value={form.date}
-                                   onChange={e => setForm(f => ({...f, date: e.target.value}))}
+                            <Input type="date" value={editSlotDate}
+                                   onChange={e => setEditSlotDate(e.target.value)}
                                    className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"/>
                             {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
                         </div>
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="block text-sm font-semibold mb-1 text-[#012765]">Start Time</label>
-                                <Input type="time" value={form.startTime}
-                                       onChange={e => setForm(f => ({...f, startTime: e.target.value}))}
-                                       className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
-                                       step="1800"/>
-                                {errors.startTime &&
-                                    <div className="text-red-500 text-xs mt-1">{errors.startTime}</div>}
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-sm font-semibold mb-1 text-[#012765]">End Time</label>
-                                <Input type="time" value={form.endTime}
-                                       onChange={e => setForm(f => ({...f, endTime: e.target.value}))}
-                                       className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
-                                       step="1800"/>
-                                {errors.endTime && <div className="text-red-500 text-xs mt-1">{errors.endTime}</div>}
-                            </div>
+                        <div className="flex flex-col gap-4">
+                            {slotTimes.map((t, idx) => (
+                                <div key={idx} className="flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">Start Time</label>
+                                        <Input type="time" value={t.startTime}
+                                               onChange={e => handleTimeChange(idx, 'startTime', e.target.value)}
+                                               className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
+                                               step="1800"/>
+                                        {errors[`startTime${idx}`] && <div className="text-red-500 text-xs mt-1">{errors[`startTime${idx}`]}</div>}
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">End Time</label>
+                                        <Input type="time" value={t.endTime}
+                                               onChange={e => handleTimeChange(idx, 'endTime', e.target.value)}
+                                               className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
+                                               step="1800"/>
+                                        {errors[`endTime${idx}`] && <div className="text-red-500 text-xs mt-1">{errors[`endTime${idx}`]}</div>}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveTimeRange(idx)}
+                                        className="mt-8 self-center"
+                                        style={{ lineHeight: 0 }}
+                                    >
+                                        <Trash className="h-5 w-5 text-red-600" />
+                                    </button>
+                                </div>
+                            ))}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="border-[#012765] text-[#012765] hover:bg-[#012765] hover:text-white transition-colors"
+                                onClick={handleAddTimeRange}
+                            >
+                                Add Time Range
+                            </Button>
                         </div>
                         <div className="flex gap-2 justify-end pt-2">
                             <Button
@@ -451,20 +525,10 @@ function SlotPage() {
                                 Cancel
                             </Button>
                             <Button type="submit"
-                                    className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors">{editDialogMode === 'edit' ? "Update" : "Create"}</Button>
+                                    className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors">Create Slot</Button>
                         </div>
                         {/* Delete button in left bottom corner, only in edit mode */}
-                        {editDialogMode === 'edit' && (
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteSlot(editSlot.id)}
-                                className="absolute left-4 bottom-4 flex items-center gap-1 text-red-600 hover:text-white hover:bg-red-600 transition-colors px-3 py-2 rounded-md"
-                                style={{zIndex: 10}}
-                            >
-                                <Trash className="h-5 w-5"/>
-                                Delete
-                            </button>
-                        )}
+                        {/* This section is removed as per the new_code, as the dialog is now for creating a single slot */}
                     </form>
                 </DialogContent>
             </Dialog>

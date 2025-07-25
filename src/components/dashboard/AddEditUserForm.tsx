@@ -15,9 +15,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export interface UserFormValues {
     id?: number;
     profilePic?: string | null;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
+    phone: string;
     role: string;
     expertise?: string;
     experience?: string;
@@ -48,9 +48,10 @@ export default function AddEditUserForm({
     const [profilePic, setProfilePic] = useState<string | null>(
         initialValues.profilePic || null
     );
-    const [firstName, setFirstName] = useState(initialValues.firstName || "");
-    const [lastName, setLastName] = useState(initialValues.lastName || "");
+    const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
+    const [fullName, setFullName] = useState(initialValues.fullName || "");
     const [email, setEmail] = useState(initialValues.email || "");
+    const [phone, setPhone] = useState(initialValues.phone || "");
     const [role, setRole] = useState(initialValues.role || "admin");
     const [expertise, setExpertise] = useState(initialValues.expertise || "");
     const [experience, setExperience] = useState(initialValues.experience || "");
@@ -59,9 +60,11 @@ export default function AddEditUserForm({
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!firstName.trim()) newErrors.firstName = "First Name is required";
-        if (!lastName.trim()) newErrors.lastName = "Last Name is required";
+        if (!fullName.trim()) newErrors.fullName = "Full Name is required";
         if (!email.trim()) newErrors.email = "Email is required";
+        if (!phone.trim()) newErrors.phone = "Phone is required";
+        // Simple phone validation for future call support
+        if (phone && !/^\+?[0-9\-\s]{7,20}$/.test(phone)) newErrors.phone = "Enter a valid phone number";
         if (role === "counsellor") {
             if (!expertise.trim()) newErrors.expertise = "Expertise is required";
             if (!experience.trim()) newErrors.experience = "Experience is required";
@@ -79,7 +82,7 @@ export default function AddEditUserForm({
                 alert("Image size should not exceed 10MB.");
                 return;
             }
-
+            setProfilePicFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProfilePic(reader.result as string);
@@ -88,20 +91,38 @@ export default function AddEditUserForm({
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        onSubmit({
-            id: initialValues.id,
-            profilePic,
-            firstName,
-            lastName,
-            email,
-            role,
-            expertise: role === "counsellor" ? expertise : undefined,
-            experience: role === "counsellor" ? experience : undefined,
-            education: role === "counsellor" ? education : undefined,
-        });
+        const payload = {
+            full_name: fullName,
+            profile_image: "https://static.vecteezy.com/system/resources/thumbnails/000/439/863/small/Basic_Ui__28186_29.jpg",
+            email: email,
+            phone: phone,
+            role: role,
+        };
+        try {
+            const response = await fetch("https://interactapiverse.com/mahadevasth/user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to add user");
+            }
+            alert("User added successfully!");
+            onSubmit({
+                fullName,
+                profilePic: payload.profile_image,
+                email,
+                phone,
+                role,
+            } as UserFormValues);
+        } catch (error: any) {
+            alert(error.message || "An error occurred while adding the user.");
+        }
     };
 
     return (
@@ -123,8 +144,7 @@ export default function AddEditUserForm({
                                     />
                                 ) : (
                                     <AvatarFallback className="bg-[#012765] text-white text-5xl">
-                                        {firstName?.[0]?.toUpperCase() || "U"}
-                                        {lastName?.[0]?.toUpperCase() || ""}
+                                        {fullName?.[0]?.toUpperCase() || "U"}
                                     </AvatarFallback>
                                 )}
                             </Avatar>
@@ -152,51 +172,53 @@ export default function AddEditUserForm({
                         <div className="flex-1 w-full space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label htmlFor="user-first-name" className="font-semibold">
-                                        First Name
+                                    <Label htmlFor="user-full-name" className="font-semibold">
+                                        Full Name
                                     </Label>
                                     <Input
-                                        id="user-first-name"
-                                        value={firstName}
-                                        onChange={(e) => setFirstName(e.target.value)}
-                                        placeholder="First Name"
+                                        id="user-full-name"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        placeholder="Full Name"
                                     />
-                                    {errors.firstName && (
+                                    {errors.fullName && (
                                         <div className="text-red-500 text-xs mt-1">
-                                            {errors.firstName}
+                                            {errors.fullName}
                                         </div>
                                     )}
                                 </div>
                                 <div>
-                                    <Label htmlFor="user-last-name" className="font-semibold">
-                                        Last Name
+                                    <Label htmlFor="user-email" className="font-semibold">
+                                        Email Address
                                     </Label>
                                     <Input
-                                        id="user-last-name"
-                                        value={lastName}
-                                        onChange={(e) => setLastName(e.target.value)}
-                                        placeholder="Last Name"
+                                        id="user-email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Email Address"
                                     />
-                                    {errors.lastName && (
+                                    {errors.email && (
                                         <div className="text-red-500 text-xs mt-1">
-                                            {errors.lastName}
+                                            {errors.email}
                                         </div>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="user-email" className="font-semibold">
-                                    Email Address
+                                <Label htmlFor="user-phone" className="font-semibold">
+                                    Phone
                                 </Label>
                                 <Input
-                                    id="user-email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Email Address"
+                                    id="user-phone"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Phone Number"
+                                    inputMode="tel"
+                                    autoComplete="tel"
                                 />
-                                {errors.email && (
+                                {errors.phone && (
                                     <div className="text-red-500 text-xs mt-1">
-                                        {errors.email}
+                                        {errors.phone}
                                     </div>
                                 )}
                             </div>

@@ -1,7 +1,7 @@
-import { useState, ChangeEvent } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import {useState, ChangeEvent} from "react";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Button} from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -9,8 +9,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {Card, CardContent} from "@/components/ui/card";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 
 export interface UserFormValues {
     id?: number;
@@ -32,11 +32,11 @@ interface AddEditUserFormProps {
 }
 
 const ROLE_OPTIONS = [
-    { value: "admin", label: "Admin" },
-    { value: "super-admin", label: "Super Admin" },
-    { value: "wellness-coach", label: "Wellness Coach" },
-    { value: "support-staff", label: "Support Staff" },
-    { value: "counsellor", label: "Counsellor" },
+    {value: "admin", label: "Admin"},
+    {value: "super-admin", label: "Super Admin"},
+    {value: "wellness-coach", label: "Wellness Coach"},
+    {value: "support-staff", label: "Support Staff"},
+    {value: "counsellor", label: "Counsellor"},
 ];
 
 export default function AddEditUserForm({
@@ -228,7 +228,7 @@ export default function AddEditUserForm({
                                 </Label>
                                 <Select value={role} onValueChange={setRole}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select role" />
+                                        <SelectValue placeholder="Select role"/>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {ROLE_OPTIONS.map((opt) => (

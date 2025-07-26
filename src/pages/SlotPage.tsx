@@ -1,23 +1,23 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, X, List, Trash } from "lucide-react";
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format } from 'date-fns/format';
-import { parse } from 'date-fns/parse';
-import { startOfWeek } from 'date-fns/startOfWeek';
-import { getDay } from 'date-fns/getDay';
-import { enUS } from 'date-fns/locale/en-US';
+import React, {useEffect, useState, useMemo} from "react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {Plus, X, List, Trash} from "lucide-react";
+import {Calendar, dateFnsLocalizer} from 'react-big-calendar';
+import {format} from 'date-fns/format';
+import {parse} from 'date-fns/parse';
+import {startOfWeek} from 'date-fns/startOfWeek';
+import {getDay} from 'date-fns/getDay';
+import {enUS} from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { addMinutes } from 'date-fns';
-import { Select } from "@/components/ui/select";
+import {addMinutes} from 'date-fns';
+import {Select} from "@/components/ui/select";
 
-const locales = { 'en-US': enUS };
+const locales = {'en-US': enUS};
 const localizer = dateFnsLocalizer({
     format,
     parse,
-    startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
+    startOfWeek: () => startOfWeek(new Date(), {weekStartsOn: 0}),
     getDay,
     locales,
 });
@@ -62,7 +62,10 @@ function SlotPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogForceOpen, setDialogForceOpen] = useState(false);
     const [editSlotDate, setEditSlotDate] = useState<string>("");
-    const [slotTimes, setSlotTimes] = useState<{ startTime: string; endTime: string }[]>([{ startTime: "", endTime: "" }]);
+    const [slotTimes, setSlotTimes] = useState<{ startTime: string; endTime: string }[]>([{
+        startTime: "",
+        endTime: ""
+    }]);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [filterDate, setFilterDate] = useState<string>("");
     const [filterStartTime, setFilterStartTime] = useState<string>("");
@@ -150,7 +153,7 @@ function SlotPage() {
         return React.cloneElement(
             props.children,
             {
-                style: { ...props.children.props.style, position: 'relative' },
+                style: {...props.children.props.style, position: 'relative'},
             },
             <>
                 {props.children.props.children}
@@ -175,7 +178,7 @@ function SlotPage() {
                         zIndex: 2,
                     }}
                 >
-                    <List size={16} color="#FF7119" />
+                    <List size={16} color="#FF7119"/>
                 </button>
             </>
         );
@@ -183,19 +186,19 @@ function SlotPage() {
 
     const openCreateDialog = (date?: Date) => {
         setEditSlotDate(date ? format(date, 'yyyy-MM-dd') : "");
-        setSlotTimes([{ startTime: "", endTime: "" }]);
+        setSlotTimes([{startTime: "", endTime: ""}]);
         setErrors({});
         setDialogOpen(true);
     };
 
     const handleAddTimeRange = () => {
-        setSlotTimes([...slotTimes, { startTime: "", endTime: "" }]);
+        setSlotTimes([...slotTimes, {startTime: "", endTime: ""}]);
     };
     const handleRemoveTimeRange = (idx: number) => {
         setSlotTimes(slotTimes.filter((_, i) => i !== idx));
     };
     const handleTimeChange = (idx: number, field: 'startTime' | 'endTime', value: string) => {
-        setSlotTimes(slotTimes.map((t, i) => i === idx ? { ...t, [field]: value } : t));
+        setSlotTimes(slotTimes.map((t, i) => i === idx ? {...t, [field]: value} : t));
     };
 
     const validate = () => {
@@ -238,7 +241,7 @@ function SlotPage() {
         };
         await fetch("https://interactapiverse.com/mahadevasth/user/slots", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(payload),
         });
         // Refetch slots after save
@@ -271,12 +274,12 @@ function SlotPage() {
 
     // Legend/filter options
     const timeOptions = [
-      { label: 'Morning', value: 'morning', color: '#FFF9C4', text: '#B59F00', range: '5am-12pm' },
-      { label: 'Afternoon', value: 'afternoon', color: '#FFE0B2', text: '#FF7119', range: '12pm-5pm' },
-      { label: 'Evening', value: 'evening', color: '#D1C4E9', text: '#5E35B1', range: '5pm-9pm' },
-      { label: 'Night', value: 'night', color: '#BBDEFB', text: '#1976D2', range: '9pm-5am' },
-      { label: 'Other', value: 'other', color: '#C8E6C9', text: '#388E3C', range: '' },
-      { label: 'All', value: 'all', color: '#e5e7eb', text: '#012765', range: '' },
+        {label: 'Morning', value: 'morning', color: '#FFF9C4', text: '#B59F00', range: '5am-12pm'},
+        {label: 'Afternoon', value: 'afternoon', color: '#FFE0B2', text: '#FF7119', range: '12pm-5pm'},
+        {label: 'Evening', value: 'evening', color: '#D1C4E9', text: '#5E35B1', range: '5pm-9pm'},
+        {label: 'Night', value: 'night', color: '#BBDEFB', text: '#1976D2', range: '9pm-5am'},
+        {label: 'Other', value: 'other', color: '#C8E6C9', text: '#388E3C', range: ''},
+        {label: 'All', value: 'all', color: '#e5e7eb', text: '#012765', range: ''},
     ];
     const activeOpt = timeOptions.find(opt => opt.value === timeOfDayFilter) || timeOptions[0];
     const slotCount = filteredSlots.length;
@@ -385,7 +388,7 @@ function SlotPage() {
                     onSelectEvent={event => {
                         const slot = event.slot;
                         setEditSlotDate(slot.date);
-                        setSlotTimes([{ startTime: slot.startTime, endTime: slot.endTime }]);
+                        setSlotTimes([{startTime: slot.startTime, endTime: slot.endTime}]);
                         setDialogOpen(true);
                     }}
                     popup
@@ -461,9 +464,9 @@ function SlotPage() {
                                 setDialogOpen(false);
                             }}
                             className="ml-2 rounded-full p-1 hover:bg-[#FF7119] transition-colors flex items-center justify-center"
-                            style={{ lineHeight: 0 }}
+                            style={{lineHeight: 0}}
                         >
-                            <X className="h-6 w-6 text-white" />
+                            <X className="h-6 w-6 text-white"/>
                         </button>
                     </div>
                     <form className="space-y-5 px-6 py-6 bg-white relative" onSubmit={handleSubmit}>
@@ -478,28 +481,32 @@ function SlotPage() {
                             {slotTimes.map((t, idx) => (
                                 <div key={idx} className="flex gap-4">
                                     <div className="flex-1">
-                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">Start Time</label>
+                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">Start
+                                            Time</label>
                                         <Input type="time" value={t.startTime}
                                                onChange={e => handleTimeChange(idx, 'startTime', e.target.value)}
                                                className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
                                                step="1800"/>
-                                        {errors[`startTime${idx}`] && <div className="text-red-500 text-xs mt-1">{errors[`startTime${idx}`]}</div>}
+                                        {errors[`startTime${idx}`] && <div
+                                            className="text-red-500 text-xs mt-1">{errors[`startTime${idx}`]}</div>}
                                     </div>
                                     <div className="flex-1">
-                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">End Time</label>
+                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">End
+                                            Time</label>
                                         <Input type="time" value={t.endTime}
                                                onChange={e => handleTimeChange(idx, 'endTime', e.target.value)}
                                                className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
                                                step="1800"/>
-                                        {errors[`endTime${idx}`] && <div className="text-red-500 text-xs mt-1">{errors[`endTime${idx}`]}</div>}
+                                        {errors[`endTime${idx}`] &&
+                                            <div className="text-red-500 text-xs mt-1">{errors[`endTime${idx}`]}</div>}
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveTimeRange(idx)}
                                         className="mt-8 self-center"
-                                        style={{ lineHeight: 0 }}
+                                        style={{lineHeight: 0}}
                                     >
-                                        <Trash className="h-5 w-5 text-red-600" />
+                                        <Trash className="h-5 w-5 text-red-600"/>
                                     </button>
                                 </div>
                             ))}
@@ -525,7 +532,8 @@ function SlotPage() {
                                 Cancel
                             </Button>
                             <Button type="submit"
-                                    className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors">Create Slot</Button>
+                                    className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors">Create
+                                Slot</Button>
                         </div>
                         {/* Delete button in left bottom corner, only in edit mode */}
                         {/* This section is removed as per the new_code, as the dialog is now for creating a single slot */}
@@ -534,7 +542,8 @@ function SlotPage() {
             </Dialog>
             {/* Multi-slot dialog */}
             <Dialog open={multiSlotDialogOpen} onOpenChange={setMultiSlotDialogOpen}>
-                <DialogContent className="rounded-2xl p-0 overflow-hidden" style={{ width: 360, maxWidth: '90vw' , overflow:'auto' }}>
+                <DialogContent className="rounded-2xl p-0 overflow-hidden"
+                               style={{width: 360, maxWidth: '90vw', overflow: 'auto'}}>
                     <div className="bg-[#012765] px-6 py-4 flex items-center justify-between">
                         <DialogHeader>
                             <DialogTitle className="text-white text-xl font-bold">
@@ -546,12 +555,12 @@ function SlotPage() {
                             aria-label="Close"
                             onClick={() => setMultiSlotDialogOpen(false)}
                             className="ml-2 rounded-full p-1 hover:bg-[#FF7119] transition-colors"
-                            style={{ lineHeight: 0 }}
+                            style={{lineHeight: 0}}
                         >
-                            <X className="h-6 w-6 text-white" />
+                            <X className="h-6 w-6 text-white"/>
                         </button>
                     </div>
-                    <div className="px-6 py-6 bg-white" style={{ maxHeight: 320, overflowY: 'auto' }}>
+                    <div className="px-6 py-6 bg-white" style={{maxHeight: 320, overflowY: 'auto'}}>
                         {multiSlotDate && getSlotsForDate(multiSlotDate).length > 0 ? (
                             <ul className="space-y-2">
                                 {getSlotsForDate(multiSlotDate).map(slot => (

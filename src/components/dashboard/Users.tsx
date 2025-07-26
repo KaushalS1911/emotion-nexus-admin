@@ -398,7 +398,7 @@ export default function Users() {
                                         type="text"
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={credentialsForm.username}
-                                        onChange={e => setCredentialsForm(f => ({ ...f, username: e.target.value }))}
+                                        onChange={e => setCredentialsForm(f => ({...f, username: e.target.value}))}
                                         required
                                     />
                                 </div>
@@ -408,11 +408,12 @@ export default function Users() {
                                         type={showPassword ? "text" : "password"}
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                                         value={credentialsForm.password}
-                                        onChange={e => setCredentialsForm(f => ({ ...f, password: e.target.value }))}
+                                        onChange={e => setCredentialsForm(f => ({...f, password: e.target.value}))}
                                         required
                                     />
-                                    <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400" onClick={() => setShowPassword(v => !v)}>
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400"
+                                            onClick={() => setShowPassword(v => !v)}>
+                                        {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                                     </button>
                                 </div>
                                 <div className="flex justify-end gap-2 mt-4">

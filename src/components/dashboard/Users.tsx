@@ -299,11 +299,11 @@ export default function Users() {
                                             ) : (
                                                 <div
                                                     className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
-                                                    {user.fullName?.[0] || "?"}
+                                                    {user.full_name?.[0] || "?"}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="py-4 px-2">{user.fullName}</td>
+                                        <td className="py-4 px-2">{user.full_name}</td>
                                         <td className="py-4 px-2">{user.email}</td>
                                         <td className="py-4 px-2">{user.phone}</td>
                                         <td className="py-4 px-2">{user.role}</td>

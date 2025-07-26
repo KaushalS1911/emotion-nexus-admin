@@ -33,8 +33,8 @@ export default function AssessmentForm() {
     const [questionText, setQuestionText] = useState("");
     // Change questionOptions to be an array of objects: { text: string, score: number }
     const [questionOptions, setQuestionOptions] = useState([
-      { text: "", score: 0 },
-      { text: "", score: 0 }
+        {text: "", score: 0},
+        {text: "", score: 0}
     ]);
     const [showRecommendationDialog, setShowRecommendationDialog] = useState(false);
     const [editingRecommendationIdx, setEditingRecommendationIdx] = useState(null);
@@ -119,10 +119,10 @@ export default function AssessmentForm() {
         // If options are objects, use as is; if strings (old data), convert
         const opts = form.questions[idx].options.length > 0 && typeof form.questions[idx].options[0] === 'object'
             ? form.questions[idx].options
-            : form.questions[idx].options.map(opt => ({ text: String(opt), score: 0 }));
+            : form.questions[idx].options.map(opt => ({text: String(opt), score: 0}));
         setQuestionOptions(opts.length > 0 ? opts : [
-          { text: "", score: 0 },
-          { text: "", score: 0 }
+            {text: "", score: 0},
+            {text: "", score: 0}
         ]);
         setShowQuestionDialog(true);
     };
@@ -134,8 +134,8 @@ export default function AssessmentForm() {
         setEditingQuestionIdx(null);
         setQuestionText("");
         setQuestionOptions([
-          { text: "", score: 0 },
-          { text: "", score: 0 }
+            {text: "", score: 0},
+            {text: "", score: 0}
         ]);
         setToast({type: "success", message: "Question deleted."});
     };
@@ -251,7 +251,7 @@ export default function AssessmentForm() {
     };
 
     const handleAddOption = () => {
-        setQuestionOptions([...questionOptions, { text: `Option ${questionOptions.length + 1}`, score: 0 }]);
+        setQuestionOptions([...questionOptions, {text: `Option ${questionOptions.length + 1}`, score: 0}]);
     };
 
     const handleRemoveOption = (idx) => {
@@ -260,12 +260,12 @@ export default function AssessmentForm() {
     };
 
     const handleOptionChange = (idx, value) => {
-        const updatedOptions = questionOptions.map((opt, i) => i === idx ? { ...opt, text: value } : opt);
+        const updatedOptions = questionOptions.map((opt, i) => i === idx ? {...opt, text: value} : opt);
         setQuestionOptions(updatedOptions);
     };
 
     const handleOptionScoreChange = (idx, value) => {
-        const updatedOptions = questionOptions.map((opt, i) => i === idx ? { ...opt, score: Number(value) } : opt);
+        const updatedOptions = questionOptions.map((opt, i) => i === idx ? {...opt, score: Number(value)} : opt);
         setQuestionOptions(updatedOptions);
     };
 
@@ -274,8 +274,8 @@ export default function AssessmentForm() {
         setEditingQuestionIdx(null);
         setQuestionText("");
         setQuestionOptions([
-          { text: "", score: 0 },
-          { text: "", score: 0 }
+            {text: "", score: 0},
+            {text: "", score: 0}
         ]);
     };
 
@@ -375,8 +375,8 @@ export default function AssessmentForm() {
                     setEditingQuestionIdx(null);
                     setQuestionText("");
                     setQuestionOptions([
-                      { text: "", score: 0 },
-                      { text: "", score: 0 }
+                        {text: "", score: 0},
+                        {text: "", score: 0}
                     ]);
                 }}>+ Add Question</Button>
             </div>
@@ -457,7 +457,8 @@ export default function AssessmentForm() {
                                 <div key={i} className="flex gap-2 mb-2 items-center">
                                     <Input value={opt.text} onChange={e => handleOptionChange(i, e.target.value)}
                                            placeholder={`Option ${i + 1}`}/>
-                                    <Input type="number" min="0" className="w-24" value={opt.score} onChange={e => handleOptionScoreChange(i, e.target.value)}
+                                    <Input type="number" min="0" className="w-24" value={opt.score}
+                                           onChange={e => handleOptionScoreChange(i, e.target.value)}
                                            placeholder="Score"/>
                                     <Button size="sm" variant="destructive" onClick={() => handleRemoveOption(i)}
                                             disabled={questionOptions.length <= 1}>Remove</Button>

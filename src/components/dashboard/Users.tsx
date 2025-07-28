@@ -93,7 +93,7 @@ export default function Users() {
 
     const filteredUsers = users.filter(user => {
         const search = searchTerm.toLowerCase().trim();
-        const fullName = (user.fullName || '').toLowerCase();
+        const fullName = (user.full_name || '').toLowerCase();
         const email = (user.email || '').toLowerCase();
         const phone = (user.phone || '').toLowerCase();
         const matchesSearch = fullName.includes(search) || email.includes(search) || phone.includes(search);
@@ -281,7 +281,7 @@ export default function Users() {
                                 <thead>
                                 <tr className="border-b border-gray-100">
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
-                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Full Name</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Role</th>

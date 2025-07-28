@@ -24,6 +24,7 @@ import AssessmentForm from "@/pages/assessment/AssessmentForm";
 import InquiryNotes from "@/pages/InquiryNotes";
 import SlotPage from "@/pages/SlotPage";
 import NewUserPage from "@/pages/NewUserPage";
+import AppointmentPage from "@/pages/AppointmentPage.tsx";
 
 // Role constants
 const ROLE = {
@@ -91,6 +92,7 @@ const adminRoutes = [
 
 const counsellorRoutes = [
   { path: "/slot", element: <SlotPage /> },
+  { path: "/appointments", element: <AppointmentPage /> },
 ];
 
 const App = () => (

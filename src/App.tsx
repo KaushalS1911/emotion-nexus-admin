@@ -94,9 +94,12 @@ const adminRoutes = [
 
 const counsellorRoutes = [
   { path: "/slot", element: <SlotPage /> },
-  { path: "/appointments", element: <AppointmentPage /> },
-  // { path: "/appointments/:id/notes", element: <AppointmentNotes /> },
 ];
+const allRole = [
+  { path: "/appointments", element: <AppointmentPage /> },
+  { path: "/appointments/:id/notes", element: <AppointmentNotes /> },
+
+]
 
 const App = () => (
   <UserProvider>
@@ -141,14 +144,19 @@ const App = () => (
               } 
             />
           ))}
-          <Route
-              path={'/appointments/:id/notes'}
+
+          {allRole.map(route => (
+            <Route
+              key={route.path}
+              path={route.path}
               element={
                 <RoleProtectedRoute allowedRoles={[ROLE.COUNSELLOR,ROLE.ADMIN]}>
-                  <AppointmentNotes />
+                  {route.element}
                 </RoleProtectedRoute>
               }
-          />
+            />
+          ))}
+
         </Route>
         
         {/* Fallback route */}

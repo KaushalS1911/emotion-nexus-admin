@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {useNavigate, useLocation} from "react-router-dom"
-import { useUserContext } from "@/UserContext";
+import {useUserContext} from "@/UserContext";
 
 interface DashboardHeaderProps {
     toggleSidebar: () => void
@@ -44,7 +44,7 @@ export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const navigate = useNavigate()
     const location = useLocation();
-    const { user, logout } = useUserContext();
+    const {user, logout} = useUserContext();
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value

@@ -2,27 +2,38 @@ import {useEffect, useState} from "react";
 import {Card, CardContent} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {User as UserIcon, TrendingUp, Calendar, CheckCircle, Search, MoreHorizontal, Eye, Trash2} from "lucide-react";
+import {
+    User as UserIcon,
+    TrendingUp,
+    Calendar,
+    CheckCircle,
+    Search,
+    MoreHorizontal,
+    Eye,
+    Trash2,
+    Key,
+    EyeOff
+} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
-import AddEditUserForm, { UserFormValues } from "@/components/dashboard/AddEditUserForm";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {useNavigate} from "react-router-dom";
+import AddEditUserForm, {UserFormValues} from "@/components/dashboard/AddEditUserForm";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 
 interface User {
     id: number;
     profilePic?: string | null;
-    name: string;
-    expertise: string;
-    experience: string;
-    education: string;
-    status?: string;
-    joinDate?: string;
-    firstName?: string;
-    lastName?: string;
+    fullName: string;
+    phone?: string;
     email?: string;
     role?: string;
+    expertise?: string;
+    experience?: string;
+    education?: string;
+    status?: string;
+    joinDate?: string;
+
     [key: string]: any;
 }
 
@@ -37,15 +48,9 @@ const ROWS_PER_PAGE = 5;
 // Remove FIXED_ROLES and instead compute available roles from users
 
 // --- User Data Helpers (API-ready) ---
-function getUsers() {
-    // TODO: Replace with API call
-    return JSON.parse(localStorage.getItem("users") || "[]");
-}
-function deleteUser(id: number) {
-    // TODO: Replace with API call
-    const users = getUsers().filter((u: any) => u.id !== id);
-    localStorage.setItem("users", JSON.stringify(users));
-}
+// Remove localStorage-based helpers:
+// function getUsers() { ... }
+// function deleteUser(id: number) { ... }
 
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
@@ -56,20 +61,25 @@ export default function Users() {
     const [viewUser, setViewUser] = useState<User | null>(null);
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const navigate = useNavigate();
+    const [addCredentialsDialogOpen, setAddCredentialsDialogOpen] = useState(false);
+    const [credentialsUser, setCredentialsUser] = useState<User | null>(null);
+    const [credentialsForm, setCredentialsForm] = useState({user_id: null, username: '', password: ''});
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
-        const stored = localStorage.getItem("users");
-        if (stored) {
-            setUsers(JSON.parse(stored));
-        } else {
-            setUsers([]);
-        }
-        const onStorage = () => {
-            const updated = localStorage.getItem("users");
-            setUsers(updated ? JSON.parse(updated) : []);
+        // Fetch users from API
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch("https://interactapiverse.com/mahadevasth/counsellors");
+                if (!response.ok) throw new Error("Failed to fetch users");
+                const data = await response.json();
+                // If API returns { data: [...] }, use data.data, else use data
+                setUsers(Array.isArray(data) ? data : data.data || []);
+            } catch (error) {
+                setUsers([]);
+            }
         };
-        window.addEventListener("storage", onStorage);
-        return () => window.removeEventListener("storage", onStorage);
+        fetchUsers();
     }, []);
 
     // Use a hardcoded list of roles for the filter
@@ -83,14 +93,10 @@ export default function Users() {
 
     const filteredUsers = users.filter(user => {
         const search = searchTerm.toLowerCase().trim();
-        let fullName = '';
-        if (user.firstName && user.lastName) {
-            fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-        } else if (user.name) {
-            fullName = user.name.toLowerCase();
-        }
+        const fullName = (user.fullName || '').toLowerCase();
         const email = (user.email || '').toLowerCase();
-        const matchesSearch = fullName.includes(search) || email.includes(search);
+        const phone = (user.phone || '').toLowerCase();
+        const matchesSearch = fullName.includes(search) || email.includes(search) || phone.includes(search);
         const matchesRole = roleFilter === "all" || user.role === roleFilter;
         return matchesSearch && matchesRole;
     });
@@ -116,10 +122,19 @@ export default function Users() {
         setPage(0);
     }, [searchTerm, roleFilter, users.length, rowsPerPage]);
 
-    const handleDelete = (id: number) => {
-        const updated = users.filter(u => u.id !== id);
-        setUsers(updated);
-        localStorage.setItem("users", JSON.stringify(updated));
+    const handleDelete = async (id: number) => {
+        try {
+            const response = await fetch(`https://interactapiverse.com/mahadevasth/user/${id}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) throw new Error("Failed to delete user");
+            // Refetch users after delete
+            const res = await fetch("https://interactapiverse.com/mahadevasth/user");
+            const data = await res.json();
+            setUsers(Array.isArray(data) ? data : data.data || []);
+        } catch (error) {
+            alert("Error deleting user");
+        }
     };
 
     const handleView = (user: User) => {
@@ -129,6 +144,40 @@ export default function Users() {
 
     const handleEdit = (user: User) => {
         navigate(`/edit-user?id=${user.id}`);
+    };
+
+    const handleAddCredentials = (user: User) => {
+        setCredentialsUser(user);
+        setCredentialsForm({user_id: null, username: '', password: ''});
+        setShowPassword(false);
+        setAddCredentialsDialogOpen(true);
+    };
+
+    const handleAddCredentialsSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!credentialsUser) return;
+        const payload = {
+            user_id: credentialsUser.user_id,
+            username: credentialsForm.username,
+            password: credentialsForm.password,
+        };
+        console.log(credentialsUser, "cre");
+        try {
+            const response = await fetch("https://interactapiverse.com/mahadevasth/user/credentials", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to add credentials");
+            }
+            alert("Credentials added successfully!");
+            setAddCredentialsDialogOpen(false);
+        } catch (error: any) {
+            alert(error.message || "An error occurred while adding credentials.");
+        }
     };
 
     return (
@@ -199,7 +248,7 @@ export default function Users() {
                             <Search
                                 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
-                                placeholder="Search by first name, last name, or email..."
+                                placeholder="Search by name, email, or phone..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -234,24 +283,29 @@ export default function Users() {
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Role</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {paginatedUsers.map((user, idx) => (
-                                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                    <tr key={user.id}
+                                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="py-4 px-2">
                                             {user.profilePic ? (
-                                                <img src={user.profilePic} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                                                <img src={user.profilePic} alt="Profile"
+                                                     className="w-10 h-10 rounded-full object-cover"/>
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
-                                                    {user.firstName?.[0] || user.name?.[0] || "?"}
+                                                <div
+                                                    className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                    {user.full_name?.[0] || "?"}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="py-4 px-2">{user.firstName ? `${user.firstName} ${user.lastName}` : user.name}</td>
+                                        <td className="py-4 px-2">{user.full_name}</td>
                                         <td className="py-4 px-2">{user.email}</td>
+                                        <td className="py-4 px-2">{user.phone}</td>
                                         <td className="py-4 px-2">{user.role}</td>
                                         <td className="py-4 px-2">
                                             <DropdownMenu>
@@ -266,6 +320,9 @@ export default function Users() {
                                                     {/*</DropdownMenuItem>*/}
                                                     <DropdownMenuItem onClick={() => handleEdit(user)}>
                                                         <span className="mr-2">✏️</span> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleAddCredentials(user)}>
+                                                        <Key className="h-4 w-4 mr-2 text-yellow-600"/> Add Credentials
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="text-red-600"
                                                                       onClick={() => handleDelete(user.id)}>
@@ -325,6 +382,53 @@ export default function Users() {
                             </Select>
                         </div>
                     </div>
+                    {/* Add Credentials Dialog */}
+                    <Dialog open={addCredentialsDialogOpen} onOpenChange={setAddCredentialsDialogOpen}>
+                        <DialogContent className="max-w-md p-0 bg-transparent">
+                            <form
+                                onSubmit={handleAddCredentialsSubmit}
+                                className="bg-white rounded-xl shadow-lg p-8 flex flex-col gap-4"
+                            >
+                                <DialogHeader>
+                                    <DialogTitle>Add Credentials</DialogTitle>
+                                </DialogHeader>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={credentialsForm.username}
+                                        onChange={e => setCredentialsForm(f => ({...f, username: e.target.value}))}
+                                        required
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                                        value={credentialsForm.password}
+                                        onChange={e => setCredentialsForm(f => ({...f, password: e.target.value}))}
+                                        required
+                                    />
+                                    <button type="button" tabIndex={-1} className="absolute right-3 top-9 text-gray-400"
+                                            onClick={() => setShowPassword(v => !v)}>
+                                        {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                                    </button>
+                                </div>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <Button type="button" variant="outline"
+                                            onClick={() => setAddCredentialsDialogOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" className="bg-[#012765] text-white">
+                                        Save
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                    {/* End Add Credentials Dialog */}
                     {/* View User Dialog */}
                     {/*<Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>*/}
                     {/*    <DialogContent className="max-w-md p-0 bg-transparent">*/}

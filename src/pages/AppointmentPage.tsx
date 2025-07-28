@@ -4,7 +4,7 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {Search, MoreHorizontal, Trash2, FileText} from "lucide-react";
+import {Search, MoreHorizontal, Trash2, FileText, ArrowLeft} from "lucide-react";
 
 const MOCK_APPOINTMENTS = [
     {
@@ -40,7 +40,7 @@ export default function AppointmentPage() {
     const [dateTo, setDateTo] = useState("");
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE);
-
+const role = sessionStorage.getItem("user-role");
     const filtered = appointments.filter((a) => {
         const matchesSearch =
             a.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,12 +64,17 @@ export default function AppointmentPage() {
 
     return (
         <div className="space-y-6">
+            {role !== "counsellor" && <Button variant="outline" onClick={() => navigate(-1)}>
+                <ArrowLeft className=" h-4 w-4"/>
+                Back
+            </Button>}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">Appointments</h1>
                     <p className="text-gray-600 mt-2 text-[#012765]">Manage and view all your scheduled appointments</p>
                 </div>
             </div>
+
             <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-4 mb-6">

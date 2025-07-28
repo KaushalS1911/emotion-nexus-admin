@@ -380,7 +380,7 @@ export const InquiriesManagement = () => {
                                                         className="flex items-center gap-2"
                                                     >
                                                         <Eye className="h-4 w-4 mr-2 text-gray-600"/>
-                                                        View Details
+                                                        View Inquiry
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/inquiries/${inquiry.id}/notes`)}

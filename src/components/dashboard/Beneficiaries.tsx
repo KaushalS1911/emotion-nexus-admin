@@ -338,7 +338,7 @@ export const Beneficiaries = () => {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onClick={() => handleView(beneficiary)}>
-                                                    <Eye className="h-4 w-4 mr-2 text-blue-600"/> View
+                                                    <Eye className="h-4 w-4 mr-2 text-blue-600"/> View Beneficiary
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600"
                                                                   onClick={() => handleDelete(beneficiary.id)}>

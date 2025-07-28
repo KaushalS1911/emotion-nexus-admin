@@ -1460,7 +1460,7 @@ export const ResourceManager = () => {
                                             className="flex items-center gap-2"
                                         >
                                             <Eye className="h-4 w-4 mr-2 text-gray-600"/>
-                                            View Profile
+                                            View Resource
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => openEditDialog(resource)}

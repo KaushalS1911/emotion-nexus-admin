@@ -1,14 +1,24 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {Card, CardContent} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {Search, MoreHorizontal, Pencil, Trash2} from "lucide-react";
+import {Search, MoreHorizontal, Trash2, FileText} from "lucide-react";
 
 const MOCK_APPOINTMENTS = [
     {
         user_id: 1,
+        appointment_date: "2025-08-10",
+        slot_time: "10:00AM-11:00AM",
+        client_name: "Rahul Jain",
+        client_email: "rahul@example.com",
+        client_phone: "9876501234",
+        consultation_reason: "Exam stress and sleep issues",
+        notes: "Prefers Hindi-speaking counsellor",
+    },
+    {
+        user_id: 2,
         appointment_date: "2025-08-10",
         slot_time: "10:00AM-11:00AM",
         client_name: "Rahul Jain",
@@ -23,14 +33,13 @@ const MOCK_APPOINTMENTS = [
 const ROWS_PER_PAGE = 5;
 
 export default function AppointmentPage() {
+    const navigate = useNavigate();
     const [appointments, setAppointments] = useState(MOCK_APPOINTMENTS);
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE);
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editing, setEditing] = useState(null);
 
     const filtered = appointments.filter((a) => {
         const matchesSearch =
@@ -45,30 +54,12 @@ export default function AppointmentPage() {
     const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const totalPages = Math.ceil(filtered.length / rowsPerPage);
 
-    const handleEdit = (appt, idx) => {
-        setEditing({...appt, idx});
-        setEditModalOpen(true);
-    };
-
     const handleDelete = (appt) => {
         setAppointments(appointments.filter(a => a !== appt));
     };
 
-    const handleEditChange = (e) => {
-        setEditing({...editing, notes: e.target.value});
-    };
-
-    const handleEditSave = async (e) => {
-        e.preventDefault();
-        // PATCH API call
-        const appointmentId = editing.idx; // Use idx as temporary id
-        await fetch(`https://interactapiverse.com/mahadevasth/appointments/${appointmentId}/notes`, {
-            method: "PATCH",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({notes: editing.notes}),
-        });
-        setAppointments(appointments.map((a, i) => i === appointmentId ? {...a, notes: editing.notes} : a));
-        setEditModalOpen(false);
+    const handleNotes = (appt, idx) => {
+        navigate(`/appointments/${idx}/notes`);
     };
 
     return (
@@ -119,14 +110,13 @@ export default function AppointmentPage() {
                                 <th className="py-4 px-2 font-medium">Email</th>
                                 <th className="py-4 px-2 font-medium">Phone</th>
                                 <th className="py-4 px-2 font-medium">Reason</th>
-                                <th className="py-4 px-2 font-medium">Notes</th>
                                 <th className="py-4 px-2 font-medium">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
                             {paginated.length === 0 ? (
                                 <tr>
-                                    <td colSpan={10} className="text-center text-gray-400 py-8">No appointments found.
+                                    <td colSpan={8} className="text-center text-gray-400 py-8">No appointments found.
                                     </td>
                                 </tr>
                             ) : (
@@ -140,7 +130,6 @@ export default function AppointmentPage() {
                                         <td className="py-4 px-2">{a.client_email}</td>
                                         <td className="py-4 px-2">{a.client_phone}</td>
                                         <td className="py-4 px-2">{a.consultation_reason}</td>
-                                        <td className="py-4 px-2">{a.notes}</td>
                                         <td className="py-4 px-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -149,9 +138,9 @@ export default function AppointmentPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleEdit(a, idx)}
+                                                    <DropdownMenuItem onClick={() => handleNotes(a, idx)}
                                                                       className="flex items-center gap-2">
-                                                        <Pencil className="h-4 w-4"/> Edit
+                                                        <FileText className="h-4 w-4"/> Notes
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDelete(a)}
                                                                       className="text-red-600 flex items-center gap-2">
@@ -205,34 +194,6 @@ export default function AppointmentPage() {
                     </div>
                 </CardContent>
             </Card>
-            {/* Edit Modal */}
-            <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-                <DialogContent className="max-w-lg p-0  rounded-2xl">
-                    <form onSubmit={handleEditSave} className="p-8 flex flex-col gap-4">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold text-center text-[#012765]">Edit
-                                Notes</DialogTitle>
-                        </DialogHeader>
-                        <label className="font-semibold text-gray-700">
-                            Notes
-                            <textarea
-                                name="notes"
-                                value={editing?.notes || ''}
-                                onChange={handleEditChange}
-                                rows={3}
-                                className="mt-1 w-full border rounded px-3 py-2 text-gray-800"
-                            />
-                        </label>
-
-                        <div className="flex justify-between mt-6">
-                            <Button type="button" variant="outline" className="text-[#012765]"
-                                    onClick={() => setEditModalOpen(false)}>Cancel</Button>
-                            <Button type="submit"
-                                    className="bg-[#FF7119] text-white px-8 py-2 font-bold rounded-md shadow">Save</Button>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 } 

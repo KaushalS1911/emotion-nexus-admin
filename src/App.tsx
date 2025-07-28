@@ -22,6 +22,8 @@ import Register from "@/pages/Register";
 import NotFound from "@/pages/NotFound";
 import AssessmentForm from "@/pages/assessment/AssessmentForm";
 import InquiryNotes from "@/pages/InquiryNotes";
+import AppointmentNotes from "@/pages/AppointmentNotes";
+import UserNotes from "@/pages/UserNotes";
 import SlotPage from "@/pages/SlotPage";
 import NewUserPage from "@/pages/NewUserPage";
 import AppointmentPage from "@/pages/AppointmentPage.tsx";
@@ -93,6 +95,7 @@ const adminRoutes = [
 const counsellorRoutes = [
   { path: "/slot", element: <SlotPage /> },
   { path: "/appointments", element: <AppointmentPage /> },
+  // { path: "/appointments/:id/notes", element: <AppointmentNotes /> },
 ];
 
 const App = () => (
@@ -138,6 +141,14 @@ const App = () => (
               } 
             />
           ))}
+          <Route
+              path={'/appointments/:id/notes'}
+              element={
+                <RoleProtectedRoute allowedRoles={[ROLE.COUNSELLOR,ROLE.ADMIN]}>
+                  <AppointmentNotes />
+                </RoleProtectedRoute>
+              }
+          />
         </Route>
         
         {/* Fallback route */}

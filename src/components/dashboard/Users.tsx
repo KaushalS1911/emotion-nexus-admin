@@ -12,7 +12,7 @@ import {
     Eye,
     Trash2,
     Key,
-    EyeOff
+    EyeOff, FileText
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
@@ -320,6 +320,11 @@ export default function Users() {
                                                     {/*</DropdownMenuItem>*/}
                                                     <DropdownMenuItem onClick={() => handleEdit(user)}>
                                                         <span className="mr-2">✏️</span> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() =>
+                                                        navigate(`/appointments/${user.user_id}/notes`)
+                                                    }>
+                                                        <FileText className="h-4 w-4 mr-2"/> Notes
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleAddCredentials(user)}>
                                                         <Key className="h-4 w-4 mr-2 text-yellow-600"/> Add Credentials

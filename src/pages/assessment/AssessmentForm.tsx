@@ -4,6 +4,9 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Label} from "@/components/ui/label";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
 
 // Mock data and types (replace with real data fetching in production)
 const mockAssessments = JSON.parse(localStorage.getItem("assessments") || "[]");
@@ -294,174 +297,335 @@ export default function AssessmentForm() {
     console.log(form)
 
     return (
-        <div className="max-w-3xl mx-auto p-6 space-y-8 bg-white rounded-xl shadow-lg border border-gray-100">
-            <h1 className="text-3xl font-bold mb-2 text-[#FF7119]">{isEdit ? "Edit Assessment" : "Add Assessment"}</h1>
-            <p className="text-gray-500 mb-6">{isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}</p>
-            {toast && (
-                <div
-                    className={`px-4 py-2 rounded text-white font-semibold ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>{toast.message}</div>
-            )}
-
-            {/* Assessment Info */}
-            <div className="bg-gray-50 rounded-lg p-6 shadow-sm border border-gray-100 space-y-6">
-                <h2 className="text-xl font-semibold text-[#012765] mb-1">Assessment Info</h2>
-                <p className="text-gray-400 mb-4">Basic information about the assessment.</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                        <Label htmlFor="userName">Assessment Name</Label>
-                        <Input id="userName" value={form.userName}
-                               onChange={e => handleFormChange('userName', e.target.value)}
-                               placeholder="Assessment name..."/>
-                    </div>
-                    <div>
-                        <Label htmlFor="date">Date</Label>
-                        <Input id="date" type="date" value={form.date}
-                               onChange={e => handleFormChange('date', e.target.value)}/>
-                    </div>
-                    <div>
-                        <Label htmlFor="score">Score</Label>
-                        <Input id="score" type="number" value={form.score}
-                               onChange={e => handleFormChange('score', Number(e.target.value))}/>
-                    </div>
-                    <div>
-                        <Label htmlFor="duration">Duration (min)</Label>
-                        <Input id="duration" value={form.duration}
-                               onChange={e => handleFormChange('duration', e.target.value)} placeholder="e.g. 10"/>
-                    </div>
-                    <div>
-                        <Label htmlFor="minAge">Min Age</Label>
-                        <Input id="minAge" type="number" value={form.minAge}
-                               onChange={e => handleFormChange('minAge', Number(e.target.value))}/>
-                    </div>
-                    <div>
-                        <Label htmlFor="maxAge">Max Age</Label>
-                        <Input id="maxAge" type="number" value={form.maxAge}
-                               onChange={e => handleFormChange('maxAge', Number(e.target.value))}/>
-                    </div>
+        <div className="p-2">
+            <div className="mx-auto">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-[#FF7119]">{isEdit ? "Edit Assessment" : "Add Assessment"}</h1>
+                    <p className="text-gray-600 mt-1">{isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}</p>
                 </div>
-            </div>
 
-            {/* Questions Section */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 space-y-4">
-                <h2 className="text-xl font-semibold text-[#012765] mb-1">Questions</h2>
-                <p className="text-gray-400 mb-4">Add or edit the questions for this assessment.</p>
-                <div className="space-y-4">
-                    {form.questions.length === 0 && (
-                        <div className="text-gray-400">No questions added.</div>
-                    )}
-                    {form.questions.map((q, idx) => (
-                        <div key={idx} className="flex items-center gap-3 group">
-                            <div
-                                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 font-medium whitespace-pre-line break-words overflow-x-auto max-w-full min-h-[44px] group-hover:shadow-md transition-shadow">
-                                <span className="font-semibold text-[#FF7119]">Q{idx + 1}:</span> {q.text}
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {q.options.map((opt, oIdx) => (
-                                        <span key={oIdx}
-                                              className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">{typeof opt === 'object' ? `${opt.text} (Score: ${opt.score})` : opt}</span>
-                                    ))}
+                {/* Toast Notification */}
+                {toast && (
+                    <div className={`px-4 py-3 rounded-lg text-white font-medium mb-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+                        {toast.message}
+                    </div>
+                )}
+
+                {/* Main Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column - Basic Info */}
+                    <div className="lg:col-span-1">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-[#012765]">Basic Information</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <Label htmlFor="userName">Assessment Name *</Label>
+                                    <Input 
+                                        id="userName" 
+                                        value={form.userName}
+                                        onChange={e => handleFormChange('userName', e.target.value)}
+                                        placeholder="Assessment name..."
+                                        className="mt-1"
+                                    />
                                 </div>
-                            </div>
-                            <div className="flex gap-2 ml-2">
-                                <Button size="sm" variant="outline" onClick={() => handleEditQuestion(idx)}
-                                        className="transition-colors">Edit</Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleRemoveQuestion(idx)}
-                                        className="transition-colors">Remove</Button>
-                            </div>
-                        </div>
-                    ))}
+                                <div>
+                                    <Label htmlFor="date">Date *</Label>
+                                    <Input 
+                                        id="date" 
+                                        type="date" 
+                                        value={form.date}
+                                        onChange={e => handleFormChange('date', e.target.value)}
+                                        className="mt-1"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <Label htmlFor="score">Score</Label>
+                                        <Input 
+                                            id="score" 
+                                            type="number" 
+                                            value={form.score}
+                                            onChange={e => handleFormChange('score', Number(e.target.value))}
+                                            className="mt-1"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="duration">Duration (min)</Label>
+                                        <Input 
+                                            id="duration" 
+                                            value={form.duration}
+                                            onChange={e => handleFormChange('duration', e.target.value)} 
+                                            placeholder="10"
+                                            className="mt-1"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <Label htmlFor="minAge">Min Age</Label>
+                                        <Input 
+                                            id="minAge" 
+                                            type="number" 
+                                            value={form.minAge}
+                                            onChange={e => handleFormChange('minAge', Number(e.target.value))}
+                                            className="mt-1"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="maxAge">Max Age</Label>
+                                        <Input 
+                                            id="maxAge" 
+                                            type="number" 
+                                            value={form.maxAge}
+                                            onChange={e => handleFormChange('maxAge', Number(e.target.value))}
+                                            className="mt-1"
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Summary Stats */}
+                        <Card className="mt-4">
+                            <CardHeader>
+                                <CardTitle className="text-[#012765]">Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Questions:</span>
+                                        <Badge variant="secondary">{form.questions.length}</Badge>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Recommendations:</span>
+                                        <Badge variant="secondary">{form.recommendations.length}</Badge>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Issues:</span>
+                                        <Badge variant="secondary">{form.issues.length}</Badge>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Right Column - Tabs Content */}
+                    <div className="lg:col-span-2">
+                        <Tabs defaultValue="questions" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="questions">Questions ({form.questions.length})</TabsTrigger>
+                                <TabsTrigger value="recommendations">Recommendations ({form.recommendations.length})</TabsTrigger>
+                                <TabsTrigger value="issues">Issues ({form.issues.length})</TabsTrigger>
+                            </TabsList>
+
+                            {/* Questions Tab */}
+                            <TabsContent value="questions" className="mt-4">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <CardTitle className="text-[#012765]">Assessment Questions</CardTitle>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => {
+                                                setShowQuestionDialog(true);
+                                                setEditingQuestionIdx(null);
+                                                setQuestionText("");
+                                                setQuestionOptions([
+                                                    {text: "", score: 0},
+                                                    {text: "", score: 0}
+                                                ]);
+                                            }}
+                                        >
+                                            + Add Question
+                                        </Button>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {form.questions.length === 0 ? (
+                                            <div className="text-center py-8 text-gray-500">
+                                                No questions added yet. Click "Add Question" to get started.
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                                {form.questions.map((q, idx) => (
+                                                    <div key={idx} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <div className="font-medium text-gray-900 mb-2">
+                                                                    <span className="text-[#FF7119] font-semibold">Q{idx + 1}:</span> {q.text}
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {q.options.map((opt, oIdx) => (
+                                                                        <Badge key={oIdx} variant="outline" className="text-xs">
+                                                                            {typeof opt === 'object' ? `${opt.text} (${opt.score})` : opt}
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1 ml-3">
+                                                                <Button size="sm" variant="outline" onClick={() => handleEditQuestion(idx)}>
+                                                                    Edit
+                                                                </Button>
+                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveQuestion(idx)}>
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Recommendations Tab */}
+                            <TabsContent value="recommendations" className="mt-4">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <CardTitle className="text-green-800">Recommendations</CardTitle>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => {
+                                                setShowRecommendationDialog(true);
+                                                setEditingRecommendationIdx(null);
+                                                setRecommendationText("");
+                                            }}
+                                        >
+                                            + Add Recommendation
+                                        </Button>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {form.recommendations.length === 0 ? (
+                                            <div className="text-center py-8 text-gray-500">
+                                                No recommendations added yet. Click "Add Recommendation" to get started.
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                                {form.recommendations.map((r, idx) => (
+                                                    <div key={idx} className="border border-green-200 rounded-lg p-3 bg-green-50 hover:bg-green-100 transition-colors">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1 text-gray-900">
+                                                                {r}
+                                                            </div>
+                                                            <div className="flex gap-1 ml-3">
+                                                                <Button size="sm" variant="outline" onClick={() => handleEditRecommendation(idx)}>
+                                                                    Edit
+                                                                </Button>
+                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveRecommendation(idx)}>
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Issues Tab */}
+                            <TabsContent value="issues" className="mt-4">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <CardTitle className="text-red-800">Issues</CardTitle>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => {
+                                                setShowIssueDialog(true);
+                                                setEditingIssueIdx(null);
+                                                setIssueText("");
+                                            }}
+                                        >
+                                            + Add Issue
+                                        </Button>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {form.issues.length === 0 ? (
+                                            <div className="text-center py-8 text-gray-500">
+                                                No issues added yet. Click "Add Issue" to get started.
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                                {form.issues.map((i, idx) => (
+                                                    <div key={idx} className="border border-red-200 rounded-lg p-3 bg-red-50 hover:bg-red-100 transition-colors">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1 text-gray-900">
+                                                                {i}
+                                                            </div>
+                                                            <div className="flex gap-1 ml-3">
+                                                                <Button size="sm" variant="outline" onClick={() => handleEditIssue(idx)}>
+                                                                    Edit
+                                                                </Button>
+                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveIssue(idx)}>
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
                 </div>
-                <Button className="mt-4" onClick={() => {
-                    setShowQuestionDialog(true);
-                    setEditingQuestionIdx(null);
-                    setQuestionText("");
-                    setQuestionOptions([
-                        {text: "", score: 0},
-                        {text: "", score: 0}
-                    ]);
-                }}>+ Add Question</Button>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 justify-end mt-6 pt-6 border-t">
+                    <Button variant="outline" onClick={() => navigate("/assessments")}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSave} className="bg-[#FF7119] hover:bg-[#FF7119]/90">
+                        {isEdit ? "Save Changes" : "Add Assessment"}
+                    </Button>
+                </div>
             </div>
 
-            {/* Recommendation Section */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 space-y-4">
-                <h2 className="text-xl font-semibold text-green-800 mb-1">Recommendations</h2>
-                <p className="text-gray-400 mb-4">Suggestions for improvement or next steps.</p>
-                <div className="space-y-4">
-                    {form.recommendations.length === 0 && (
-                        <div className="text-gray-400">No recommendations added.</div>
-                    )}
-                    {form.recommendations.map((r, idx) => (
-                        <div key={idx} className="flex items-center gap-3 group">
-                            <div
-                                className="flex-1 bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-gray-900 font-medium whitespace-pre-line break-words overflow-x-auto max-w-full min-h-[44px] group-hover:shadow-md transition-shadow">
-                                {r}
-                            </div>
-                            <div className="flex gap-2 ml-2">
-                                <Button size="sm" variant="outline" onClick={() => handleEditRecommendation(idx)}
-                                        className="transition-colors">Edit</Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleRemoveRecommendation(idx)}
-                                        className="transition-colors">Remove</Button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <Button className="mt-4" onClick={() => {
-                    setShowRecommendationDialog(true);
-                    setEditingRecommendationIdx(null);
-                    setRecommendationText("");
-                }}>+ Add Recommendation</Button>
-            </div>
-
-            {/* Issues Section */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 space-y-4">
-                <h2 className="text-xl font-semibold text-red-800 mb-1">Issues</h2>
-                <p className="text-gray-400 mb-4">Challenges or concerns identified in the assessment.</p>
-                <div className="space-y-4">
-                    {form.issues.length === 0 && (
-                        <div className="text-gray-400">No issues added.</div>
-                    )}
-                    {form.issues.map((i, idx) => (
-                        <div key={idx} className="flex items-center gap-3 group">
-                            <div
-                                className="flex-1 bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-gray-900 font-medium whitespace-pre-line break-words overflow-x-auto max-w-full min-h-[44px] group-hover:shadow-md transition-shadow">
-                                {i}
-                            </div>
-                            <div className="flex gap-2 ml-2">
-                                <Button size="sm" variant="outline" onClick={() => handleEditIssue(idx)}
-                                        className="transition-colors">Edit</Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleRemoveIssue(idx)}
-                                        className="transition-colors">Remove</Button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <Button className="mt-4" onClick={() => {
-                    setShowIssueDialog(true);
-                    setEditingIssueIdx(null);
-                    setIssueText("");
-                }}>+ Add Issue</Button>
-            </div>
-
-            {/* Dialogs and Actions */}
+            {/* Dialogs */}
             {showQuestionDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <h2 className="text-lg font-bold mb-4">{editingQuestionIdx !== null ? 'Edit Question' : 'Add Question'}</h2>
                         <div className="mb-4">
                             <Label>Question Text</Label>
-                            <Input value={questionText} onChange={e => setQuestionText(e.target.value)}
-                                   placeholder="Enter question..."/>
+                            <Input 
+                                value={questionText} 
+                                onChange={e => setQuestionText(e.target.value)}
+                                placeholder="Enter question..."
+                                className="mt-1"
+                            />
                         </div>
                         <div className="mb-4">
                             <Label>Options</Label>
                             {questionOptions.map((opt, i) => (
                                 <div key={i} className="flex gap-2 mb-2 items-center">
-                                    <Input value={opt.text} onChange={e => handleOptionChange(i, e.target.value)}
-                                           placeholder={`Option ${i + 1}`}/>
-                                    <Input type="number" min="0" className="w-24" value={opt.score}
-                                           onChange={e => handleOptionScoreChange(i, e.target.value)}
-                                           placeholder="Score"/>
-                                    <Button size="sm" variant="destructive" onClick={() => handleRemoveOption(i)}
-                                            disabled={questionOptions.length <= 1}>Remove</Button>
+                                    <Input 
+                                        value={opt.text} 
+                                        onChange={e => handleOptionChange(i, e.target.value)}
+                                        placeholder={`Option ${i + 1}`}
+                                        className="flex-1"
+                                    />
+                                    <Input 
+                                        type="number" 
+                                        min="0" 
+                                        className="w-20" 
+                                        value={opt.score}
+                                        onChange={e => handleOptionScoreChange(i, e.target.value)}
+                                        placeholder="Score"
+                                    />
+                                    <Button 
+                                        size="sm" 
+                                        variant="destructive" 
+                                        onClick={() => handleRemoveOption(i)}
+                                        disabled={questionOptions.length <= 1}
+                                    >
+                                        ×
+                                    </Button>
                                 </div>
                             ))}
                             <Button size="sm" className="mt-2" onClick={handleAddOption}>+ Add Option</Button>
@@ -473,31 +637,40 @@ export default function AssessmentForm() {
                     </div>
                 </div>
             )}
+
             {showRecommendationDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                         <h2 className="text-lg font-bold mb-4">{editingRecommendationIdx !== null ? 'Edit Recommendation' : 'Add Recommendation'}</h2>
                         <div className="mb-4">
                             <Label>Recommendation</Label>
-                            <Input value={recommendationText} onChange={e => setRecommendationText(e.target.value)}
-                                   placeholder="Enter recommendation..."/>
+                            <Input 
+                                value={recommendationText} 
+                                onChange={e => setRecommendationText(e.target.value)}
+                                placeholder="Enter recommendation..."
+                                className="mt-1"
+                            />
                         </div>
                         <div className="flex justify-end gap-2 mt-4">
                             <Button variant="outline" onClick={handleCloseRecommendationDialog}>Cancel</Button>
-                            <Button
-                                onClick={handleSaveRecommendation}>{editingRecommendationIdx !== null ? 'Save' : 'Add'}</Button>
+                            <Button onClick={handleSaveRecommendation}>{editingRecommendationIdx !== null ? 'Save' : 'Add'}</Button>
                         </div>
                     </div>
                 </div>
             )}
+
             {showIssueDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                         <h2 className="text-lg font-bold mb-4">{editingIssueIdx !== null ? 'Edit Issue' : 'Add Issue'}</h2>
                         <div className="mb-4">
                             <Label>Issue</Label>
-                            <Input value={issueText} onChange={e => setIssueText(e.target.value)}
-                                   placeholder="Enter issue..."/>
+                            <Input 
+                                value={issueText} 
+                                onChange={e => setIssueText(e.target.value)}
+                                placeholder="Enter issue..."
+                                className="mt-1"
+                            />
                         </div>
                         <div className="flex justify-end gap-2 mt-4">
                             <Button variant="outline" onClick={handleCloseIssueDialog}>Cancel</Button>
@@ -506,12 +679,6 @@ export default function AssessmentForm() {
                     </div>
                 </div>
             )}
-
-            {/* Actions */}
-            <div className="flex gap-2 justify-end mt-8">
-                <Button variant="outline" onClick={() => navigate("/assessments")}>Cancel</Button>
-                <Button onClick={handleSave}>{isEdit ? "Save Changes" : "Add Assessment"}</Button>
-            </div>
         </div>
     );
 } 

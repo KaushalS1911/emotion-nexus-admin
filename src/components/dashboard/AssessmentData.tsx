@@ -18,17 +18,6 @@ import {
     X,
 } from "lucide-react";
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    LineChart,
-    Line,
-} from "recharts";
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -57,7 +46,7 @@ interface Assessment {
 
 interface Question {
     text: string;
-    options: string[];
+    options: (string | { text: string; score: number })[];
 }
 
 interface AssessmentWithQuestions extends Assessment {
@@ -259,6 +248,13 @@ export const AssessmentData = () => {
         }
     }, []);
 
+    const SummaryBox = ({label, value, color}: { label: string, value: number, color: string }) => (
+        <div className="text-center p-3 bg-gray-50 rounded border border-gray-100">
+            <div className={`text-lg font-bold ${color}`}>{value}</div>
+            <div className="text-xs text-gray-500 font-medium mt-1">{label}</div>
+        </div>
+    );
+
 
     const totalAssessments = filteredAssessments.length;
     const avgScore = filteredAssessments.length > 0 ? (filteredAssessments.reduce((sum, a) => sum + a.score, 0) / filteredAssessments.length).toFixed(1) : '0.0';
@@ -282,120 +278,270 @@ export const AssessmentData = () => {
 
     return (
         <div className="space-y-6">
-            {/* Toast/Alert */}
+
             {toast && (
                 <div
                     className={`fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>{toast.message}</div>
             )}
-            {/* View Profile Dialog */}
+
             <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
-                <DialogContent className="max-w-2xl p-0">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-[#012765] mb-2 px-8 pt-8">Assessment Details
-                            :</DialogTitle>
+                <DialogContent
+                    className="max-w-4xl max-h-[90vh] overflow-hidden p-0 bg-white rounded-xl shadow-xl border border-gray-200">
+                    <DialogHeader className="px-8 py-6 border-b border-gray-100 bg-white">
+                        <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-blue-950">
+                            <FileText className="h-6 w-6 text-[#FF7119]"/>
+                            Assessment Details
+                        </DialogTitle>
+                        <p className="text-gray-500 text-base mt-2">
+                            Complete information and insights about this assessment
+                        </p>
                     </DialogHeader>
-                    <hr className="my-2 border-gray-200"/>
                     {viewing && (
-                        <div className="space-y-8 px-8 pb-8 pt-2 overflow-y-auto" style={{maxHeight: '80vh'}}>
-                            <div>
-                                <div className="font-semibold text-lg mb-2 text-[#012765]">Main Info :</div>
-                                <div
-                                    className="bg-[#181f2a] p-5 rounded-lg text-sm font-mono text-left space-y-1 w-full">
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Assessment Name :</span>
-                                        <span className="text-teal-300 ml-2">{viewing.userName}</span>
-                                    </div>
-                                    {/*<div>*/}
-                                    {/*    <span className="text-pink-400 font-semibold">Category :</span>*/}
-                                    {/*    <span className="text-teal-300 ml-2">{viewing.category}</span>*/}
-                                    {/*</div>*/}
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Date :</span>
-                                        <span
-                                            className="text-teal-300 ml-2">{new Date(viewing.date).toLocaleDateString()}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Score :</span>
-                                        <span className="text-teal-300 ml-2">{viewing.score}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Duration :</span>
-                                        <span className="text-teal-300 ml-2">{viewing.duration} min</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-pink-400 font-semibold">Age Group :</span>
-                                        <span className="text-teal-300 ml-2">
-                                            {viewing.maxAge && viewing.maxAge !== viewing.minAge
-                                                ? `${viewing.minAge}-${viewing.maxAge} age group`
-                                                : `${viewing.minAge} age group`}
-                                        </span>
+                        <div className="flex flex-col h-full">
+
+                            <div
+                                className="flex-1 overflow-y-auto px-8 pb-10 space-y-8 bg-white scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50"
+                                style={{maxHeight: 'calc(90vh - 120px)'}}>
+
+                                <div className="flex flex-col gap-6 max-h-[80vh] overflow-y-auto px-0 py-0">
+
+                                    <div className="flex flex-col lg:flex-row gap-4">
+
+                                        <Card
+                                            className="flex-1 min-w-[300px] border border-gray-100 shadow-sm bg-white">
+                                            <CardHeader className="pb-4 border-b border-gray-100">
+                                                <CardTitle
+                                                    className="text-lg font-semibold text-blue-950">Overview</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-5 space-y-4 text-base text-gray-700">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Assessment Name</span>
+                                                    <span
+                                                        className="font-semibold text-right break-all">{viewing.userName}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">User Email</span>
+                                                    <span
+                                                        className="font-semibold text-right break-all">{viewing.userId}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Date</span>
+                                                    <span className="font-semibold text-right">
+                                                        {new Date(viewing.date).toLocaleDateString("en-US", {
+                                                            year: "numeric",
+                                                            month: "short",
+                                                            day: "numeric",
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Score</span>
+                                                    <Badge
+                                                        className={`${getScoreColor(viewing.score)} bg-blue-100 text-[#012765] px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white`}>
+                                                        {viewing.score}/100
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Duration</span>
+                                                    <span className="font-semibold">{viewing.duration} min</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Age Group</span>
+                                                    <Badge
+                                                        className="bg-blue-100 text-[#012765] px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                                        {viewing.maxAge && viewing.maxAge !== viewing.minAge
+                                                            ? `${viewing.minAge}-${viewing.maxAge} yrs`
+                                                            : `${viewing.minAge} yrs`}
+                                                    </Badge>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+
+
+                                        <Card
+                                            className="flex-1 min-w-[300px] border border-gray-100 shadow-sm bg-white">
+                                            <CardHeader className="pb-4 border-b border-gray-100">
+                                                <CardTitle
+                                                    className="text-lg font-semibold text-blue-950">Summary</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-5">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <SummaryBox
+                                                        label="Questions"
+                                                        value={viewing.questions.length}
+                                                        color="text-blue-700"
+                                                    />
+                                                    <SummaryBox
+                                                        label="Recommendations"
+                                                        value={viewing.recommendations.length}
+                                                        color="text-green-700"
+                                                    />
+                                                    <SummaryBox
+                                                        label="Issues"
+                                                        value={viewing.issues.length}
+                                                        color="text-orange-600"
+                                                    />
+                                                    <SummaryBox
+                                                        label="Score"
+                                                        value={viewing.score}
+                                                        color="text-purple-700"
+                                                    />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
                                     </div>
                                 </div>
-                            </div>
-                            <hr className="my-4 border-gray-200"/>
-                            <div>
-                                <div className="font-semibold mb-2 text-[#012765]">Questions :</div>
-                                <div className="space-y-3">{viewing.questions.length === 0 &&
-                                    <div className="text-gray-400">No questions added.</div>
-                                }
-                                    {viewing.questions.map((q, qIdx) => (
-                                        <div key={qIdx} className="border rounded-lg p-3 bg-gray-50">
+
+
+                                <Card className="border border-gray-100 shadow-sm bg-white">
+                                    <CardHeader
+                                        className="pb-4 border-b border-gray-100 flex justify-between items-center">
+                                        <CardTitle className="text-lg font-semibold text-blue-950">Assessment
+                                            Questions</CardTitle>
+                                        <Badge
+                                            className="bg-blue-100 text-[#012765] px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                            {viewing.questions.length} Questions
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="p-5 space-y-4 max-h-64 overflow-y-auto">
+                                        {viewing.questions.length === 0 ? (
                                             <div
-                                                className="font-semibold mb-3 text-[#FF7119]">Q{qIdx + 1} : {q.text}</div>
-                                            <div className="flex flex-wrap gap-2">{q.options.map((opt, oIdx) => (
-                                                <Badge key={oIdx}
-                                                       className="bg-gray-100 text-gray-700">{opt}</Badge>))}
+                                                className="flex flex-col items-center justify-center text-gray-400 py-10">
+                                                <FileText className="w-10 h-10 mb-3"/>
+                                                <p className="text-base">No questions added to this assessment</p>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ) : (
+                                            viewing.questions.map((q, qIdx) => (
+                                                <div key={qIdx}
+                                                     className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex gap-4 items-start">
+                                                    <div
+                                                        className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-bold">
+                                                        {qIdx + 1}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-base text-gray-900 mb-2">{q.text}</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {q.options.map((opt, oIdx) => (
+                                                                <Badge key={oIdx}
+                                                                       className="text-base bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                                                                    {typeof opt === "object" && opt?.text
+                                                                        ? `${opt.text} (${opt.score})`
+                                                                        : String(opt || "")}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border border-gray-100 shadow-sm bg-white">
+                                    <CardHeader
+                                        className="pb-4 border-b border-gray-100 flex justify-between items-center">
+                                        <CardTitle
+                                            className="text-lg font-semibold text-blue-950">Recommendations</CardTitle>
+                                        <Badge
+                                            className="bg-blue-100 text-[#012765] px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                            {viewing.recommendations.length} Items
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="p-5 space-y-4 max-h-40 overflow-y-auto">
+                                        {viewing.recommendations.length === 0 ? (
+                                            <div
+                                                className="flex flex-col items-center justify-center text-gray-400 py-8">
+                                                <div
+                                                    className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                                                    <div className="w-6 h-6 bg-green-400 rounded-full"/>
+                                                </div>
+                                                <p className="text-base font-medium">No recommendations available</p>
+                                            </div>
+                                        ) : (
+                                            viewing.recommendations.map((rec, rIdx) => (
+                                                <div key={rIdx}
+                                                     className="flex items-start gap-3 p-4 bg-green-50 border border-green-100 rounded-lg">
+                                                    <div
+                                                        className="w-6 h-6 bg-green-400 text-white rounded-full flex items-center justify-center text-lg font-bold">✓
+                                                    </div>
+                                                    <p className="text-base text-green-900 font-medium">{rec}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border border-gray-100 shadow-sm bg-white">
+                                    <CardHeader
+                                        className="pb-4 border-b border-gray-100 flex justify-between items-center">
+                                        <CardTitle className="text-lg font-semibold text-blue-950">Issues
+                                            Identified</CardTitle>
+                                        <Badge
+                                            className="bg-blue-100 text-[#012765] px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                            {viewing.issues.length} Items
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="p-5 space-y-4 max-h-40 overflow-y-auto">
+                                        {viewing.issues.length === 0 ? (
+                                            <div
+                                                className="flex flex-col items-center justify-center text-gray-400 py-8">
+                                                <div
+                                                    className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                                                    <div className="w-6 h-6 bg-red-400 rounded-full"/>
+                                                </div>
+                                                <p className="text-base font-medium">No issues identified</p>
+                                            </div>
+                                        ) : (
+                                            viewing.issues.map((issue, iIdx) => (
+                                                <div key={iIdx}
+                                                     className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-lg">
+                                                    <div
+                                                        className="w-6 h-6 bg-red-400 text-white rounded-full flex items-center justify-center text-lg font-bold">!
+                                                    </div>
+                                                    <p className="text-base text-red-900 font-medium">{issue}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </Card>
                             </div>
-                            <hr className="my-4 border-gray-200"/>
-                            <div>
-                                <div className="font-semibold mb-2 text-green-900">Recommendations :</div>
-                                <div className="space-y-3">
-                                    {viewing.recommendations.length === 0 &&
-                                        <div className="text-gray-400">No recommendations added.</div>
-                                    }
-                                    {viewing.recommendations.map((rec, rIdx) => (
-                                        <div key={rIdx}
-                                             className="rounded-lg px-4 py-3 bg-[#e6faee] flex items-start min-h-[44px] w-full">
-                                            <span className="text-green-900 font-semibold text-base mt-1">•</span>
-                                            <span
-                                                className="ml-2 text-green-900 font-medium break-words whitespace-pre-line w-full">{rec}</span>
-                                        </div>
-                                    ))}
+
+                            <div
+                                className="border-t border-gray-100 bg-white px-8 py-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-base">
+                                <div className="flex flex-wrap gap-4 text-gray-500">
+                                    <span>Assessment ID: <span
+                                        className="text-gray-900 font-semibold">{viewing.id}</span></span>
+                                    <span className="hidden sm:inline-block w-px h-5 bg-gray-300"/>
+                                    <span>Created: <span
+                                        className="text-gray-900">{new Date(viewing.date).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric"
+                                    })}</span></span>
                                 </div>
-                            </div>
-                            <hr className="my-4 border-gray-200"/>
-                            <div>
-                                <div className="font-semibold mb-2 text-red-900">Issues :</div>
-                                <div className="space-y-3">
-                                    {viewing.issues.length === 0 &&
-                                        <div className="text-gray-400">No issues added.</div>
-                                    }
-                                    {viewing.issues.map((issue, iIdx) => (
-                                        <div key={iIdx}
-                                             className="rounded-lg px-4 py-3 bg-[#fdeaea] flex items-start min-h-[44px] w-full">
-                                            <span className="text-red-700 font-semibold text-base mt-1">•</span>
-                                            <span
-                                                className="ml-2 text-red-900 font-medium break-words whitespace-pre-line w-full">{issue}</span>
-                                        </div>
-                                    ))}
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate(`/assessments/edit/${viewing.id}`)}
+                                        className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-[#FF7119] px-5 py-2 text-base rounded-md"
+                                    >
+                                        <Pencil className="h-5 w-5"/>
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        onClick={() => setViewing(null)}
+                                        className="bg-[#FF7119] hover:bg-[#e55d00] text-white flex items-center gap-2 px-5 py-2 text-base rounded-md"
+                                    >
+                                        <X className="h-5 w-5"/>
+                                        Close
+                                    </Button>
                                 </div>
-                            </div>
-                            <div className="flex justify-end gap-2 mt-6 border-t pt-4">
-                                <Button variant="outline" onClick={() => {
-                                    setViewing(null);
-                                }}>
-                                    <X className="h-4 w-4 mr-1"/> Close
-                                </Button>
                             </div>
                         </div>
                     )}
                 </DialogContent>
             </Dialog>
-            {/* Header */}
+
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">
@@ -411,7 +557,6 @@ export const AssessmentData = () => {
                 </div>
             </div>
 
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Card className="border-0 shadow-lg bg-white">
                     <CardContent className="p-6">
@@ -531,7 +676,7 @@ export const AssessmentData = () => {
                         {/*    </SelectTrigger>*/}
                         {/*    <SelectContent>*/}
                         {/*        <SelectItem value="all">All Categories</SelectItem>*/}
-                        {/*        <SelectItem value="K12">K12 Students</SelectItem>*/}
+                        {/*        <SelectItem value="K12">K12 Students*/}
                         {/*        <SelectItem value="Primary">Primary Students*/}
                         {/*        <SelectItem value="Aspirant">Aspirants*/}
                         {/*        <SelectItem value="Employee">Employees*/}
@@ -637,7 +782,7 @@ export const AssessmentData = () => {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onClick={() => openViewDialog(assessment)}
                                                                   className="flex items-center gap-2">
-                                                    <Eye className="h-4 w-4"/> View Profile
+                                                    <Eye className="h-4 w-4"/> View Assessment
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     onClick={() => navigate(`/assessments/edit/${assessment.id}`)}

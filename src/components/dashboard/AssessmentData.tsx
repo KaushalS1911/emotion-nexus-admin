@@ -296,6 +296,13 @@ export const AssessmentData = () => {
                             Complete information and insights about this assessment
                         </p>
                     </DialogHeader>
+                    <button
+                        onClick={() => setViewing(null)}
+                        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                        <X className="h-5 w-5"/>
+                        <span className="sr-only">Close</span>
+                    </button>
                     {viewing && (
                         <div className="flex flex-col h-full">
 
@@ -319,11 +326,11 @@ export const AssessmentData = () => {
                                                     <span
                                                         className="font-semibold text-right break-all">{viewing.userName}</span>
                                                 </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500">User Email</span>
-                                                    <span
-                                                        className="font-semibold text-right break-all">{viewing.userId}</span>
-                                                </div>
+                                                {/*<div className="flex justify-between items-center">*/}
+                                                {/*    <span className="text-gray-500">User Email</span>*/}
+                                                {/*    <span*/}
+                                                {/*        className="font-semibold text-right break-all">{viewing.userId}</span>*/}
+                                                {/*</div>*/}
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-gray-500">Date</span>
                                                     <span className="font-semibold text-right">

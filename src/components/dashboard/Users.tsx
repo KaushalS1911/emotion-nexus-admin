@@ -322,7 +322,7 @@ export default function Users() {
                                                         <span className="mr-2">✏️</span> Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() =>
-                                                        navigate(`/appointments/${user.user_id}/notes`)
+                                                        navigate("/appointments")
                                                     }>
                                                         <FileText className="h-4 w-4 mr-2"/> Notes
                                                     </DropdownMenuItem>

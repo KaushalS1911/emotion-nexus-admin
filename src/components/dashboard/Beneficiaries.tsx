@@ -10,7 +10,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Calendar as UiCalendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
-import { X } from "lucide-react"
+import {X} from "lucide-react"
 
 type BeneficiaryStatus = "Active" | "Inactive";
 

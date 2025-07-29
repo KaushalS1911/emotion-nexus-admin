@@ -26,7 +26,7 @@ import {
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
 import {MoreVertical, Eye, Edit} from "lucide-react";
 import {useNavigate} from "react-router-dom";
-import { X } from "lucide-react"
+import {X} from "lucide-react"
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
@@ -188,7 +188,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'all' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('all')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -203,7 +203,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'unresolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('unresolved')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -218,7 +218,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'resolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('resolved')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -340,7 +340,7 @@ export const InquiriesManagement = () => {
                                         </td>
 
                                         <td className="py-4 px-2">
-                                        <Badge
+                                            <Badge
                                                 className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
                                         </td>
                                         <td className="py-4 px-2 max-w-xs truncate"

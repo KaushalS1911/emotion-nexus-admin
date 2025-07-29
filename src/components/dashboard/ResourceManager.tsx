@@ -30,7 +30,7 @@ import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 import {Calendar as UiCalendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
-import { X } from "lucide-react"
+import {X} from "lucide-react"
 
 type ResourceFormErrors = {
     title?: string;
@@ -1258,7 +1258,7 @@ export const ResourceManager = () => {
                             {(viewingResource.thumbnail || viewingResource.emptyImage) && (
                                 <div>
                                     <div className="font-semibold text-lg text-gray-800 mb-2">
-                                    Images
+                                        Images
                                     </div>
                                     <div className="flex flex-col md:flex-row gap-6">
                                         {viewingResource.thumbnail && (

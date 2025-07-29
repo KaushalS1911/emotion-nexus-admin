@@ -6,12 +6,12 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import {ArrowLeft} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
 import {format} from "date-fns";
-import { Search } from "lucide-react";
+import {Search} from "lucide-react";
 
 
 interface Note {
@@ -113,7 +113,7 @@ export default function InquiryNotes() {
     return (
         <div className="space-y-6">
             <Button variant="outline" onClick={() => navigate(-1)}>
-                <ArrowLeft className=" h-4 w-4" />
+                <ArrowLeft className=" h-4 w-4"/>
                 Back
             </Button>
             <div className="flex items-center justify-between">
@@ -130,7 +130,8 @@ export default function InquiryNotes() {
                 <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
                                 placeholder="Search by note content, counsellor, or Client Name"
                                 value={searchTerm}
@@ -218,7 +219,8 @@ export default function InquiryNotes() {
                             >
                                 &#60;
                             </button>
-                            <span className="font-medium">{filteredNotes.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredNotes.length)}</span>
+                            <span
+                                className="font-medium">{filteredNotes.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredNotes.length)}</span>
                             <span className="text-gray-400">of</span>
                             <span className="font-semibold text-[#012765] text-base ml-2">{filteredNotes.length}</span>
                             <button

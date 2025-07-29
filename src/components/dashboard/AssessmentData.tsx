@@ -787,8 +787,9 @@ export const AssessmentData = () => {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => navigate(`/assessments/view/${assessment.id}`)}
-                                                                  className="flex items-center gap-2">
+                                                <DropdownMenuItem
+                                                    onClick={() => navigate(`/assessments/view/${assessment.id}`)}
+                                                    className="flex items-center gap-2">
                                                     <Eye className="h-4 w-4"/> View Assessment
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem

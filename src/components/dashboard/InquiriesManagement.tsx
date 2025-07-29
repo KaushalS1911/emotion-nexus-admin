@@ -167,20 +167,10 @@ export const InquiriesManagement = () => {
     const paginatedInquiries = filteredInquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const totalPages = Math.ceil(filteredInquiries.length / rowsPerPage);
 
-    // Dynamic summary values
-    const totalInquiries = filteredInquiries.length;
-    // Active = unresolved
-    const activeInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
-    const thisWeekCount = filteredInquiries.filter(i => {
-        const d = new Date(i.date);
-        const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        return d >= startOfWeek && d <= endOfWeek;
-    }).length;
+    // Calculate summary values
+    const totalInquiries = inquiries.length;
+    const unresolvedInquiries = inquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
     const resolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() === 'resolved').length;
-    const unresolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
     const completionRate = totalInquiries > 0 ? ((resolvedInquiries / totalInquiries) * 100).toFixed(0) : '0';
 
     return (

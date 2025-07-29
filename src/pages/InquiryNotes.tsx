@@ -132,7 +132,7 @@ export default function InquiryNotes() {
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
-                                placeholder="Search by note content, counsellor, or inquiry name"
+                                placeholder="Search by note content, counsellor, or Client Name"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -183,10 +183,10 @@ export default function InquiryNotes() {
                             <thead>
                             <tr className="border-b border-gray-100 text-left text-gray-600">
                                 <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
-                                <th className="py-3 px-2">Inquiry Name</th>
+                                <th className="py-3 px-2">Client Name</th>
                                 <th className="py-3 px-2">Counsellor Name</th>
-                                <th className="py-3 px-2">Note</th>
                                 <th className="py-3 px-2">Created At</th>
+                                <th className="py-3 px-2">Note</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -195,8 +195,8 @@ export default function InquiryNotes() {
                                     <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                                     <td className="py-3 px-2 font-medium text-gray-800">{inquiryName}</td>
                                     <td className="py-3 px-2 text-gray-600">{n.counsellor}</td>
-                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                     <td className="py-3 px-2 text-gray-600">{new Date(n.createdAt).toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                 </tr>
                             ))}
                             {filteredNotes.length === 0 && (

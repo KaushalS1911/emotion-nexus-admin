@@ -12,7 +12,7 @@ import {
     Eye,
     Trash2,
     Key,
-    EyeOff, FileText
+    EyeOff, FileText, Clock
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
@@ -318,17 +318,19 @@ export default function Users() {
                                                     {/*<DropdownMenuItem onClick={() => handleView(user)}>*/}
                                                     {/*    <Eye className="h-4 w-4 mr-2 text-blue-600"/> View*/}
                                                     {/*</DropdownMenuItem>*/}
-                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                        <span className="mr-2">✏️</span> Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() =>
-                                                        navigate("/appointments")
-                                                    }>
-                                                        <FileText className="h-4 w-4 mr-2"/> Notes
-                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleAddCredentials(user)}>
                                                         <Key className="h-4 w-4 mr-2 text-yellow-600"/> Add Credentials
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                        <span className="mr-2">✏️</span> Edit
+                                                    </DropdownMenuItem>
+                                                    {user.role === "counsellor" && (
+                                                        <DropdownMenuItem onClick={() =>
+                                                            navigate("/appointments")
+                                                        }>
+                                                            <Clock className="h-4 w-4 mr-2" /> Appointments
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     <DropdownMenuItem className="text-red-600"
                                                                       onClick={() => handleDelete(user.id)}>
                                                         <Trash2 className="h-4 w-4 mr-2"/> Delete

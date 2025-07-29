@@ -196,8 +196,8 @@ export default function AppointmentNotes() {
                                 <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                                 <th className="py-3 px-2">Client Name</th>
                                 <th className="py-3 px-2">Counsellor Name</th>
-                                <th className="py-3 px-2">Note</th>
                                 <th className="py-3 px-2">Created At</th>
+                                <th className="py-3 px-2">Note</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -209,8 +209,8 @@ export default function AppointmentNotes() {
                                     <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                                     <td className="py-3 px-2 font-medium text-gray-800">{appointmentName}</td>
                                     <td className="py-3 px-2 text-gray-600">{n.counsellor}</td>
-                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                     <td className="py-3 px-2 text-gray-600">{new Date(n.createdAt).toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                 </tr>
                             ))}
                             {filteredNotes.length === 0 && (

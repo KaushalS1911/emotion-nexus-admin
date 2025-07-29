@@ -358,8 +358,8 @@ export const InquiriesManagement = () => {
                                         <td className="py-4 px-2">
                                             <Badge className={
                                                 String(inquiry.status).toLowerCase() === 'resolved'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                    ? 'bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
+                                                    : 'bg-yellow-200 text-yellow-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
                                             }>
                                                 {String(inquiry.status).toLowerCase() === 'resolved' ? 'Resolved' : 'Unresolved'}
                                             </Badge>

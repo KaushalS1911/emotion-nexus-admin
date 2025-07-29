@@ -11,10 +11,11 @@ import {Badge} from "@/components/ui/badge";
 // Mock data and types (replace with real data fetching in production)
 const mockAssessments = JSON.parse(localStorage.getItem("assessments") || "[]");
 
-export default function AssessmentForm() {
+export default function AssessmentForm({view}) {
     const navigate = useNavigate();
     const {id} = useParams();
     const isEdit = Boolean(id);
+    const isViewMode = view === true;
     const [form, setForm] = useState({
         id: Date.now(),
         userId: "",
@@ -301,8 +302,12 @@ export default function AssessmentForm() {
             <div className="mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-[#FF7119]">{isEdit ? "Edit Assessment" : "Add Assessment"}</h1>
-                    <p className="text-gray-600 mt-1">{isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}</p>
+                    <h1 className="text-3xl font-bold text-[#FF7119]">
+                        {isViewMode ? "View Assessment" : isEdit ? "Edit Assessment" : "Add Assessment"}
+                    </h1>
+                    <p className="text-gray-600 mt-1">
+                        {isViewMode ? "View the details of this assessment." : isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}
+                    </p>
                 </div>
 
                 {/* Toast Notification */}
@@ -329,6 +334,7 @@ export default function AssessmentForm() {
                                         onChange={e => handleFormChange('userName', e.target.value)}
                                         placeholder="Assessment name..."
                                         className="mt-1"
+                                        disabled={isViewMode}
                                     />
                                 </div>
                                 <div>
@@ -339,6 +345,7 @@ export default function AssessmentForm() {
                                         value={form.date}
                                         onChange={e => handleFormChange('date', e.target.value)}
                                         className="mt-1"
+                                        disabled={isViewMode}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
@@ -350,6 +357,7 @@ export default function AssessmentForm() {
                                             value={form.score}
                                             onChange={e => handleFormChange('score', Number(e.target.value))}
                                             className="mt-1"
+                                            disabled={isViewMode}
                                         />
                                     </div>
                                     <div>
@@ -360,6 +368,7 @@ export default function AssessmentForm() {
                                             onChange={e => handleFormChange('duration', e.target.value)} 
                                             placeholder="10"
                                             className="mt-1"
+                                            disabled={isViewMode}
                                         />
                                     </div>
                                 </div>
@@ -372,6 +381,7 @@ export default function AssessmentForm() {
                                             value={form.minAge}
                                             onChange={e => handleFormChange('minAge', Number(e.target.value))}
                                             className="mt-1"
+                                            disabled={isViewMode}
                                         />
                                     </div>
                                     <div>
@@ -382,6 +392,7 @@ export default function AssessmentForm() {
                                             value={form.maxAge}
                                             onChange={e => handleFormChange('maxAge', Number(e.target.value))}
                                             className="mt-1"
+                                            disabled={isViewMode}
                                         />
                                     </div>
                                 </div>
@@ -426,25 +437,27 @@ export default function AssessmentForm() {
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between">
                                         <CardTitle className="text-[#012765]">Assessment Questions</CardTitle>
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => {
-                                                setShowQuestionDialog(true);
-                                                setEditingQuestionIdx(null);
-                                                setQuestionText("");
-                                                setQuestionOptions([
-                                                    {text: "", score: 0},
-                                                    {text: "", score: 0}
-                                                ]);
-                                            }}
-                                        >
-                                            + Add Question
-                                        </Button>
+                                        {!isViewMode && (
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    setShowQuestionDialog(true);
+                                                    setEditingQuestionIdx(null);
+                                                    setQuestionText("");
+                                                    setQuestionOptions([
+                                                        {text: "", score: 0},
+                                                        {text: "", score: 0}
+                                                    ]);
+                                                }}
+                                            >
+                                                + Add Question
+                                            </Button>
+                                        )}
                                     </CardHeader>
                                     <CardContent>
                                         {form.questions.length === 0 ? (
                                             <div className="text-center py-8 text-gray-500">
-                                                No questions added yet. Click "Add Question" to get started.
+                                                No questions added yet. {!isViewMode && "Click \"Add Question\" to get started."}
                                             </div>
                                         ) : (
                                             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -463,14 +476,16 @@ export default function AssessmentForm() {
                                                                     ))}
                                                                 </div>
                                                             </div>
-                                                            <div className="flex gap-1 ml-3">
-                                                                <Button size="sm" variant="outline" onClick={() => handleEditQuestion(idx)}>
-                                                                    Edit
-                                                                </Button>
-                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveQuestion(idx)}>
-                                                                    Remove
-                                                                </Button>
-                                                            </div>
+                                                            {!isViewMode && (
+                                                                <div className="flex gap-1 ml-3">
+                                                                    <Button size="sm" variant="outline" onClick={() => handleEditQuestion(idx)}>
+                                                                        Edit
+                                                                    </Button>
+                                                                    <Button size="sm" variant="destructive" onClick={() => handleRemoveQuestion(idx)}>
+                                                                        Remove
+                                                                    </Button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -485,21 +500,23 @@ export default function AssessmentForm() {
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between">
                                         <CardTitle className="text-green-800">Recommendations</CardTitle>
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => {
-                                                setShowRecommendationDialog(true);
-                                                setEditingRecommendationIdx(null);
-                                                setRecommendationText("");
-                                            }}
-                                        >
-                                            + Add Recommendation
-                                        </Button>
+                                        {!isViewMode && (
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    setShowRecommendationDialog(true);
+                                                    setEditingRecommendationIdx(null);
+                                                    setRecommendationText("");
+                                                }}
+                                            >
+                                                + Add Recommendation
+                                            </Button>
+                                        )}
                                     </CardHeader>
                                     <CardContent>
                                         {form.recommendations.length === 0 ? (
                                             <div className="text-center py-8 text-gray-500">
-                                                No recommendations added yet. Click "Add Recommendation" to get started.
+                                                No recommendations added yet. {!isViewMode && "Click \"Add Recommendation\" to get started."}
                                             </div>
                                         ) : (
                                             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -509,14 +526,16 @@ export default function AssessmentForm() {
                                                             <div className="flex-1 text-gray-900">
                                                                 {r}
                                                             </div>
-                                                            <div className="flex gap-1 ml-3">
-                                                                <Button size="sm" variant="outline" onClick={() => handleEditRecommendation(idx)}>
-                                                                    Edit
-                                                                </Button>
-                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveRecommendation(idx)}>
-                                                                    Remove
-                                                                </Button>
-                                                            </div>
+                                                            {!isViewMode && (
+                                                                <div className="flex gap-1 ml-3">
+                                                                    <Button size="sm" variant="outline" onClick={() => handleEditRecommendation(idx)}>
+                                                                        Edit
+                                                                    </Button>
+                                                                    <Button size="sm" variant="destructive" onClick={() => handleRemoveRecommendation(idx)}>
+                                                                        Remove
+                                                                    </Button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -531,21 +550,23 @@ export default function AssessmentForm() {
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between">
                                         <CardTitle className="text-red-800">Issues</CardTitle>
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => {
-                                                setShowIssueDialog(true);
-                                                setEditingIssueIdx(null);
-                                                setIssueText("");
-                                            }}
-                                        >
-                                            + Add Issue
-                                        </Button>
+                                        {!isViewMode && (
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    setShowIssueDialog(true);
+                                                    setEditingIssueIdx(null);
+                                                    setIssueText("");
+                                                }}
+                                            >
+                                                + Add Issue
+                                            </Button>
+                                        )}
                                     </CardHeader>
                                     <CardContent>
                                         {form.issues.length === 0 ? (
                                             <div className="text-center py-8 text-gray-500">
-                                                No issues added yet. Click "Add Issue" to get started.
+                                                No issues added yet. {!isViewMode && "Click \"Add Issue\" to get started."}
                                             </div>
                                         ) : (
                                             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -555,14 +576,16 @@ export default function AssessmentForm() {
                                                             <div className="flex-1 text-gray-900">
                                                                 {i}
                                                             </div>
-                                                            <div className="flex gap-1 ml-3">
-                                                                <Button size="sm" variant="outline" onClick={() => handleEditIssue(idx)}>
-                                                                    Edit
-                                                                </Button>
-                                                                <Button size="sm" variant="destructive" onClick={() => handleRemoveIssue(idx)}>
-                                                                    Remove
-                                                                </Button>
-                                                            </div>
+                                                            {!isViewMode && (
+                                                                <div className="flex gap-1 ml-3">
+                                                                    <Button size="sm" variant="outline" onClick={() => handleEditIssue(idx)}>
+                                                                        Edit
+                                                                    </Button>
+                                                                    <Button size="sm" variant="destructive" onClick={() => handleRemoveIssue(idx)}>
+                                                                        Remove
+                                                                    </Button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -578,16 +601,18 @@ export default function AssessmentForm() {
                 {/* Action Buttons */}
                 <div className="flex gap-3 justify-end mt-6 pt-6 border-t">
                     <Button variant="outline" onClick={() => navigate("/assessments")}>
-                        Cancel
+                        {isViewMode ? "Back" : "Cancel"}
                     </Button>
-                    <Button onClick={handleSave} className="bg-[#FF7119] hover:bg-[#FF7119]/90">
-                        {isEdit ? "Save Changes" : "Add Assessment"}
-                    </Button>
+                    {!isViewMode && (
+                        <Button onClick={handleSave} className="bg-[#FF7119] hover:bg-[#FF7119]/90">
+                            {isEdit ? "Save Changes" : "Add Assessment"}
+                        </Button>
+                    )}
                 </div>
             </div>
 
-            {/* Dialogs */}
-            {showQuestionDialog && (
+            {/* Dialogs - Only show if not in view mode */}
+            {!isViewMode && showQuestionDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <h2 className="text-lg font-bold mb-4">{editingQuestionIdx !== null ? 'Edit Question' : 'Add Question'}</h2>
@@ -638,7 +663,7 @@ export default function AssessmentForm() {
                 </div>
             )}
 
-            {showRecommendationDialog && (
+            {!isViewMode && showRecommendationDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                         <h2 className="text-lg font-bold mb-4">{editingRecommendationIdx !== null ? 'Edit Recommendation' : 'Add Recommendation'}</h2>
@@ -659,7 +684,7 @@ export default function AssessmentForm() {
                 </div>
             )}
 
-            {showIssueDialog && (
+            {!isViewMode && showIssueDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                         <h2 className="text-lg font-bold mb-4">{editingIssueIdx !== null ? 'Edit Issue' : 'Add Issue'}</h2>

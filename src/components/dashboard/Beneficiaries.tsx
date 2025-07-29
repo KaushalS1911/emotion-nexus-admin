@@ -12,7 +12,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
 import { X } from "lucide-react"
 
-type BeneficiaryStatus = "active" | "inactive";
+type BeneficiaryStatus = "Active" | "Inactive";
 
 interface Beneficiary {
     id: number;
@@ -32,7 +32,7 @@ const mockBeneficiaries: Beneficiary[] = [
         age: 16,
         assessmentName: "Wellness Basics",
         joinDate: "2024-01-15",
-        status: "active",
+        status: "Active",
     },
     {
         id: 2,
@@ -41,7 +41,7 @@ const mockBeneficiaries: Beneficiary[] = [
         age: 28,
         assessmentName: "Employee Wellness",
         joinDate: "2024-02-20",
-        status: "active",
+        status: "Active",
     },
     {
         id: 3,
@@ -50,7 +50,7 @@ const mockBeneficiaries: Beneficiary[] = [
         age: 19,
         assessmentName: "Aspirant Mindset",
         joinDate: "2024-03-10",
-        status: "inactive",
+        status: "Inactive",
     },
     {
         id: 4,
@@ -59,7 +59,7 @@ const mockBeneficiaries: Beneficiary[] = [
         age: 14,
         assessmentName: "Primary Growth",
         joinDate: "2024-01-05",
-        status: "active",
+        status: "Active",
     },
     {
         id: 5,
@@ -68,7 +68,7 @@ const mockBeneficiaries: Beneficiary[] = [
         age: 17,
         assessmentName: "K12 Progress",
         joinDate: "2024-04-12",
-        status: "active",
+        status: "Active",
     },
 ];
 
@@ -90,6 +90,12 @@ function getInitials(name: string) {
         .map((n) => n[0])
         .join("")
         .toUpperCase();
+}
+
+// Helper to capitalize first letter
+function capitalizeFirst(str: string) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 export const Beneficiaries = () => {
@@ -135,7 +141,7 @@ export const Beneficiaries = () => {
     const totalPages = Math.ceil(filteredBeneficiaries.length / rowsPerPage);
 
     const getStatusColor = (status: BeneficiaryStatus) =>
-        status === "active"
+        status === "Active"
             ? "bg-green-100 text-green-800"
             : "bg-gray-100 text-gray-800";
 
@@ -245,8 +251,8 @@ export const Beneficiaries = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                    <SelectItem value="Active">Active</SelectItem>
+                                    <SelectItem value="Inactive">Inactive</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -327,7 +333,9 @@ export const Beneficiaries = () => {
                                     <td className="py-4 px-2 text-gray-600">{new Date(beneficiary.joinDate).toLocaleDateString()}</td>
                                     <td className="py-4 px-2">
                                         <Badge
-                                            className={getStatusColor(beneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>{beneficiary.status}</Badge>
+                                            className={getStatusColor(beneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                                            {capitalizeFirst(beneficiary.status)}
+                                        </Badge>
                                     </td>
                                     <td className="py-4 px-2">
                                         <DropdownMenu>
@@ -448,7 +456,9 @@ export const Beneficiaries = () => {
                                 <div className="font-medium text-gray-600">Status</div>
                                 <div className="bg-gray-50 rounded px-2 py-1">
                                     <Badge
-                                        className={getStatusColor(viewBeneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>{viewBeneficiary.status}</Badge>
+                                        className={getStatusColor(viewBeneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                                        {capitalizeFirst(viewBeneficiary.status)}
+                                    </Badge>
                                 </div>
                             </div>
                         </div>

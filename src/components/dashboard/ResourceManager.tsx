@@ -31,7 +31,7 @@ import {Calendar as UiCalendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
 import {X} from "lucide-react"
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 type ResourceFormErrors = {
     title?: string;
@@ -588,7 +588,7 @@ export const ResourceManager = () => {
                     className="mt-4 md:mt-0 bg-[#012765] text-white"
                     onClick={() => navigate("/resources/new")}
                 >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 mr-2"/>
                     Add Resource
                 </Button>
             </div>

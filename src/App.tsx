@@ -27,6 +27,7 @@ import UserNotes from "@/pages/UserNotes";
 import SlotPage from "@/pages/SlotPage";
 import NewUserPage from "@/pages/NewUserPage";
 import AppointmentPage from "@/pages/AppointmentPage.tsx";
+import ResourceFormPage from "@/pages/ResourceFormPage";
 
 // Role constants
 const ROLE = {
@@ -89,6 +90,8 @@ const adminRoutes = [
   { path: "/inquiries/:id/notes", element: <InquiryNotes /> },
   { path: "/feedback", element: <FeedbackTracking /> },
   { path: "/resources", element: <ResourceManager /> },
+  { path: "/resources/new", element: <ResourceFormPage /> },
+  { path: "/resources/edit/:id", element: <ResourceFormPage /> },
   { path: "/notifications", element: <NotificationsCenter /> },
   { path: "/settings", element: <SettingsPage /> },
 ];

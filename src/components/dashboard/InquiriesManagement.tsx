@@ -435,7 +435,12 @@ export const InquiriesManagement = () => {
                                                                 </tr>
                                                                 <tr>
                                                                     <td className="font-medium text-gray-600 px-4 py-2 align-top">Message</td>
-                                                                    <td className="px-4 py-2 whitespace-pre-line bg-gray-50 rounded">{selectedInquiry.message}</td>
+                                                                    <td className="px-4 py-2 whitespace-pre-line bg-gray-50 rounded">
+                                                                        <div
+                                                                            className="max-h-[400px] overflow-y-auto whitespace-pre-line">
+                                                                            {selectedInquiry.message}
+                                                                        </div>
+                                                                    </td>
                                                                 </tr>
                                                                 </tbody>
                                                             </table>

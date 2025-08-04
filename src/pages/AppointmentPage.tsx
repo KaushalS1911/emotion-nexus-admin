@@ -147,6 +147,10 @@ const role = sessionStorage.getItem("user-role");
                                                                       className="flex items-center gap-2">
                                                         <FileText className="h-4 w-4"/> Notes
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleNotes(a, idx)}
+                                                                      className="flex items-center gap-2">
+                                                        <FileText className="h-4 w-4"/> Recommendations
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDelete(a)}
                                                                       className="text-red-600 flex items-center gap-2">
                                                         <Trash2 className="h-4 w-4"/> Delete

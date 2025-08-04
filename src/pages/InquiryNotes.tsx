@@ -6,12 +6,15 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import {ArrowLeft} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
 import {format} from "date-fns";
-import { Search } from "lucide-react";
+import {Search} from "lucide-react";
+import { Eye } from "lucide-react";
+import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
+import {MoreHorizontal} from "lucide-react";
 
 
 interface Note {
@@ -39,6 +42,9 @@ export default function InquiryNotes() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
+
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const [selectedNoteIdx, setSelectedNoteIdx] = useState<number | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -113,7 +119,7 @@ export default function InquiryNotes() {
     return (
         <div className="space-y-6">
             <Button variant="outline" onClick={() => navigate(-1)}>
-                <ArrowLeft className=" h-4 w-4" />
+                <ArrowLeft className=" h-4 w-4"/>
                 Back
             </Button>
             <div className="flex items-center justify-between">
@@ -130,9 +136,10 @@ export default function InquiryNotes() {
                 <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
-                                placeholder="Search by note content, counsellor, or inquiry name"
+                                placeholder="Search by note content, counsellor, or Client Name"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -183,10 +190,11 @@ export default function InquiryNotes() {
                             <thead>
                             <tr className="border-b border-gray-100 text-left text-gray-600">
                                 <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
-                                <th className="py-3 px-2">Inquiry Name</th>
+                                <th className="py-3 px-2">Client Name</th>
                                 <th className="py-3 px-2">Counsellor Name</th>
-                                <th className="py-3 px-2">Note</th>
                                 <th className="py-3 px-2">Created At</th>
+                                <th className="py-3 px-2">Note</th>
+                                <th className="py-3 px-2">Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -195,13 +203,33 @@ export default function InquiryNotes() {
                                     <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                                     <td className="py-3 px-2 font-medium text-gray-800">{inquiryName}</td>
                                     <td className="py-3 px-2 text-gray-600">{n.counsellor}</td>
-                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                     <td className="py-3 px-2 text-gray-600">{new Date(n.createdAt).toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-nowrap overflow-hidden text-ellipsis" style={{maxWidth: 150}} title={n.note}>{n.note}</td>
+                                    <td className="py-3 px-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="sm" aria-label="Actions">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() => {
+                                                        setSelectedNoteIdx(idx);
+                                                        setViewDialogOpen(true);
+                                                    }}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Eye className="h-4 w-4" /> View
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </td>
                                 </tr>
                             ))}
                             {filteredNotes.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-center text-gray-400 py-8">No notes found.</td>
+                                    <td colSpan={6} className="text-center text-gray-400 py-8">No notes found.</td>
                                 </tr>
                             )}
                             </tbody>
@@ -218,7 +246,8 @@ export default function InquiryNotes() {
                             >
                                 &#60;
                             </button>
-                            <span className="font-medium">{filteredNotes.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredNotes.length)}</span>
+                            <span
+                                className="font-medium">{filteredNotes.length === 0 ? 0 : page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredNotes.length)}</span>
                             <span className="text-gray-400">of</span>
                             <span className="font-semibold text-[#012765] text-base ml-2">{filteredNotes.length}</span>
                             <button
@@ -301,6 +330,46 @@ export default function InquiryNotes() {
                             </Button>
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="text-lg font-semibold">Note Details</DialogTitle>
+                        <Button variant="ghost" size="sm" onClick={() => setViewDialogOpen(false)} className="h-8 w-8 p-0">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" d="M18 6 6 18M6 6l12 12"/></svg>
+                        </Button>
+                    </div>
+                    {selectedNoteIdx !== null && paginatedNotes[selectedNoteIdx] && (() => {
+                        const selectedNote = paginatedNotes[selectedNoteIdx];
+                        return (
+                            <div>
+                                <table className="min-w-full text-sm border border-gray-300 rounded-lg bg-white">
+                                    <tbody>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Client Name</td>
+                                            <td className="w-2/3 px-4 py-3 text-gray-900">{inquiryName}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Counsellor Name</td>
+                                            <td className="w-2/3 px-4 py-3 text-gray-900">{selectedNote.counsellor}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Created At</td>
+                                            <td className="w-2/3 px-4 py-3 text-gray-900">{new Date(selectedNote.createdAt).toLocaleString()}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="w-1/3 px-4 py-3 font-medium text-gray-700 align-top border-r">Note</td>
+                                            <td className="w-2/3 px-4 py-3 text-gray-900">
+                                                <div className="max-h-[400px] overflow-y-auto whitespace-pre-line">{selectedNote.note}</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
 

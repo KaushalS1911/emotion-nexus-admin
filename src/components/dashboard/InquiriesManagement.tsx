@@ -26,7 +26,7 @@ import {
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
 import {MoreVertical, Eye, Edit} from "lucide-react";
 import {useNavigate} from "react-router-dom";
-import { X } from "lucide-react"
+import {X} from "lucide-react"
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
@@ -167,20 +167,10 @@ export const InquiriesManagement = () => {
     const paginatedInquiries = filteredInquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const totalPages = Math.ceil(filteredInquiries.length / rowsPerPage);
 
-    // Dynamic summary values
-    const totalInquiries = filteredInquiries.length;
-    // Active = unresolved
-    const activeInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
-    const thisWeekCount = filteredInquiries.filter(i => {
-        const d = new Date(i.date);
-        const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        return d >= startOfWeek && d <= endOfWeek;
-    }).length;
+    // Calculate summary values
+    const totalInquiries = inquiries.length;
+    const unresolvedInquiries = inquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
     const resolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() === 'resolved').length;
-    const unresolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
     const completionRate = totalInquiries > 0 ? ((resolvedInquiries / totalInquiries) * 100).toFixed(0) : '0';
 
     return (
@@ -198,7 +188,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'all' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('all')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -213,7 +203,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'unresolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('unresolved')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -228,7 +218,7 @@ export const InquiriesManagement = () => {
                 <button
                     className={`border-0 shadow-lg bg-white rounded-lg focus:outline-none transition ring-2 ${topCardFilter === 'resolved' ? 'ring-[#012765]' : 'ring-transparent'}`}
                     onClick={() => setTopCardFilter('resolved')}
-                    style={{ textAlign: 'left' }}
+                    style={{textAlign: 'left'}}
                 >
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -350,7 +340,7 @@ export const InquiriesManagement = () => {
                                         </td>
 
                                         <td className="py-4 px-2">
-                                        <Badge
+                                            <Badge
                                                 className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
                                         </td>
                                         <td className="py-4 px-2 max-w-xs truncate"
@@ -358,8 +348,8 @@ export const InquiriesManagement = () => {
                                         <td className="py-4 px-2">
                                             <Badge className={
                                                 String(inquiry.status).toLowerCase() === 'resolved'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                    ? 'bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
+                                                    : 'bg-yellow-200 text-yellow-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
                                             }>
                                                 {String(inquiry.status).toLowerCase() === 'resolved' ? 'Resolved' : 'Unresolved'}
                                             </Badge>
@@ -445,7 +435,12 @@ export const InquiriesManagement = () => {
                                                                 </tr>
                                                                 <tr>
                                                                     <td className="font-medium text-gray-600 px-4 py-2 align-top">Message</td>
-                                                                    <td className="px-4 py-2 whitespace-pre-line bg-gray-50 rounded">{selectedInquiry.message}</td>
+                                                                    <td className="px-4 py-2 whitespace-pre-line bg-gray-50 rounded">
+                                                                        <div
+                                                                            className="max-h-[400px] overflow-y-auto whitespace-pre-line">
+                                                                            {selectedInquiry.message}
+                                                                        </div>
+                                                                    </td>
                                                                 </tr>
                                                                 </tbody>
                                                             </table>

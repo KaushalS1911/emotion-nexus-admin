@@ -787,8 +787,9 @@ export const AssessmentData = () => {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => openViewDialog(assessment)}
-                                                                  className="flex items-center gap-2">
+                                                <DropdownMenuItem
+                                                    onClick={() => navigate(`/assessments/view/${assessment.id}`)}
+                                                    className="flex items-center gap-2">
                                                     <Eye className="h-4 w-4"/> View Assessment
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
@@ -798,7 +799,7 @@ export const AssessmentData = () => {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600 flex items-center gap-2"
                                                                   onClick={() => handleDeactivate(assessment.id)}>
-                                                    <Trash2 className="h-4 w-4"/> Deactivate
+                                                    <Trash2 className="h-4 w-4"/> Delete
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

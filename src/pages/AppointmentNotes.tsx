@@ -10,7 +10,9 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
 import {format} from "date-fns";
-import { ArrowLeft, Search } from "lucide-react";
+import {ArrowLeft, Search} from "lucide-react";
+import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
+import {MoreHorizontal, Eye, X} from "lucide-react";
 
 interface Note {
     note: string;
@@ -31,18 +33,21 @@ export default function AppointmentNotes() {
         counsellor: "Admin User",
     });
     const [appointmentName, setAppointmentName] = useState("");
-    
+
     // Pagination and filtering states
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
 
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const [selectedNoteIdx, setSelectedNoteIdx] = useState<number | null>(null);
+
     useEffect(() => {
         if (id) {
             const stored = localStorage.getItem(`appointment-notes-${id}`);
             if (stored) setNotes(JSON.parse(stored));
-            
+
             // Get client name from mock data using the index
             const MOCK_APPOINTMENTS = [
                 {
@@ -66,7 +71,7 @@ export default function AppointmentNotes() {
                     notes: "Prefers Hindi-speaking counsellor",
                 },
             ];
-            
+
             const appointmentIndex = parseInt(id as string);
             if (MOCK_APPOINTMENTS[appointmentIndex]) {
                 setAppointmentName(MOCK_APPOINTMENTS[appointmentIndex].client_name);
@@ -80,7 +85,7 @@ export default function AppointmentNotes() {
             note.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
             note.counsellor.toLowerCase().includes(searchTerm.toLowerCase()) ||
             appointmentName.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         let matchesDate = true;
         if (dateRange.from && dateRange.to) {
             const noteDate = new Date(note.createdAt);
@@ -92,7 +97,7 @@ export default function AppointmentNotes() {
             const noteDate = new Date(note.createdAt);
             matchesDate = noteDate <= dateRange.to;
         }
-        
+
         return matchesSearch && matchesDate;
     });
 
@@ -121,7 +126,7 @@ export default function AppointmentNotes() {
     return (
         <div className="space-y-6">
             <Button variant="outline" onClick={() => navigate(-1)}>
-                <ArrowLeft className=" h-4 w-4" />
+                <ArrowLeft className=" h-4 w-4"/>
                 Back
             </Button>
             <div className="flex items-center justify-between">
@@ -196,8 +201,9 @@ export default function AppointmentNotes() {
                                 <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
                                 <th className="py-3 px-2">Client Name</th>
                                 <th className="py-3 px-2">Counsellor Name</th>
-                                <th className="py-3 px-2">Note</th>
                                 <th className="py-3 px-2">Created At</th>
+                                <th className="py-3 px-2">Note</th>
+                                <th className="py-3 px-2">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -209,13 +215,33 @@ export default function AppointmentNotes() {
                                     <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
                                     <td className="py-3 px-2 font-medium text-gray-800">{appointmentName}</td>
                                     <td className="py-3 px-2 text-gray-600">{n.counsellor}</td>
-                                    <td className="py-3 px-2 text-gray-900 max-w-xs whitespace-pre-line">{n.note}</td>
                                     <td className="py-3 px-2 text-gray-600">{new Date(n.createdAt).toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-gray-900 max-w-xs truncate"
+                                        title={n.note}>{n.note}</td>
+                                    <td className="py-3 px-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="sm" aria-label="Actions">
+                                                    <MoreHorizontal className="h-4 w-4"/>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() => {
+                                                        setSelectedNoteIdx(idx);
+                                                        setViewDialogOpen(true);
+                                                    }}
+                                                    className="flex items-center gap-2">
+                                                    <Eye className="h-4 w-4"/> View
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </td>
                                 </tr>
                             ))}
                             {filteredNotes.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-center text-gray-400 py-8">No notes found.</td>
+                                    <td colSpan={6} className="text-center text-gray-400 py-8">No notes found.</td>
                                 </tr>
                             )}
                             </tbody>
@@ -317,6 +343,60 @@ export default function AppointmentNotes() {
                             </Button>
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="text-lg font-semibold">Note Details</DialogTitle>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setViewDialogOpen(false)}
+                            className="h-8 w-8 p-0"
+                        >
+                            <X className="h-4 w-4"/>
+                        </Button>
+                    </div>
+                    {selectedNoteIdx !== null && paginatedNotes[selectedNoteIdx] && (() => {
+                        const selectedNote = paginatedNotes[selectedNoteIdx];
+                        return (
+                            <div>
+                                <table className="min-w-full text-sm border border-gray-300 rounded-lg bg-white">
+                                    <tbody>
+                                    <tr className="border-b border-gray-200">
+                                        <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Client Name
+                                        </td>
+                                        <td className="w-2/3 px-4 py-3 text-gray-900">{appointmentName}</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-200">
+                                        <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Counsellor
+                                            Name
+                                        </td>
+                                        <td className="w-2/3 px-4 py-3 text-gray-900">{selectedNote.counsellor}</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-200">
+                                        <td className="w-1/3 px-4 py-3 font-medium text-gray-700 border-r">Created At
+                                        </td>
+                                        <td className="w-2/3 px-4 py-3 text-gray-900">
+                                            {new Date(selectedNote.createdAt).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="w-1/3 px-4 py-3 font-medium text-gray-700 align-top border-r">Note</td>
+                                        <td className="w-2/3 px-4 py-3 text-gray-900">
+                                            <div className="max-h-[400px] overflow-y-auto whitespace-pre-line">
+                                                {selectedNote.note}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
         </div>

@@ -12,6 +12,8 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
+    CalendarClock,
+    PlusCircle
 } from "lucide-react";
 import logo from "../../../public/Emotionally Yours Logo.png";
 import logo1 from "../../../public/logo.jpg";
@@ -48,14 +50,14 @@ const menuItems: MenuItem[] = [
 const slotMenuItem = {
     id: "slot",
     label: "Slot",
-    icon: FileText,
+    icon: PlusCircle,
     route: "/slot",
 };
 
 const appointmentMenuItem = {
     id: "appointments",
     label: "Appointments",
-    icon: FileText,
+    icon: CalendarClock,
     route: "/appointments",
 };
 

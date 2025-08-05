@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {MoreVertical, Eye} from "lucide-react";
 import {useNavigate} from "react-router-dom";
 import {X} from "lucide-react"
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
+import {useToast} from "@/hooks/use-toast";
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
@@ -288,7 +289,10 @@ export const InquiriesManagement = () => {
 
                 // If the same counselor is already assigned, just close the dialog
                 if (previouslyAssigned === selectedTeamMember) {
-                    alert(`Inquiry is already assigned to ${selectedTeamMember}`);
+                    toast({
+                        title: `Inquiry is already assigned to ${selectedTeamMember}`,
+                        description: "You can re-assign if needed.",
+                    });
                     setAssignDialogOpen(false);
                     setAssignInquiryId(null);
                     setSelectedTeamMember(null);
@@ -331,19 +335,28 @@ export const InquiriesManagement = () => {
                 const message = previouslyAssigned
                     ? `Successfully reassigned inquiry from ${previouslyAssigned} to ${selectedTeamMember}`
                     : `Successfully assigned inquiry to ${selectedTeamMember}`;
-                alert(message);
+                toast({
+                    title: "Inquiry Assigned",
+                    description: message,
+                });
 
                 setAssignDialogOpen(false);
                 setAssignInquiryId(null);
                 setSelectedTeamMember(null);
             } catch (error) {
                 console.error('Error assigning inquiry:', error);
-                alert('Failed to assign inquiry. Please try again.');
+                toast({
+                    title: "Failed to Assign Inquiry",
+                    description: "Failed to assign inquiry. Please try again.",
+                    variant: "destructive",
+                });
             } finally {
                 setAssigningLoading(false);
             }
         }
     };
+
+    const {toast} = useToast();
 
     return (
         <div className="space-y-6">

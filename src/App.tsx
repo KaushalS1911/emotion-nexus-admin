@@ -1,6 +1,7 @@
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import React from "react";
 import {UserProvider, useUserContext} from "@/UserContext";
+import {Toaster} from "@/components/ui/toaster";
 
 // Layouts
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -169,6 +170,7 @@ const App = () => (
                 {/* Fallback route */}
                 <Route path="*" element={<NotFound/>}/>
             </Routes>
+            <Toaster/>
         </BrowserRouter>
     </UserProvider>
 );

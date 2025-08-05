@@ -1,6 +1,6 @@
 "use client";
 
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -29,6 +29,7 @@ import {useNavigate} from "react-router-dom";
 import {Calendar as UiCalendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {format} from "date-fns";
+import {useToast} from "@/hooks/use-toast";
 
 interface Assessment {
     id: number;
@@ -174,11 +175,11 @@ export const AssessmentData = () => {
         active: true
     }))]);
     const [viewing, setViewing] = useState<AssessmentWithQuestions | null>(null);
-    const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
     const navigate = useNavigate();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
+    const {toast} = useToast();
 
     const filteredAssessments = assessments.filter((assessment) => {
         const matchesSearch =
@@ -231,15 +232,12 @@ export const AssessmentData = () => {
         const updatedAssessments = assessments.filter(assessment => assessment.id !== assessmentId);
         setAssessments(updatedAssessments);
         localStorage.setItem("assessments", JSON.stringify(updatedAssessments));
-        setToast({type: "success", message: "Assessment deactivated successfully."});
+        toast({
+            title: "Assessment deactivated",
+            description: "Assessment deactivated successfully.",
+            variant: "success",
+        });
     };
-
-    useEffect(() => {
-        if (toast) {
-            const t = setTimeout(() => setToast(null), 2500);
-            return () => clearTimeout(t);
-        }
-    }, [toast]);
 
     useEffect(() => {
         const stored = localStorage.getItem("assessments");
@@ -278,11 +276,6 @@ export const AssessmentData = () => {
 
     return (
         <div className="space-y-6">
-
-            {toast && (
-                <div
-                    className={`fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>{toast.message}</div>
-            )}
 
             <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
                 <DialogContent

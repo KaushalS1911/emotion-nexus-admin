@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {format as formatDate, addDays, parse} from 'date-fns';
+import {format as formatDate, addDays, parse, addHours} from 'date-fns';
 import {Swiper, SwiperSlide} from 'swiper/react';
 import {Navigation} from 'swiper/modules';
 import 'swiper/css';
@@ -128,22 +128,26 @@ const RescheduleCall = () => {
         if (!formData.from_time) newErrors.from_time = 'From time is required';
         if (!formData.to_time) newErrors.to_time = 'To time is required';
 
-        if (!formData.client_name) {
+        if (!formData.client_name || formData.client_name.trim() === '') {
             newErrors.client_name = 'Full Name is required';
         } else if (formData.client_name.length < 2) {
             newErrors.client_name = 'Full Name must be at least 2 characters';
         }
 
-        if (!formData.client_email) {
+        if (!formData.client_email || formData.client_email.trim() === '') {
             newErrors.client_email = 'Email is required';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.client_email)) {
             newErrors.client_email = 'Enter a valid email';
         }
 
-        if (!formData.client_phone) {
+        if (!formData.client_phone || formData.client_phone.trim() === '') {
             newErrors.client_phone = 'Phone number is required';
         } else if (!/^[0-9]{10}$/.test(formData.client_phone)) {
             newErrors.client_phone = 'Phone number must be exactly 10 digits';
+        }
+
+        if (!formData.consultation_reason || formData.consultation_reason.trim() === '') {
+            newErrors.consultation_reason = 'Consultation reason is required';
         }
 
         setErrors(newErrors);
@@ -333,53 +337,53 @@ const RescheduleCall = () => {
     };
 
     return (
-        <div className="font-['Poppins'] mt-8 md:mt-5">
-            <div className="max-w-[83vw]  ">
+        <div className="font-poppins mt-8 md:mt-5">
+            <div className="max-w-[83vw] font-poppins">
                 {/* Header with Back Button */}
-                <div className="flex items-center ">
+                <div className="flex items-center font-poppins">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 px-4 py-2 border border-[#012765] text-[#012765] font-semibold rounded-lg hover:border-[#FF6600] hover:text-[#FF6600] transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 border border-[#012765] text-[#012765] font-semibold rounded-lg hover:border-[#FF6600] hover:text-[#FF6600] transition-colors font-poppins"
                     >
                         <ArrowLeft className="h-4 w-4"/>
                         Back
                     </button>
                 </div>
 
-                <div className=" p-2 mt-4">
+                <div className="p-2 mt-4 font-poppins">
                     {/* Page Title */}
-                    <h1 className="text-4xl font-extrabold text-[#012765] mb-4  tracking-wide">
+                    <h1 className="text-4xl font-bold text-[#012765] mb-4 tracking-wide font-poppins">
                         Reschedule Appointment
                     </h1>
 
-                    <p className="text-[#FF6600] font-semibold mb-8 opacity-90">
+                    <p className="text-[#FF6600] font-semibold mb-8 opacity-90 font-poppins">
                         Choose a new date and time for your appointment
                     </p>
 
                     {/* Original Appointment Info */}
                     {originalAppointment && (
-                        <div className="mb-8 border-2 border-[#FF6600] rounded-2xl bg-[#fff7f0] p-6">
-                            <h2 className="text-xl font-bold text-[#012765] mb-4">
+                        <div className="mb-8 border-2 border-[#FF6600] rounded-2xl bg-[#fff7f0] p-6 font-poppins">
+                            <h2 className="text-xl font-bold text-[#012765] mb-4 font-poppins">
                                 Original Appointment
                             </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-poppins">
                                 <div>
-                                    <p className="text-sm font-semibold text-[#012765]">
+                                    <p className="text-sm font-semibold text-[#012765] font-poppins">
                                         Date: {originalAppointment.appointment_date}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-[#012765]">
+                                    <p className="text-sm font-semibold text-[#012765] font-poppins">
                                         Time: {originalAppointment.slot_time}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-[#012765]">
+                                    <p className="text-sm font-semibold text-[#012765] font-poppins">
                                         Client: {originalAppointment.client_name}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-[#012765]">
+                                    <p className="text-sm font-semibold text-[#012765] font-poppins">
                                         Email: {originalAppointment.client_email}
                                     </p>
                                 </div>
@@ -388,11 +392,11 @@ const RescheduleCall = () => {
                     )}
 
                     {/* Counselor Slider */}
-                    <h3 className="text-xl font-bold text-[#012765] mb-4 tracking-wide">
+                    <h3 className="text-xl font-bold text-[#012765] mb-4 tracking-wide font-poppins">
                         Choose Your Counselor
                     </h3>
 
-                    <div className="relative">
+                    <div className="relative font-poppins">
                         <Swiper
                             modules={[Navigation]}
                             navigation={{
@@ -419,7 +423,7 @@ const RescheduleCall = () => {
                                             setSelectedCounselorIdx(counselors.findIndex(cou => cou.user_id === c.user_id));
                                             setSelectedSlot('');
                                         }}
-                                        className={`min-w-[260px] h-full rounded-2xl cursor-pointer transition-all duration-300 relative flex flex-col overflow-hidden ${
+                                        className={`min-w-[260px] h-full rounded-2xl cursor-pointer transition-all duration-300 relative flex flex-col overflow-hidden font-poppins ${
                                             counselors.find(cou => cou.user_id === c.user_id) === counselor
                                                 ? 'border-2 border-[#FF6600] shadow-2xl bg-[#fff7f0] hover:shadow-3xl hover:-translate-y-1 hover:border-[#FF6600] before:content-[""] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-[#FF6600]'
                                                 : 'border border-gray-200 shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-gray-300'
@@ -428,24 +432,24 @@ const RescheduleCall = () => {
                                         <div
                                             className="flex flex-col items-center p-5 sm:p-6 h-full min-h-[220px] flex-1 font-poppins">
                                             {/* Avatar Section */}
-                                            <div className="flex flex-col items-center mb-1.5 w-full">
+                                            <div className="flex flex-col items-center mb-1.5 w-full font-poppins">
                                                 <img
-                                                    src={c.profile_image || 'https://via.placeholder.com/90?text=No+Image'}
+                                                    src="https://static.vecteezy.com/system/resources/thumbnails/000/439/863/small_2x/Basic_Ui__28186_29.jpg"
                                                     alt={c.full_name}
-                                                    className="w-[80px] h-[80px] mb-3 rounded-full border-2 border-[#012765] shadow-md"
+                                                    className="w-[80px] h-[80px] mb-3 rounded-full border-2 border-[#012765] shadow-md object-cover"
                                                 />
-                                                <h4 className="text-xl font-bold text-[#012765] text-center mb-1 leading-snug">
+                                                <h4 className="text-xl font-bold text-[#012765] text-center mb-1 leading-snug font-poppins">
                                                     {c.full_name} ({c.experience || '5+ years'})
                                                 </h4>
-                                                <p className="text-[#FF6600] font-semibold text-center text-sm opacity-90">
+                                                <p className="text-[#FF6600] font-semibold text-center text-sm opacity-90 font-poppins">
                                                     {c.role} ({c.education || 'Masters in Psychology'})
                                                 </p>
                                             </div>
 
                                             {/* Expertise Section */}
-                                            <div className="grid grid-cols-1 text-sm text-[#012765] w-full flex-1">
-                                                <div className="flex items-start gap-1">
-                                                 <span className="text-[#FF6600] text-center flex-1">
+                                            <div className="grid grid-cols-1 text-sm text-[#012765] w-full flex-1 font-poppins">
+                                                <div className="flex items-start gap-1 font-poppins">
+                                                 <span className="text-[#FF6600] text-center flex-1 font-poppins">
                                                    {c.expertise || 'General Counseling'}
                                                  </span>
                                                 </div>
@@ -459,20 +463,20 @@ const RescheduleCall = () => {
 
                         {/* Custom Navigation Arrows */}
                         <button
-                            className="swiper-button-pre absolute left-0 top-32 transform -translate-y-1/2 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
+                            className="swiper-button-pre absolute left-0 top-32 transform -translate-y-1/2 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors font-poppins">
                             <ChevronLeft className="h-6 w-6 text-[#012765]"/>
                         </button>
                         <button
-                            className="swiper-button-nex absolute right-0 top-32 transform -translate-y-1/2 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
+                            className="swiper-button-nex absolute right-0 top-32 transform -translate-y-1/2 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors font-poppins">
                             <ChevronRight className="h-6 w-6 text-[#012765]"/>
                         </button>
                     </div>
 
                     {/* Date Picker */}
-                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide">
+                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide font-poppins">
                         Choose New Date
                     </h3>
-                    <div className="flex gap-3 overflow-x-auto pb-4 px-1 sm:px-0 scrollbar-hide">
+                    <div className="flex gap-3 overflow-x-auto pb-4 px-1 sm:px-0 scrollbar-hide font-poppins">
                         {days.map((date) => {
                             const dateStr = formatDate(date, 'yyyy-MM-dd');
                             const isSelected = selectedDate === dateStr;
@@ -483,16 +487,16 @@ const RescheduleCall = () => {
                                         setSelectedDate(dateStr);
                                         setSelectedSlot('');
                                     }}
-                                    className={`px-6 py-3 rounded-2xl font-bold text-base shadow-sm flex items-center gap-2 transition-all ${
+                                    className={`px-6 py-3 rounded-2xl font-bold text-base shadow-sm flex items-center gap-2 transition-all font-poppins ${
                                         isSelected
                                             ? 'bg-[#FF6600] text-white shadow-lg'
                                             : 'bg-white text-[#012765] border border-[#FF6600] hover:bg-[#FF6600] hover:text-white'
                                     }`}
                                 >
                                     {isSelected && <Calendar className="h-4 w-4"/>}
-                                    <div>
-                                        <p className="font-bold">{formatDate(date, 'EEE')}</p>
-                                        <p className="text-xs">{formatDate(date, 'd MMM')}</p>
+                                    <div className="font-poppins">
+                                        <p className="font-bold font-poppins">{formatDate(date, 'EEE')}</p>
+                                        <p className="text-xs font-poppins">{formatDate(date, 'd MMM')}</p>
                                     </div>
                                 </button>
                             );
@@ -500,28 +504,38 @@ const RescheduleCall = () => {
                     </div>
 
                     {/* Time Slots */}
-                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide">
+                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide font-poppins">
                         Choose New Time Slot
                     </h3>
-                    <div className="flex flex-wrap gap-3 mb-4">
+                    <div className="flex flex-wrap gap-3 mb-4 font-poppins">
                         {slots.length === 0 ? (
-                            <p className="text-[#FF6600] font-semibold">No slots available for this day.</p>
+                            <p className="text-[#FF6600] font-semibold font-poppins">No slots available for this day.</p>
                         ) : (
-                            slots.map((slot) => {
-                                // Convert 'HH:mm' to AM/PM format
-                                const parsed = parse(slot, 'HH:mm', new Date());
-                                const ampm = formatDate(parsed, 'h:mm a');
+                            slots.map((slot, index) => {
+                                // Create time ranges: each slot is 1 hour duration
+                                const startTime = slot;
+                                const endTime = slots[index + 1] || addHours(parse(slot, 'HH:mm', new Date()), 1);
+                                
+                                // Convert to AM/PM format
+                                const startParsed = parse(startTime, 'HH:mm', new Date());
+                                const endParsed = typeof endTime === 'string' ? parse(endTime, 'HH:mm', new Date()) : endTime;
+                                
+                                const startAMPM = formatDate(startParsed, 'h:mm a');
+                                const endAMPM = formatDate(endParsed, 'h:mm a');
+                                
+                                const timeRange = `${startAMPM} - ${endAMPM}`;
+                                
                                 return (
                                     <button
                                         key={slot}
-                                        onClick={() => setSelectedSlot(slot)}
-                                        className={`px-4 py-2 rounded-lg font-bold text-base min-w-[80px] transition-all ${
-                                            selectedSlot === slot
+                                        onClick={() => setSelectedSlot(`${startTime}-${formatDate(endParsed, 'HH:mm')}`)}
+                                        className={`px-6 py-3 rounded-lg font-bold text-base min-w-[140px] transition-all font-poppins ${
+                                            selectedSlot === `${startTime}-${formatDate(endParsed, 'HH:mm')}`
                                                 ? 'bg-[#FF6600] text-white shadow-lg'
                                                 : 'bg-white text-[#012765] border-2 border-[#FF6600] hover:bg-[#FF6600] hover:text-white'
                                         }`}
                                     >
-                                        {ampm}
+                                        {timeRange}
                                     </button>
                                 );
                             })
@@ -529,11 +543,11 @@ const RescheduleCall = () => {
                     </div>
 
                     {/* Reschedule Button */}
-                    <div className="text-center mt-16">
+                    <div className="text-center mt-16 font-poppins">
                         <button
                             disabled={!selectedSlot}
                             onClick={handleReschedule}
-                            className="px-12 py-4 rounded-2xl font-extrabold bg-[#FF6600] text-white text-lg shadow-lg tracking-wide transition-all hover:bg-[#FE6A00] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-12 py-4 rounded-2xl font-bold bg-[#FF6600] text-white text-lg shadow-lg tracking-wide transition-all hover:bg-[#FE6A00] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed font-poppins"
                         >
                             Reschedule Appointment
                         </button>
@@ -542,17 +556,15 @@ const RescheduleCall = () => {
 
                 {/* Book Appointment Form Dialog */}
                 {formOpen && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-[#fff7f0] to-[#f8fafc] rounded-2xl max-w-md w-full p-6">
-                            <h2 className="font-['Poppins'] text-[#012765] font-extrabold text-2xl text-center tracking-wide pb-0">
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 font-poppins">
+                        <div className="bg-white rounded-2xl max-w-md w-full p-6 font-poppins shadow-xl">
+                            <h2 className="text-[#012765] font-bold text-2xl text-center mb-6 font-poppins">
                                 Book Appointment
                             </h2>
-                            <form onSubmit={handleFormSubmit} className="w-full max-w-md mx-auto mt-4 font-['Poppins']">
-                                {/* Hidden user_id, appointment_date, slot_time fields (auto-filled) */}
-
+                            <form onSubmit={handleFormSubmit} className="w-full space-y-3 font-poppins">
                                 {/* Appointment Date */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
+                                <div className="font-poppins">
+                                    <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
                                         Appointment Date
                                     </label>
                                     <input
@@ -560,119 +572,126 @@ const RescheduleCall = () => {
                                         name="appointment_date"
                                         value={formData.appointment_date}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent font-poppins text-gray-700 bg-gray-100"
+                                        readOnly
                                     />
                                     {errors.appointment_date && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.appointment_date}</p>
+                                        <p className="text-red-500 text-xs mt-1 font-poppins">{errors.appointment_date}</p>
                                     )}
                                 </div>
 
                                 {/* From Time */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        From Time
-                                    </label>
-                                    <input
-                                        type="time"
-                                        name="from_time"
-                                        value={formData.from_time}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
-                                    />
-                                    {errors.from_time && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.from_time}</p>
-                                    )}
+                                <div className="flex flex-col md:flex-row gap-4 font-poppins">
+                                    {/* From Time */}
+                                    <div className="w-full md:w-1/2">
+                                        <label className="block text-sm font-medium text-[#012765] mb-2">
+                                            From Time
+                                        </label>
+                                        <input
+                                            type="time"
+                                            name="from_time"
+                                            value={formData.from_time}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent text-gray-700 bg-gray-100"
+                                            readOnly
+                                        />
+                                        {errors.from_time && (
+                                            <p className="text-red-500 text-xs mt-1">{errors.from_time}</p>
+                                        )}
+                                    </div>
+
+                                    {/* To Time */}
+                                    <div className="w-full md:w-1/2">
+                                        <label className="block text-sm font-medium text-[#012765] mb-2">
+                                            To Time
+                                        </label>
+                                        <input
+                                            type="time"
+                                            name="to_time"
+                                            value={formData.to_time}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent text-gray-700 bg-gray-100"
+                                            readOnly
+                                        />
+                                        {errors.to_time && (
+                                            <p className="text-red-500 text-xs mt-1">{errors.to_time}</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* To Time */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        To Time
-                                    </label>
-                                    <input
-                                        type="time"
-                                        name="to_time"
-                                        value={formData.to_time}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
-                                    />
-                                    {errors.to_time && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.to_time}</p>
-                                    )}
-                                </div>
 
                                 {/* Full Name */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        Full Name
+                                <div className="font-poppins">
+                                    <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
+                                        Full Name *
                                     </label>
                                     <input
                                         type="text"
                                         name="client_name"
                                         value={formData.client_name}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent font-poppins text-gray-700"
                                     />
                                     {errors.client_name && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.client_name}</p>
+                                        <p className="text-red-500 text-xs mt-1 font-poppins">{errors.client_name}</p>
                                     )}
                                 </div>
 
                                 {/* Email */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        Email
+                                <div className="font-poppins">
+                                    <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
+                                        Email *
                                     </label>
                                     <input
                                         type="email"
                                         name="client_email"
                                         value={formData.client_email}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent font-poppins text-gray-700"
                                     />
                                     {errors.client_email && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.client_email}</p>
+                                        <p className="text-red-500 text-xs mt-1 font-poppins">{errors.client_email}</p>
                                     )}
                                 </div>
 
                                 {/* Phone */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        Phone
+                                <div className="font-poppins">
+                                    <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
+                                        Phone *
                                     </label>
                                     <input
                                         type="tel"
                                         name="client_phone"
                                         value={formData.client_phone}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent font-poppins text-gray-700"
                                     />
                                     {errors.client_phone && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.client_phone}</p>
+                                        <p className="text-red-500 text-xs mt-1 font-poppins">{errors.client_phone}</p>
                                     )}
                                 </div>
 
                                 {/* Consultation Reason */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-[#012765] mb-2">
-                                        Consultation Reason
+                                <div className="font-poppins">
+                                    <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
+                                        Consultation Reason *
                                     </label>
                                     <textarea
                                         name="consultation_reason"
                                         value={formData.consultation_reason}
                                         onChange={handleInputChange}
                                         rows={4}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent resize-none"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent resize-none font-poppins text-gray-700"
                                     />
                                     {errors.consultation_reason && (
-                                        <p className="text-red-500 text-xs mt-1">{errors.consultation_reason}</p>
+                                        <p className="text-red-500 text-xs mt-1 font-poppins">{errors.consultation_reason}</p>
                                     )}
                                 </div>
 
                                 {/* Notes (for edit mode) */}
                                 {isEdit && (
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-[#012765] mb-2">
+                                    <div className="font-poppins">
+                                        <label className="block text-sm font-medium text-[#012765] mb-2 font-poppins">
                                             Notes
                                         </label>
                                         <textarea
@@ -680,23 +699,23 @@ const RescheduleCall = () => {
                                             value={formData.notes}
                                             onChange={handleInputChange}
                                             rows={4}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent resize-none"
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-transparent resize-none font-poppins text-gray-700"
                                         />
                                     </div>
                                 )}
 
                                 {/* Form Actions */}
-                                <div className="flex justify-center gap-4 pt-6">
+                                <div className="flex justify-between gap-4 pt-4 font-poppins">
                                     <button
                                         type="button"
                                         onClick={() => setFormOpen(false)}
-                                        className="px-6 py-2 text-[#012765] font-bold rounded-lg hover:text-[#FF6600] transition-colors"
+                                        className="px-6 py-3 text-[#012765] font-medium rounded-lg hover:text-[#FF6600] transition-colors font-poppins"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-6 py-2 bg-[#FF6600] text-white font-extrabold rounded-lg hover:bg-[#FE6A00] transition-colors"
+                                        className="px-6 py-3 bg-[#FF6600] text-white font-medium rounded-lg hover:bg-[#FE6A00] transition-colors font-poppins"
                                     >
                                         Book Appointment
                                     </button>
@@ -708,20 +727,20 @@ const RescheduleCall = () => {
 
                 {/* Success Dialog */}
                 {successOpen && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-gradient-to-br from-[#fff7f0] to-[#f8fafc] rounded-2xl max-w-sm w-full p-6">
-                            <h2 className="font-['Poppins'] text-[#012765] font-extrabold text-xl text-center tracking-wide pb-0">
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 font-poppins">
+                        <div className="bg-gradient-to-br from-[#fff7f0] to-[#f8fafc] rounded-2xl max-w-sm w-full p-6 font-poppins">
+                            <h2 className="text-[#012765] font-bold text-xl text-center tracking-wide pb-0 font-poppins">
                                 Appointment Booked Successfully!
                             </h2>
-                            <div className="mt-4">
-                                <p className="text-[#012765] font-semibold text-center mt-2 mb-6">
+                            <div className="mt-4 font-poppins">
+                                <p className="text-[#012765] font-semibold text-center mt-2 mb-6 font-poppins">
                                     Thank you for booking your appointment. We look forward to seeing you!
                                 </p>
                             </div>
-                            <div className="flex justify-center pb-4">
+                            <div className="flex justify-center pb-4 font-poppins">
                                 <button
                                     onClick={handleCloseSuccess}
-                                    className="px-6 py-2 bg-[#FF6600] text-white font-bold rounded-lg hover:bg-[#FE6A00] transition-colors"
+                                    className="px-6 py-2 bg-[#FF6600] text-white font-bold rounded-lg hover:bg-[#FE6A00] transition-colors font-poppins"
                                 >
                                     OK
                                 </button>

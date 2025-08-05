@@ -1,23 +1,23 @@
-import {useEffect, useState} from "react";
-import {Card, CardContent} from "@/components/ui/card";
+import React, {useState, useEffect} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import {Badge} from "@/components/ui/badge";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {Search, MoreHorizontal, Trash2, Edit, UserPlus} from "lucide-react";
+import {useNavigate} from "react-router-dom";
+import {useToast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {
     User as UserIcon,
     TrendingUp,
     Calendar,
     CheckCircle,
-    Search,
-    MoreHorizontal,
     Eye,
-    Trash2,
     Key,
     EyeOff, FileText, Clock
 } from "lucide-react";
-import {Button} from "@/components/ui/button";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {useNavigate} from "react-router-dom";
 import AddEditUserForm, {UserFormValues} from "@/components/dashboard/AddEditUserForm";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 
@@ -65,6 +65,7 @@ export default function Users() {
     const [credentialsUser, setCredentialsUser] = useState<User | null>(null);
     const [credentialsForm, setCredentialsForm] = useState({user_id: null, username: '', password: ''});
     const [showPassword, setShowPassword] = useState(false);
+    const {toast} = useToast();
 
     useEffect(() => {
         // Fetch users from API
@@ -132,8 +133,16 @@ export default function Users() {
             const res = await fetch("https://interactapiverse.com/mahadevasth/user");
             const data = await res.json();
             setUsers(Array.isArray(data) ? data : data.data || []);
+            toast({
+                title: "User deleted",
+                description: "User has been deleted.",
+            });
         } catch (error) {
-            alert("Error deleting user");
+            toast({
+                title: "Error deleting user",
+                description: "Failed to delete user.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -173,10 +182,17 @@ export default function Users() {
             if (!response.ok) {
                 throw new Error("Failed to add credentials");
             }
-            alert("Credentials added successfully!");
+            toast({
+                title: "Credentials added",
+                description: "Credentials added successfully!",
+            });
             setAddCredentialsDialogOpen(false);
         } catch (error: any) {
-            alert(error.message || "An error occurred while adding credentials.");
+            toast({
+                title: "Error adding credentials",
+                description: error.message || "An error occurred while adding credentials.",
+                variant: "destructive",
+            });
         }
     };
 

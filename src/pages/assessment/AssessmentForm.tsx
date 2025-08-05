@@ -1,11 +1,15 @@
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Label} from "@/components/ui/label";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {ArrowLeft, Plus, Edit, Trash2, Save} from "lucide-react";
+import {useToast} from "@/hooks/use-toast";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Badge} from "@/components/ui/badge";
 
 // Mock data and types (replace with real data fetching in production)
@@ -31,7 +35,6 @@ export default function AssessmentForm({view}) {
         minAge: 0,
         maxAge: 0,
     });
-    const [toast, setToast] = useState(null);
     const [showQuestionDialog, setShowQuestionDialog] = useState(false);
     const [editingQuestionIdx, setEditingQuestionIdx] = useState(null);
     const [questionText, setQuestionText] = useState("");
@@ -46,6 +49,7 @@ export default function AssessmentForm({view}) {
     const [showIssueDialog, setShowIssueDialog] = useState(false);
     const [editingIssueIdx, setEditingIssueIdx] = useState(null);
     const [issueText, setIssueText] = useState("");
+    const {toast} = useToast();
 
     useEffect(() => {
         if (isEdit) {
@@ -73,14 +77,6 @@ export default function AssessmentForm({view}) {
         }
     }, [id, isEdit]);
 
-    // Toast auto-dismiss
-    useEffect(() => {
-        if (toast) {
-            const t = setTimeout(() => setToast(null), 2000);
-            return () => clearTimeout(t);
-        }
-    }, [toast]);
-
     // Auto-save form to localStorage when form changes (only for editing)
     useEffect(() => {
         if (isEdit && (form.userName || form.category || form.date)) {
@@ -98,7 +94,11 @@ export default function AssessmentForm({view}) {
 
     const handleSave = () => {
         if (!form.userName || !form.date) {
-            setToast({type: "error", message: "Please fill all required fields."});
+            toast({
+                title: "Validation Error",
+                description: "Please fill all required fields.",
+                variant: "destructive",
+            });
             return;
         }
         const stored = localStorage.getItem("assessments");
@@ -112,7 +112,10 @@ export default function AssessmentForm({view}) {
             updated = [newAssessment, ...assessments];
         }
         localStorage.setItem("assessments", JSON.stringify(updated));
-        setToast({type: "success", message: isEdit ? "Assessment updated." : "Assessment added."});
+        toast({
+            title: isEdit ? "Assessment Updated" : "Assessment Added",
+            description: isEdit ? "Assessment updated successfully." : "Assessment added successfully.",
+        });
         setTimeout(() => navigate("/assessments"), 800);
     };
 
@@ -141,12 +144,19 @@ export default function AssessmentForm({view}) {
             {text: "", score: 0},
             {text: "", score: 0}
         ]);
-        setToast({type: "success", message: "Question deleted."});
+        toast({
+            title: "Question Deleted",
+            description: "Question deleted successfully.",
+        });
     };
 
     const handleSaveQuestion = () => {
         if (!questionText || questionOptions.length < 2 || questionOptions.some(opt => !opt.text)) {
-            setToast({type: "error", message: "Please fill all required fields."});
+            toast({
+                title: "Validation Error",
+                description: "Please fill all required fields.",
+                variant: "destructive",
+            });
             return;
         }
         let updatedQuestions;
@@ -173,7 +183,10 @@ export default function AssessmentForm({view}) {
         setForm((f) => ({...f, questions: updatedQuestions}));
         setShowQuestionDialog(false);
         setEditingQuestionIdx(null);
-        setToast({type: "success", message: "Question saved."});
+        toast({
+            title: "Question Saved",
+            description: "Question saved successfully.",
+        });
     };
 
     // Recommendation handlers
@@ -189,12 +202,19 @@ export default function AssessmentForm({view}) {
         setShowRecommendationDialog(false);
         setEditingRecommendationIdx(null);
         setRecommendationText("");
-        setToast({type: "success", message: "Recommendation deleted."});
+        toast({
+            title: "Recommendation Deleted",
+            description: "Recommendation deleted successfully.",
+        });
     };
 
     const handleSaveRecommendation = () => {
         if (!recommendationText.trim()) {
-            setToast({type: "error", message: "Please enter a recommendation."});
+            toast({
+                title: "Validation Error",
+                description: "Please enter a recommendation.",
+                variant: "destructive",
+            });
             return;
         }
         let updatedRecommendations;
@@ -212,7 +232,10 @@ export default function AssessmentForm({view}) {
         setForm((f) => ({...f, recommendations: updatedRecommendations}));
         setShowRecommendationDialog(false);
         setEditingRecommendationIdx(null);
-        setToast({type: "success", message: "Recommendation saved."});
+        toast({
+            title: "Recommendation Saved",
+            description: "Recommendation saved successfully.",
+        });
     };
 
     // Issue handlers
@@ -228,12 +251,19 @@ export default function AssessmentForm({view}) {
         setShowIssueDialog(false);
         setEditingIssueIdx(null);
         setIssueText("");
-        setToast({type: "success", message: "Issue deleted."});
+        toast({
+            title: "Issue Deleted",
+            description: "Issue deleted successfully.",
+        });
     };
 
     const handleSaveIssue = () => {
         if (!issueText.trim()) {
-            setToast({type: "error", message: "Please enter an issue."});
+            toast({
+                title: "Validation Error",
+                description: "Please enter an issue.",
+                variant: "destructive",
+            });
             return;
         }
         let updatedIssues;
@@ -251,7 +281,10 @@ export default function AssessmentForm({view}) {
         setForm((f) => ({...f, issues: updatedIssues}));
         setShowIssueDialog(false);
         setEditingIssueIdx(null);
-        setToast({type: "success", message: "Issue saved."});
+        toast({
+            title: "Issue Saved",
+            description: "Issue saved successfully.",
+        });
     };
 
     const handleAddOption = () => {
@@ -301,21 +334,24 @@ export default function AssessmentForm({view}) {
         <div className="p-2">
             <div className="mx-auto">
                 {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-[#FF7119]">
-                        {isViewMode ? "View Assessment" : isEdit ? "Edit Assessment" : "Add Assessment"}
-                    </h1>
-                    <p className="text-gray-600 mt-1">
-                        {isViewMode ? "View the details of this assessment." : isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}
-                    </p>
-                </div>
-
-                {/* Toast Notification */}
-                {toast && (
-                    <div className={`px-4 py-3 rounded-lg text-white font-medium mb-4 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-                        {toast.message}
+                <div className="flex items-center gap-4 mb-6">
+                    <Button
+                        onClick={() => navigate(-1)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                    >
+                        <ArrowLeft className="h-4 w-4"/>
+                        Back
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-[#012765]">
+                            {isViewMode ? "View Assessment" : isEdit ? "Edit Assessment" : "Create Assessment"}
+                        </h1>
+                        <p className="text-gray-600 mt-1">
+                            {isViewMode ? "View the details of this assessment." : isEdit ? "Update the details of this assessment." : "Fill in the details to create a new assessment."}
+                        </p>
                     </div>
-                )}
+                </div>
 
                 {/* Main Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,16 +1,12 @@
-import {useState, ChangeEvent} from "react";
+import React, {useState} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {Card, CardContent} from "@/components/ui/card";
-import {Avatar, AvatarFallback} from "@/components/ui/avatar";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {User, Mail, Phone, GraduationCap, Star} from "lucide-react";
+import {useToast} from "@/hooks/use-toast";
 
 export interface UserFormValues {
     id?: number;
@@ -74,12 +70,15 @@ export default function AddEditUserForm({
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleProfilePicChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             const maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if (file.size > maxSize) {
-                alert("Image size should not exceed 10MB.");
+                toast({
+                    title: "Image size should not exceed 10MB.",
+                    variant: "destructive",
+                });
                 return;
             }
             setProfilePicFile(file);
@@ -112,7 +111,10 @@ export default function AddEditUserForm({
             if (!response.ok) {
                 throw new Error("Failed to add user");
             }
-            alert("User added successfully!");
+            toast({
+                title: "User added successfully!",
+                description: "User has been added to the system.",
+            });
             onSubmit({
                 fullName,
                 profilePic: payload.profile_image,
@@ -121,9 +123,14 @@ export default function AddEditUserForm({
                 role,
             } as UserFormValues);
         } catch (error: any) {
-            alert(error.message || "An error occurred while adding the user.");
+            toast({
+                title: error.message || "An error occurred while adding the user.",
+                variant: "destructive",
+            });
         }
     };
+
+    const {toast} = useToast();
 
     return (
         <Card className="border-0 shadow-none bg-transparent">

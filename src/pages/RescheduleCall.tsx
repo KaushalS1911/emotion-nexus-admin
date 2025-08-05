@@ -311,7 +311,7 @@ const RescheduleCall = () => {
         const timeRange = selectedSlot.split('-');
         const fromTime = timeRange[0] || '';
         const toTime = timeRange[1] || '';
-        
+
         setFormData({
             user_id: counselor.user_id || '',
             appointment_date: selectedDate,
@@ -456,7 +456,7 @@ const RescheduleCall = () => {
                                 </SwiperSlide>
                             ))}
                         </Swiper>
-                        
+
                         {/* Custom Navigation Arrows */}
                         <button
                             className="swiper-button-pre absolute left-0 top-32 transform -translate-y-1/2 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors">

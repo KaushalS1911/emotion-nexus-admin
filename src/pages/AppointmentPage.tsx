@@ -4,8 +4,30 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuSeparator} from "@/components/ui/dropdown-menu";
-import {Search, MoreHorizontal, Trash2, FileText, ArrowLeft, Clock, Calendar, MessageSquare, CheckCircle, XCircle, RefreshCw, Settings} from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+    Search,
+    MoreHorizontal,
+    Trash2,
+    FileText,
+    ArrowLeft,
+    Clock,
+    Calendar,
+    MessageSquare,
+    CheckCircle,
+    XCircle,
+    RefreshCw,
+    Settings
+} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 
 const INITIAL_APPOINTMENTS = [
@@ -93,7 +115,7 @@ export default function AppointmentPage() {
 
     const handleStatusChange = (appt, newStatus) => {
         const updatedAppointments = appointments.map(a =>
-            a === appt ? { ...a, status: newStatus } : a
+            a === appt ? {...a, status: newStatus} : a
         );
         saveAppointmentsToStorage(updatedAppointments);
         console.log(`Status changed to ${newStatus} for appointment with ${appt.client_name}`);
@@ -153,13 +175,13 @@ export default function AppointmentPage() {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'attended':
-                return <CheckCircle className="h-4 w-4 text-green-600" />;
+                return <CheckCircle className="h-4 w-4 text-green-600"/>;
             case 'not-attended':
-                return <XCircle className="h-4 w-4 text-red-600" />;
+                return <XCircle className="h-4 w-4 text-red-600"/>;
             case 'rescheduled':
-                return <RefreshCw className="h-4 w-4 text-yellow-600" />;
+                return <RefreshCw className="h-4 w-4 text-yellow-600"/>;
             default:
-                return <Clock className="h-4 w-4 text-gray-600" />;
+                return <Clock className="h-4 w-4 text-gray-600"/>;
         }
     };
 
@@ -231,14 +253,19 @@ export default function AppointmentPage() {
                             placeholder="To date"
                         />
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full md:w-48 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7119] focus:border-transparent bg-white hover:bg-gray-50 text-gray-700">
-                                <SelectValue placeholder="All Status" />
+                            <SelectTrigger
+                                className="w-full md:w-48 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7119] focus:border-transparent bg-white hover:bg-gray-50 text-gray-700">
+                                <SelectValue placeholder="All Status"/>
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" className="text-gray-700 hover:bg-gray-100">All Status</SelectItem>
-                                <SelectItem value="attended" className="text-gray-700 hover:bg-gray-100">Attended</SelectItem>
-                                <SelectItem value="not-attended" className="text-gray-700 hover:bg-gray-100">Not Attended</SelectItem>
-                                <SelectItem value="rescheduled" className="text-gray-700 hover:bg-gray-100">Rescheduled</SelectItem>
+                                <SelectItem value="all" className="text-gray-700 hover:bg-gray-100">All
+                                    Status</SelectItem>
+                                <SelectItem value="attended"
+                                            className="text-gray-700 hover:bg-gray-100">Attended</SelectItem>
+                                <SelectItem value="not-attended" className="text-gray-700 hover:bg-gray-100">Not
+                                    Attended</SelectItem>
+                                <SelectItem value="rescheduled"
+                                            className="text-gray-700 hover:bg-gray-100">Rescheduled</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -281,8 +308,8 @@ export default function AppointmentPage() {
                                                 a.status === 'attended'
                                                     ? 'bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
                                                     : a.status === 'not-attended'
-                                                    ? 'bg-yellow-200 text-yellow-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
-                                                    : 'bg-gray-200 text-gray-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
+                                                        ? 'bg-yellow-200 text-yellow-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
+                                                        : 'bg-gray-200 text-gray-700 transition-colors duration-150 hover:bg-[#012765] hover:text-white'
                                             }>
                                                 {getStatusText(a.status)}
                                             </Badge>
@@ -326,7 +353,7 @@ export default function AppointmentPage() {
                                                         </DropdownMenuSubContent>
                                                     </DropdownMenuSub>
 
-                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuSeparator/>
 
                                                     {/* Reschedule Call */}
                                                     <DropdownMenuItem
@@ -355,7 +382,7 @@ export default function AppointmentPage() {
                                                         Recommendations
                                                     </DropdownMenuItem>
 
-                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuSeparator/>
 
                                                     {/* Delete */}
                                                     <DropdownMenuItem

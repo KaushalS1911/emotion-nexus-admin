@@ -113,6 +113,7 @@ interface Counselor {
     education?: string;
     status?: string;
     joinDate?: string;
+
     [key: string]: any;
 }
 
@@ -157,7 +158,7 @@ export const InquiriesManagement = () => {
             .then((res) => res.json())
             .then((data) => {
                 const inquiriesData = Array.isArray(data) ? data : data?.data || [];
-                
+
                 // Load assignments from localStorage and merge with inquiry data
                 const inquiriesWithAssignments = inquiriesData.map((inquiry: any) => {
                     const assignmentKey = `inquiry_assignment_${inquiry.id}`;
@@ -320,7 +321,7 @@ export const InquiriesManagement = () => {
                 // Update the inquiry in the local state
                 setInquiries(prev => prev.map(inquiry =>
                     inquiry.id === assignInquiryId
-                        ? { ...inquiry, assignedTo: selectedTeamMember }
+                        ? {...inquiry, assignedTo: selectedTeamMember}
                         : inquiry
                 ));
 
@@ -723,7 +724,8 @@ export const InquiriesManagement = () => {
                     <div className="space-y-4">
                         {/* Search for counselors */}
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                             <Input
                                 placeholder="Search counselors by name, email"
                                 value={assignSearchTerm}
@@ -739,55 +741,57 @@ export const InquiriesManagement = () => {
                             ) : (
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="border-b border-gray-100">
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
-                                            {/*<th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>*/}
-                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Select</th>
-                                        </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
+                                        {/*<th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>*/}
+                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Select</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {paginatedCounselors.map((counselor, idx) => (
-                                            <tr key={counselor.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                                <td className="py-4 px-2">{assignPage * assignRowsPerPage + idx + 1}</td>
-                                                <td className="py-4 px-2">
-                                                    {counselor.profilePic ? (
-                                                        <img src={counselor.profilePic} alt="Profile"
-                                                             className="w-10 h-10 rounded-full object-cover"/>
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
-                                                            {counselor.full_name?.[0] || "?"}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="py-4 px-2">{counselor.full_name}</td>
-                                                <td className="py-4 px-2">{counselor.email}</td>
-                                                <td className="py-4 px-2">{counselor.phone || "-"}</td>
-                                                {/*<td className="py-4 px-2">*/}
-                                                {/*    <Badge className="bg-blue-100 text-blue-800">*/}
-                                                {/*        {counselor.expertise || "General"}*/}
-                                                {/*    </Badge>*/}
-                                                {/*</td>*/}
-                                                <td className="py-4 px-2">
-                                                    <Button
-                                                        variant={selectedTeamMember === counselor.full_name ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => setSelectedTeamMember(counselor.full_name)}
-                                                        className={selectedTeamMember === counselor.full_name ? "bg-[#012765] text-white" : ""}
-                                                    >
-                                                        {selectedTeamMember === counselor.full_name ? "Selected" : "Select"}
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {filteredCounselors.length === 0 && !counselorsLoading && (
-                                            <tr>
-                                                <td className="py-4 px-2 text-center" colSpan={7}>No counselors found.</td>
-                                            </tr>
-                                        )}
+                                    {paginatedCounselors.map((counselor, idx) => (
+                                        <tr key={counselor.id}
+                                            className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                            <td className="py-4 px-2">{assignPage * assignRowsPerPage + idx + 1}</td>
+                                            <td className="py-4 px-2">
+                                                {counselor.profilePic ? (
+                                                    <img src={counselor.profilePic} alt="Profile"
+                                                         className="w-10 h-10 rounded-full object-cover"/>
+                                                ) : (
+                                                    <div
+                                                        className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                        {counselor.full_name?.[0] || "?"}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="py-4 px-2">{counselor.full_name}</td>
+                                            <td className="py-4 px-2">{counselor.email}</td>
+                                            <td className="py-4 px-2">{counselor.phone || "-"}</td>
+                                            {/*<td className="py-4 px-2">*/}
+                                            {/*    <Badge className="bg-blue-100 text-blue-800">*/}
+                                            {/*        {counselor.expertise || "General"}*/}
+                                            {/*    </Badge>*/}
+                                            {/*</td>*/}
+                                            <td className="py-4 px-2">
+                                                <Button
+                                                    variant={selectedTeamMember === counselor.full_name ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => setSelectedTeamMember(counselor.full_name)}
+                                                    className={selectedTeamMember === counselor.full_name ? "bg-[#012765] text-white" : ""}
+                                                >
+                                                    {selectedTeamMember === counselor.full_name ? "Selected" : "Select"}
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredCounselors.length === 0 && !counselorsLoading && (
+                                        <tr>
+                                            <td className="py-4 px-2 text-center" colSpan={7}>No counselors found.</td>
+                                        </tr>
+                                    )}
                                     </tbody>
                                 </table>
                             )}
@@ -838,8 +842,9 @@ export const InquiriesManagement = () => {
                                             setAssignPage(0);
                                         }}
                                     >
-                                        <SelectTrigger className="w-20 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2">
-                                            <SelectValue />
+                                        <SelectTrigger
+                                            className="w-20 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2">
+                                            <SelectValue/>
                                         </SelectTrigger>
                                         <SelectContent className="w-20 rounded-md shadow-lg border-gray-200">
                                             <SelectItem
@@ -888,7 +893,8 @@ export const InquiriesManagement = () => {
                             >
                                 {assigningLoading ? (
                                     <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        <div
+                                            className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                                         Assigning...
                                     </>
                                 ) : (

@@ -438,7 +438,7 @@ const RescheduleCall = () => {
                                                     alt={c.full_name}
                                                     className="w-[80px] h-[80px] mb-3 rounded-full border-2 border-[#012765] shadow-md object-cover"
                                                 />
-                                                <h4 className="text-xl font-bold text-[#012765] text-center mb-1 leading-snug font-poppins">
+                                                <h4 className="text-xl font-[600] text-[#012765] text-center mb-1 leading-snug font-poppins">
                                                     {c.full_name} ({c.experience || '5+ years'})
                                                 </h4>
                                                 <p className="text-[#FF6600] font-semibold text-center text-sm opacity-90 font-poppins">

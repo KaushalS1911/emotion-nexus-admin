@@ -70,12 +70,12 @@ export default function AppointmentPage() {
             a.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             a.client_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             a.client_phone.includes(searchTerm);
-        
+
         const matchesDateFrom = !dateFrom || a.appointment_date >= dateFrom;
         const matchesDateTo = !dateTo || a.appointment_date <= dateTo;
-        
+
         const matchesStatus = statusFilter === "all" || a.status === statusFilter;
-        
+
         return matchesSearch && matchesDateFrom && matchesDateTo && matchesStatus;
     });
 
@@ -92,7 +92,7 @@ export default function AppointmentPage() {
     };
 
     const handleStatusChange = (appt, newStatus) => {
-        const updatedAppointments = appointments.map(a => 
+        const updatedAppointments = appointments.map(a =>
             a === appt ? { ...a, status: newStatus } : a
         );
         saveAppointmentsToStorage(updatedAppointments);
@@ -111,12 +111,12 @@ export default function AppointmentPage() {
     // Function to format time with AM/PM
     const formatTimeWithAMPM = (timeString) => {
         if (!timeString) return '';
-        
+
         // If already in AM/PM format, return as is
         if (timeString.includes('AM') || timeString.includes('PM')) {
             return timeString;
         }
-        
+
         // If it's a time range (contains dash), format both parts
         if (timeString.includes('-')) {
             const [startTime, endTime] = timeString.split('-');
@@ -124,19 +124,19 @@ export default function AppointmentPage() {
             const formattedEnd = formatSingleTime(endTime);
             return `${formattedStart}-${formattedEnd}`;
         }
-        
+
         // Single time
         return formatSingleTime(timeString);
     };
 
     const formatSingleTime = (time) => {
         if (!time) return '';
-        
+
         // If already has AM/PM, return as is
         if (time.includes('AM') || time.includes('PM')) {
             return time;
         }
-        
+
         // Handle 24-hour format (HH:MM)
         if (time.includes(':')) {
             const [hours, minutes] = time.split(':');
@@ -145,7 +145,7 @@ export default function AppointmentPage() {
             const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
             return `${displayHour}:${minutes}${ampm}`;
         }
-        
+
         // Handle other formats or return as is
         return time;
     };
@@ -302,21 +302,21 @@ export default function AppointmentPage() {
                                                             Status
                                                         </DropdownMenuSubTrigger>
                                                         <DropdownMenuSubContent>
-                                                            <DropdownMenuItem 
+                                                            <DropdownMenuItem
                                                                 onClick={() => handleStatusChange(a, 'attended')}
                                                                 className="flex items-center gap-2"
                                                             >
                                                                 <CheckCircle className="h-4 w-4 text-green-600"/>
                                                                 Attended
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem 
+                                                            <DropdownMenuItem
                                                                 onClick={() => handleStatusChange(a, 'not-attended')}
                                                                 className="flex items-center gap-2"
                                                             >
                                                                 <XCircle className="h-4 w-4 text-red-600"/>
                                                                 Not Attended
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem 
+                                                            <DropdownMenuItem
                                                                 onClick={() => handleStatusChange(a, 'rescheduled')}
                                                                 className="flex items-center gap-2"
                                                             >
@@ -325,40 +325,40 @@ export default function AppointmentPage() {
                                                             </DropdownMenuItem>
                                                         </DropdownMenuSubContent>
                                                     </DropdownMenuSub>
-                                                    
+
                                                     <DropdownMenuSeparator />
-                                                    
+
                                                     {/* Reschedule Call */}
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         onClick={() => handleReschedule(a)}
                                                         className="flex items-center gap-2"
                                                     >
                                                         <Calendar className="h-4 w-4"/>
                                                         Reschedule Call
                                                     </DropdownMenuItem>
-                                                    
+
                                                     {/* Notes */}
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         onClick={() => handleNotes(a, idx)}
                                                         className="flex items-center gap-2"
                                                     >
                                                         <FileText className="h-4 w-4"/>
                                                         Notes
                                                     </DropdownMenuItem>
-                                                    
+
                                                     {/* Recommendations */}
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         onClick={() => handleRecommendations(a)}
                                                         className="flex items-center gap-2"
                                                     >
                                                         <MessageSquare className="h-4 w-4"/>
                                                         Recommendations
                                                     </DropdownMenuItem>
-                                                    
+
                                                     <DropdownMenuSeparator />
-                                                    
+
                                                     {/* Delete */}
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         onClick={() => handleDelete(a)}
                                                         className="text-red-600 flex items-center gap-2"
                                                     >

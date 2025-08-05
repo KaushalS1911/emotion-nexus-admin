@@ -10,10 +10,10 @@ import {Settings, User, Shield, Bell, Database, Mail} from "lucide-react";
 import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {useToast} from "@/hooks/use-toast";
-import { useUserContext } from "@/UserContext";
+import {useUserContext} from "@/UserContext";
 
 export const SettingsPage = () => {
-    const { user, updateUser } = useUserContext();
+    const {user, updateUser} = useUserContext();
     const [firstName, setFirstName] = useState(user?.name?.split(" ")[0] || "");
     const [lastName, setLastName] = useState(user?.name?.split(" ")[1] || "");
     const [email, setEmail] = useState(user?.email || "");
@@ -61,7 +61,8 @@ export const SettingsPage = () => {
                     <CardContent className="space-y-6">
                         <div className="flex items-center space-x-4">
                             <Avatar className="h-20 w-20">
-                                <AvatarFallback className="bg-[#012765] text-white">{(firstName[0] || "U").toUpperCase()}{(lastName[0] || "").toUpperCase()}</AvatarFallback>
+                                <AvatarFallback
+                                    className="bg-[#012765] text-white">{(firstName[0] || "U").toUpperCase()}{(lastName[0] || "").toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <Button variant="outline">Change Avatar</Button>
@@ -72,17 +73,17 @@ export const SettingsPage = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="firstName">First Name</Label>
-                                <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                                <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)}/>
                             </div>
                             <div>
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
+                                <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)}/>
                             </div>
                         </div>
 
                         <div>
                             <Label htmlFor="email">Email Address</Label>
-                            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+                            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}/>
                         </div>
 
                         <div>
@@ -221,6 +222,7 @@ function getUsers() {
     // TODO: Replace with API call
     return JSON.parse(localStorage.getItem("users") || "[]");
 }
+
 function addUser(user: any) {
     // TODO: Replace with API call
     const users = getUsers();

@@ -328,7 +328,7 @@ export default function Users() {
                                                         <DropdownMenuItem onClick={() =>
                                                             navigate("/appointments")
                                                         }>
-                                                            <Clock className="h-4 w-4 mr-2" /> Appointments
+                                                            <Clock className="h-4 w-4 mr-2"/> Appointments
                                                         </DropdownMenuItem>
                                                     )}
                                                     <DropdownMenuItem className="text-red-600"

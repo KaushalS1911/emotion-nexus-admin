@@ -44,7 +44,7 @@ export default function AppointmentNotes() {
     const [selectedNoteIdx, setSelectedNoteIdx] = useState<number | null>(null);
 
     // Validation states
-    const [errors, setErrors] = useState<{note?: string; createdAt?: string}>({});
+    const [errors, setErrors] = useState<{ note?: string; createdAt?: string }>({});
 
     useEffect(() => {
         if (id) {
@@ -57,10 +57,10 @@ export default function AppointmentNotes() {
                 try {
                     const appointments = JSON.parse(storedAppointments);
                     const appointmentIndex = parseInt(id as string);
-                    
+
                     // Find appointment by index or by user_id
                     const appointment = appointments[appointmentIndex] || appointments.find(appt => appt.user_id === appointmentIndex);
-                    
+
                     if (appointment && appointment.client_name) {
                         setAppointmentName(appointment.client_name);
                     } else {
@@ -170,7 +170,7 @@ export default function AppointmentNotes() {
     const handleInput = (e: any) => {
         const {id, value} = e.target;
         setForm((f) => ({...f, [id]: value}));
-        
+
         // Clear error when user starts typing
         if (errors[id as keyof typeof errors]) {
             setErrors(prev => ({...prev, [id]: undefined}));
@@ -178,16 +178,16 @@ export default function AppointmentNotes() {
     };
 
     const validateForm = () => {
-        const newErrors: {note?: string; createdAt?: string} = {};
-        
+        const newErrors: { note?: string; createdAt?: string } = {};
+
         if (!form.note.trim()) {
             newErrors.note = "Note is required";
         }
-        
+
         if (!form.createdAt) {
             newErrors.createdAt = "Date and time is required";
         }
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -196,13 +196,13 @@ export default function AppointmentNotes() {
         if (!validateForm()) {
             return;
         }
-        
+
         const noteData = {
             ...form,
             createdAt: form.createdAt,
             counsellor: "Admin User"
         };
-        
+
         const newNotes = [...notes, noteData];
         setNotes(newNotes);
         localStorage.setItem(`appointment-notes-${id}`, JSON.stringify(newNotes));

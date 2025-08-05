@@ -28,6 +28,8 @@ import SlotPage from "@/pages/SlotPage";
 import NewUserPage from "@/pages/NewUserPage";
 import AppointmentPage from "@/pages/AppointmentPage.tsx";
 import ResourceFormPage from "@/pages/ResourceFormPage";
+import RescheduleCall from "@/pages/RescheduleCall";
+import Recommendations from "@/pages/Recommendations";
 
 // Role constants
 const ROLE = {
@@ -102,7 +104,8 @@ const counsellorRoutes = [
 const allRole = [
   { path: "/appointments", element: <AppointmentPage /> },
   { path: "/appointments/:id/notes", element: <AppointmentNotes /> },
-
+  { path: "/reschedule-call/:user_id", element: <RescheduleCall /> },
+  { path: "/appointments/:user_id/recommendations", element: <Recommendations /> },
 ]
 
 const App = () => (

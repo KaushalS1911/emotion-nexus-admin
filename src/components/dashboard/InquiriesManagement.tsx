@@ -14,7 +14,9 @@ import {
     Check,
     Calendar,
     TrendingUp,
-    FileText
+    FileText,
+    UserPlus,
+    Edit
 } from "lucide-react";
 import {
     Dialog,
@@ -24,13 +26,17 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
-import {MoreVertical, Eye, Edit} from "lucide-react";
+import {MoreVertical, Eye} from "lucide-react";
 import {useNavigate} from "react-router-dom";
 import {X} from "lucide-react"
+import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 
 
 const API_LIST = "https://interactapiverse.com/mahadevasth/enquiry/list";
 const API_SINGLE = (id: string | number) => `https://interactapiverse.com/mahadevasth/enquiry/${id}`;
+// API endpoint for assigning inquiries to counselors (currently not connected)
+// Expected payload: { assignedTo: "counselor_name" }
+const API_ASSIGN = (id: string | number) => `https://interactapiverse.com/mahadevasth/enquiry/${id}/assign`;
 
 
 interface InquiryBase {
@@ -95,6 +101,21 @@ const inquiryTypes = [
     "Request a Callback - Career Uncertainty",
 ];
 
+interface Counselor {
+    id: number;
+    profilePic?: string | null;
+    full_name: string;
+    phone?: string;
+    email?: string;
+    role?: string;
+    expertise?: string;
+    experience?: string;
+    education?: string;
+    status?: string;
+    joinDate?: string;
+    [key: string]: any;
+}
+
 export const InquiriesManagement = () => {
     const [inquiries, setInquiries] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -111,13 +132,43 @@ export const InquiriesManagement = () => {
     // Add a state for topCardFilter to control which card is active
     const [topCardFilter, setTopCardFilter] = useState<'all' | 'unresolved' | 'resolved'>('all');
 
+    // New states for assignment dialog
+    const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+    const [assignInquiryId, setAssignInquiryId] = useState<string | number | null>(null);
+    const [assignSearchTerm, setAssignSearchTerm] = useState("");
+    const [assignPage, setAssignPage] = useState(0);
+    const [assignRowsPerPage, setAssignRowsPerPage] = useState(5);
+    const [selectedTeamMember, setSelectedTeamMember] = useState<string | null>(null);
+    const [counselors, setCounselors] = useState<Counselor[]>([]);
+    const [counselorsLoading, setCounselorsLoading] = useState(false);
+    const [assigningLoading, setAssigningLoading] = useState(false);
+
+    // New states for edit dialog
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editInquiryId, setEditInquiryId] = useState<string | number | null>(null);
+    const [editInquiry, setEditInquiry] = useState<any | null>(null);
+    const [editStatus, setEditStatus] = useState<string>("");
+    const [editLoading, setEditLoading] = useState(false);
+
 
     useEffect(() => {
         setLoading(true);
         fetch(API_LIST)
             .then((res) => res.json())
             .then((data) => {
-                setInquiries(Array.isArray(data) ? data : data?.data || []);
+                const inquiriesData = Array.isArray(data) ? data : data?.data || [];
+                
+                // Load assignments from localStorage and merge with inquiry data
+                const inquiriesWithAssignments = inquiriesData.map((inquiry: any) => {
+                    const assignmentKey = `inquiry_assignment_${inquiry.id}`;
+                    const assignedTo = localStorage.getItem(assignmentKey);
+                    return {
+                        ...inquiry,
+                        assignedTo: assignedTo || null
+                    };
+                });
+
+                setInquiries(inquiriesWithAssignments);
             })
             .finally(() => setLoading(false));
     }, []);
@@ -138,6 +189,33 @@ export const InquiriesManagement = () => {
     useEffect(() => {
         setPage(0);
     }, [searchTerm, typeFilter, statusFilter, inquiries]);
+
+    // Fetch counselors from API
+    useEffect(() => {
+        const fetchCounselors = async () => {
+            setCounselorsLoading(true);
+            try {
+                const response = await fetch("https://interactapiverse.com/mahadevasth/counsellors");
+                if (!response.ok) throw new Error("Failed to fetch counselors");
+                const data = await response.json();
+                // Filter only users with "counsellor" role
+                const counselorsData = Array.isArray(data) ? data : data.data || [];
+                const filteredCounselors = counselorsData.filter((user: Counselor) =>
+                    user.role?.toLowerCase() === 'counsellor'
+                );
+                setCounselors(filteredCounselors);
+            } catch (error) {
+                console.error("Error fetching counselors:", error);
+                setCounselors([]);
+            } finally {
+                setCounselorsLoading(false);
+            }
+        };
+
+        if (assignDialogOpen) {
+            fetchCounselors();
+        }
+    }, [assignDialogOpen]);
 
 
     // Adjusted status filtering logic
@@ -172,6 +250,99 @@ export const InquiriesManagement = () => {
     const unresolvedInquiries = inquiries.filter(i => String(i.status).toLowerCase() !== 'resolved').length;
     const resolvedInquiries = filteredInquiries.filter(i => String(i.status).toLowerCase() === 'resolved').length;
     const completionRate = totalInquiries > 0 ? ((resolvedInquiries / totalInquiries) * 100).toFixed(0) : '0';
+
+    // Filter counselors based on search
+    const filteredCounselors = counselors.filter((counselor) =>
+        counselor.full_name?.toLowerCase().includes(assignSearchTerm.toLowerCase()) ||
+        counselor.email?.toLowerCase().includes(assignSearchTerm.toLowerCase()) ||
+        counselor.expertise?.toLowerCase().includes(assignSearchTerm.toLowerCase())
+    );
+
+    const paginatedCounselors = filteredCounselors.slice(
+        assignPage * assignRowsPerPage,
+        assignPage * assignRowsPerPage + assignRowsPerPage
+    );
+    const totalAssignPages = Math.ceil(filteredCounselors.length / assignRowsPerPage);
+
+    // Handle assignment
+    const handleAssignInquiry = (inquiryId: string | number) => {
+        setAssignInquiryId(inquiryId);
+        setAssignDialogOpen(true);
+        setAssignSearchTerm("");
+        setAssignPage(0);
+
+        // Find the current inquiry to get the assigned counselor
+        const currentInquiry = inquiries.find(inquiry => inquiry.id === inquiryId);
+        const previouslyAssigned = currentInquiry?.assignedTo || null;
+        setSelectedTeamMember(previouslyAssigned);
+    };
+
+    const handleConfirmAssignment = async () => {
+        if (selectedTeamMember && assignInquiryId) {
+            setAssigningLoading(true);
+            try {
+                // Find the current inquiry to check if assignment is the same
+                const currentInquiry = inquiries.find(inquiry => inquiry.id === assignInquiryId);
+                const previouslyAssigned = currentInquiry?.assignedTo;
+
+                // If the same counselor is already assigned, just close the dialog
+                if (previouslyAssigned === selectedTeamMember) {
+                    alert(`Inquiry is already assigned to ${selectedTeamMember}`);
+                    setAssignDialogOpen(false);
+                    setAssignInquiryId(null);
+                    setSelectedTeamMember(null);
+                    setAssigningLoading(false);
+                    return;
+                }
+
+                // TODO: Uncomment when API is ready
+                // Make API call to assign the inquiry
+                /*
+                const response = await fetch(API_ASSIGN(assignInquiryId), {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        assignedTo: selectedTeamMember
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to assign inquiry');
+                }
+                */
+
+                // Static assignment for now - save to localStorage
+                const assignmentKey = `inquiry_assignment_${assignInquiryId}`;
+                localStorage.setItem(assignmentKey, selectedTeamMember);
+
+                // Update the inquiry in the local state
+                setInquiries(prev => prev.map(inquiry =>
+                    inquiry.id === assignInquiryId
+                        ? { ...inquiry, assignedTo: selectedTeamMember }
+                        : inquiry
+                ));
+
+                console.log(`Successfully assigned inquiry ${assignInquiryId} to ${selectedTeamMember}`);
+
+                // Show success message
+                const message = previouslyAssigned
+                    ? `Successfully reassigned inquiry from ${previouslyAssigned} to ${selectedTeamMember}`
+                    : `Successfully assigned inquiry to ${selectedTeamMember}`;
+                alert(message);
+
+                setAssignDialogOpen(false);
+                setAssignInquiryId(null);
+                setSelectedTeamMember(null);
+            } catch (error) {
+                console.error('Error assigning inquiry:', error);
+                alert('Failed to assign inquiry. Please try again.');
+            } finally {
+                setAssigningLoading(false);
+            }
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -321,6 +492,7 @@ export const InquiriesManagement = () => {
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Date</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Inquiry Type</th>
+                                    <th className="text-left py-4 px-2 font-medium text-gray-600">Counselor Name</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Message</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Status</th>
                                     <th className="text-left py-4 px-2 font-medium text-gray-600">Actions</th>
@@ -342,6 +514,13 @@ export const InquiriesManagement = () => {
                                         <td className="py-4 px-2">
                                             <Badge
                                                 className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
+                                        </td>
+                                        <td className="py-4 px-2">
+                                            {inquiry.assignedTo ? (
+                                                <span className="text-[#012765] font-medium">{inquiry.assignedTo}</span>
+                                            ) : (
+                                                <span className="text-gray-400">-</span>
+                                            )}
                                         </td>
                                         <td className="py-4 px-2 max-w-xs truncate"
                                             title={inquiry.message}>{inquiry.message}</td>
@@ -371,6 +550,13 @@ export const InquiriesManagement = () => {
                                                     >
                                                         <Eye className="h-4 w-4 mr-2 text-gray-600"/>
                                                         View Inquiry
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleAssignInquiry(inquiry.id)}
+                                                        className="flex items-center gap-2"
+                                                    >
+                                                        <UserPlus className="h-4 w-4 mr-2 text-gray-600"/>
+                                                        Assign Inquiry
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/inquiries/${inquiry.id}/notes`)}
@@ -456,7 +642,7 @@ export const InquiriesManagement = () => {
                                 ))}
                                 {filteredInquiries.length === 0 && (
                                     <tr>
-                                        <td className="py-4 px-2 text-center" colSpan={6}>No inquiries found.</td>
+                                        <td className="py-4 px-2 text-center" colSpan={9}>No inquiries found.</td>
                                     </tr>
                                 )}
                                 </tbody>
@@ -519,6 +705,200 @@ export const InquiriesManagement = () => {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Assignment Dialog */}
+            <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                    {/*<button*/}
+                    {/*    onClick={() => setAssignDialogOpen(false)}*/}
+                    {/*    className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"*/}
+                    {/*>*/}
+                    {/*    <X className="h-5 w-5"/>*/}
+                    {/*    <span className="sr-only">Close</span>*/}
+                    {/*</button>*/}
+                    <DialogHeader>
+                        <DialogTitle>Assign Inquiry to Counselor</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        {/* Search for counselors */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+                            <Input
+                                placeholder="Search counselors by name, email"
+                                value={assignSearchTerm}
+                                onChange={(e) => setAssignSearchTerm(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+
+                        {/* Counselors table */}
+                        <div className="overflow-x-auto">
+                            {counselorsLoading ? (
+                                <div className="p-8 text-center text-gray-500">Loading counselors...</div>
+                            ) : (
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-100">
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">#</th>
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Profile</th>
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
+                                            {/*<th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>*/}
+                                            <th className="text-left py-4 px-2 font-medium text-gray-600">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedCounselors.map((counselor, idx) => (
+                                            <tr key={counselor.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                                <td className="py-4 px-2">{assignPage * assignRowsPerPage + idx + 1}</td>
+                                                <td className="py-4 px-2">
+                                                    {counselor.profilePic ? (
+                                                        <img src={counselor.profilePic} alt="Profile"
+                                                             className="w-10 h-10 rounded-full object-cover"/>
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                            {counselor.full_name?.[0] || "?"}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="py-4 px-2">{counselor.full_name}</td>
+                                                <td className="py-4 px-2">{counselor.email}</td>
+                                                <td className="py-4 px-2">{counselor.phone || "-"}</td>
+                                                {/*<td className="py-4 px-2">*/}
+                                                {/*    <Badge className="bg-blue-100 text-blue-800">*/}
+                                                {/*        {counselor.expertise || "General"}*/}
+                                                {/*    </Badge>*/}
+                                                {/*</td>*/}
+                                                <td className="py-4 px-2">
+                                                    <Button
+                                                        variant={selectedTeamMember === counselor.full_name ? "default" : "outline"}
+                                                        size="sm"
+                                                        onClick={() => setSelectedTeamMember(counselor.full_name)}
+                                                        className={selectedTeamMember === counselor.full_name ? "bg-[#012765] text-white" : ""}
+                                                    >
+                                                        {selectedTeamMember === counselor.full_name ? "Selected" : "Select"}
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredCounselors.length === 0 && !counselorsLoading && (
+                                            <tr>
+                                                <td className="py-4 px-2 text-center" colSpan={7}>No counselors found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+
+                        {/* Assignment pagination */}
+                        {filteredCounselors.length > 0 && !counselorsLoading && (
+                            <div className="w-full flex justify-end">
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <button
+                                        className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                                        onClick={() => setAssignPage(assignPage - 1)}
+                                        disabled={assignPage === 0}
+                                        aria-label="Previous page"
+                                    >
+                                        &#60;
+                                    </button>
+                                    <span className="font-medium">
+        {assignPage * assignRowsPerPage + 1} -{" "}
+                                        {Math.min((assignPage + 1) * assignRowsPerPage, filteredCounselors.length)}
+      </span>
+                                    <span className="text-gray-400">of</span>
+                                    <span className="font-semibold text-[#012765] text-base ml-2">
+        {filteredCounselors.length}
+      </span>
+                                    <button
+                                        className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                                        onClick={() => setAssignPage(assignPage + 1)}
+                                        disabled={assignPage >= totalAssignPages - 1}
+                                        aria-label="Next page"
+                                    >
+                                        &#62;
+                                    </button>
+                                    <span className="text-sm text-gray-500 ml-4">Rows per page:</span>
+
+                                    <Select
+                                        value={
+                                            assignRowsPerPage === filteredCounselors.length
+                                                ? "All"
+                                                : String(assignRowsPerPage)
+                                        }
+                                        onValueChange={(val) => {
+                                            if (val === "All") {
+                                                setAssignRowsPerPage(filteredCounselors.length);
+                                            } else {
+                                                setAssignRowsPerPage(Number(val));
+                                            }
+                                            setAssignPage(0);
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-20 h-8 border-gray-200 rounded-md shadow-sm text-gray-700 text-sm focus:ring-2">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="w-20 rounded-md shadow-lg border-gray-200">
+                                            <SelectItem
+                                                value="5"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden"
+                                            >
+                                                5
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="10"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden"
+                                            >
+                                                10
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="25"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden"
+                                            >
+                                                25
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="All"
+                                                className="text-gray-800 data-[state=checked]:bg-gray-200 data-[state=checked]:text-black [&>[data-select-item-indicator]]:hidden"
+                                            >
+                                                All
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* Action buttons */}
+                        <div className="flex justify-end gap-2 pt-4 border-t">
+                            <Button
+                                variant="outline"
+                                onClick={() => setAssignDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleConfirmAssignment}
+                                disabled={!selectedTeamMember || assigningLoading}
+                                className="bg-[#012765] text-white hover:bg-[#012765]/90"
+                            >
+                                {assigningLoading ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Assigning...
+                                    </>
+                                ) : (
+                                    "Assign Inquiry"
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

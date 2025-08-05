@@ -29,7 +29,7 @@ export default function AppointmentNotes() {
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<Note>({
         note: "",
-        createdAt: new Date().toISOString().slice(0, 16),
+        createdAt: "",
         counsellor: "Admin User",
     });
     const [appointmentName, setAppointmentName] = useState("");
@@ -43,38 +43,95 @@ export default function AppointmentNotes() {
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [selectedNoteIdx, setSelectedNoteIdx] = useState<number | null>(null);
 
+    // Validation states
+    const [errors, setErrors] = useState<{note?: string; createdAt?: string}>({});
+
     useEffect(() => {
         if (id) {
             const stored = localStorage.getItem(`appointment-notes-${id}`);
             if (stored) setNotes(JSON.parse(stored));
 
-            // Get client name from mock data using the index
-            const MOCK_APPOINTMENTS = [
-                {
-                    user_id: 1,
-                    appointment_date: "2025-08-10",
-                    slot_time: "10:00AM-11:00AM",
-                    client_name: "Rahul Jain",
-                    client_email: "rahul@example.com",
-                    client_phone: "9876501234",
-                    consultation_reason: "Exam stress and sleep issues",
-                    notes: "Prefers Hindi-speaking counsellor",
-                },
-                {
-                    user_id: 1,
-                    appointment_date: "2025-08-10",
-                    slot_time: "10:00AM-11:00AM",
-                    client_name: "Rahul Jain",
-                    client_email: "rahul@example.com",
-                    client_phone: "9876501234",
-                    consultation_reason: "Exam stress and sleep issues",
-                    notes: "Prefers Hindi-speaking counsellor",
-                },
-            ];
+            // Get client name from actual appointments in localStorage
+            const storedAppointments = localStorage.getItem('appointments');
+            if (storedAppointments) {
+                try {
+                    const appointments = JSON.parse(storedAppointments);
+                    const appointmentIndex = parseInt(id as string);
+                    
+                    // Find appointment by index or by user_id
+                    const appointment = appointments[appointmentIndex] || appointments.find(appt => appt.user_id === appointmentIndex);
+                    
+                    if (appointment && appointment.client_name) {
+                        setAppointmentName(appointment.client_name);
+                    } else {
+                        // Fallback to mock data if not found
+                        const MOCK_APPOINTMENTS = [
+                            {
+                                user_id: 1,
+                                appointment_date: "2025-08-10",
+                                slot_time: "10:00AM-11:00AM",
+                                client_name: "Rahul Jain",
+                                client_email: "rahul@example.com",
+                                client_phone: "9876501234",
+                                consultation_reason: "Exam stress and sleep issues",
+                                notes: "Prefers Hindi-speaking counsellor",
+                            },
+                            {
+                                user_id: 1,
+                                appointment_date: "2025-08-10",
+                                slot_time: "10:00AM-11:00AM",
+                                client_name: "Rahul Jain",
+                                client_email: "rahul@example.com",
+                                client_phone: "9876501234",
+                                consultation_reason: "Exam stress and sleep issues",
+                                notes: "Prefers Hindi-speaking counsellor",
+                            },
+                        ];
 
-            const appointmentIndex = parseInt(id as string);
-            if (MOCK_APPOINTMENTS[appointmentIndex]) {
-                setAppointmentName(MOCK_APPOINTMENTS[appointmentIndex].client_name);
+                        if (MOCK_APPOINTMENTS[appointmentIndex]) {
+                            setAppointmentName(MOCK_APPOINTMENTS[appointmentIndex].client_name);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error parsing appointments from localStorage:', error);
+                    // Fallback to mock data
+                    const MOCK_APPOINTMENTS = [
+                        {
+                            user_id: 1,
+                            appointment_date: "2025-08-10",
+                            slot_time: "10:00AM-11:00AM",
+                            client_name: "Rahul Jain",
+                            client_email: "rahul@example.com",
+                            client_phone: "9876501234",
+                            consultation_reason: "Exam stress and sleep issues",
+                            notes: "Prefers Hindi-speaking counsellor",
+                        },
+                    ];
+
+                    const appointmentIndex = parseInt(id as string);
+                    if (MOCK_APPOINTMENTS[appointmentIndex]) {
+                        setAppointmentName(MOCK_APPOINTMENTS[appointmentIndex].client_name);
+                    }
+                }
+            } else {
+                // Fallback to mock data if no appointments in localStorage
+                const MOCK_APPOINTMENTS = [
+                    {
+                        user_id: 1,
+                        appointment_date: "2025-08-10",
+                        slot_time: "10:00AM-11:00AM",
+                        client_name: "Rahul Jain",
+                        client_email: "rahul@example.com",
+                        client_phone: "9876501234",
+                        consultation_reason: "Exam stress and sleep issues",
+                        notes: "Prefers Hindi-speaking counsellor",
+                    },
+                ];
+
+                const appointmentIndex = parseInt(id as string);
+                if (MOCK_APPOINTMENTS[appointmentIndex]) {
+                    setAppointmentName(MOCK_APPOINTMENTS[appointmentIndex].client_name);
+                }
             }
         }
     }, [id]);
@@ -113,14 +170,45 @@ export default function AppointmentNotes() {
     const handleInput = (e: any) => {
         const {id, value} = e.target;
         setForm((f) => ({...f, [id]: value}));
+        
+        // Clear error when user starts typing
+        if (errors[id as keyof typeof errors]) {
+            setErrors(prev => ({...prev, [id]: undefined}));
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors: {note?: string; createdAt?: string} = {};
+        
+        if (!form.note.trim()) {
+            newErrors.note = "Note is required";
+        }
+        
+        if (!form.createdAt) {
+            newErrors.createdAt = "Date and time is required";
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = () => {
-        const newNotes = [...notes, form];
+        if (!validateForm()) {
+            return;
+        }
+        
+        const noteData = {
+            ...form,
+            createdAt: form.createdAt,
+            counsellor: "Admin User"
+        };
+        
+        const newNotes = [...notes, noteData];
         setNotes(newNotes);
         localStorage.setItem(`appointment-notes-${id}`, JSON.stringify(newNotes));
         setModalOpen(false);
-        setForm({note: "", createdAt: new Date().toISOString().slice(0, 16), counsellor: "Admin User"});
+        setForm({note: "", createdAt: "", counsellor: "Admin User"});
+        setErrors({});
     };
 
     return (
@@ -314,8 +402,11 @@ export default function AppointmentNotes() {
                                 value={form.note}
                                 onChange={handleInput}
                                 placeholder="Enter note..."
-                                className="min-h-[80px]"
+                                className={`min-h-[80px] ${errors.note ? 'border-red-500 focus:ring-red-500' : ''}`}
                             />
+                            {errors.note && (
+                                <p className="text-red-500 text-sm mt-1">{errors.note}</p>
+                            )}
                         </div>
                         <div>
                             <Label htmlFor="createdAt">Created At</Label>
@@ -324,18 +415,19 @@ export default function AppointmentNotes() {
                                 type="datetime-local"
                                 value={form.createdAt}
                                 onChange={handleInput}
+                                placeholder="Select date and time"
+                                className={errors.createdAt ? 'border-red-500 focus:ring-red-500' : ''}
                             />
-                        </div>
-                        <div>
-                            <Label htmlFor="counsellor">Counsellor Name</Label>
-                            <Input
-                                id="counsellor"
-                                value={form.counsellor}
-                                onChange={handleInput}
-                            />
+                            {errors.createdAt && (
+                                <p className="text-red-500 text-sm mt-1">{errors.createdAt}</p>
+                            )}
                         </div>
                         <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={() => setModalOpen(false)}>
+                            <Button variant="outline" onClick={() => {
+                                setModalOpen(false);
+                                setErrors({});
+                                setForm({note: "", createdAt: "", counsellor: "Admin User"});
+                            }}>
                                 Cancel
                             </Button>
                             <Button onClick={handleSubmit} className="bg-[#FF7119] text-white">

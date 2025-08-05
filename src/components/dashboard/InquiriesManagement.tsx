@@ -531,7 +531,7 @@ export const InquiriesManagement = () => {
                                         </td>
                                         <td className="py-4 px-2">
                                             {inquiry.assignedTo ? (
-                                                <span className="text-[#012765] font-medium">{inquiry.assignedTo}</span>
+                                                <span className="text-[#000] font-medium">{inquiry.assignedTo}</span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
@@ -760,14 +760,16 @@ export const InquiriesManagement = () => {
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
-                                        {/*<th className="text-left py-4 px-2 font-medium text-gray-600">Expertise</th>*/}
-                                        <th className="text-left py-4 px-2 font-medium text-gray-600">Select</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {paginatedCounselors.map((counselor, idx) => (
                                         <tr key={counselor.id}
-                                            className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                            className={`border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
+                                                selectedTeamMember === counselor.full_name ? 'bg-blue-50' : ''
+                                            }`}
+                                            onClick={() => setSelectedTeamMember(counselor.full_name)}
+                                        >
                                             <td className="py-4 px-2">{assignPage * assignRowsPerPage + idx + 1}</td>
                                             <td className="py-4 px-2">
                                                 {counselor.profilePic ? (
@@ -783,28 +785,8 @@ export const InquiriesManagement = () => {
                                             <td className="py-4 px-2">{counselor.full_name}</td>
                                             <td className="py-4 px-2">{counselor.email}</td>
                                             <td className="py-4 px-2">{counselor.phone || "-"}</td>
-                                            {/*<td className="py-4 px-2">*/}
-                                            {/*    <Badge className="bg-blue-100 text-blue-800">*/}
-                                            {/*        {counselor.expertise || "General"}*/}
-                                            {/*    </Badge>*/}
-                                            {/*</td>*/}
-                                            <td className="py-4 px-2">
-                                                <Button
-                                                    variant={selectedTeamMember === counselor.full_name ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => setSelectedTeamMember(counselor.full_name)}
-                                                    className={selectedTeamMember === counselor.full_name ? "bg-[#012765] text-white" : ""}
-                                                >
-                                                    {selectedTeamMember === counselor.full_name ? "Selected" : "Select"}
-                                                </Button>
-                                            </td>
                                         </tr>
                                     ))}
-                                    {filteredCounselors.length === 0 && !counselorsLoading && (
-                                        <tr>
-                                            <td className="py-4 px-2 text-center" colSpan={7}>No counselors found.</td>
-                                        </tr>
-                                    )}
                                     </tbody>
                                 </table>
                             )}

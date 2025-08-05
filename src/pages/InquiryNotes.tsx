@@ -125,13 +125,6 @@ export default function InquiryNotes() {
         
         if (!form.createdAt) {
             newErrors.createdAt = "Date and time is required";
-        } else {
-            // Check if the selected date is not in the future
-            const selectedDate = new Date(form.createdAt);
-            const now = new Date();
-            if (selectedDate > now) {
-                newErrors.createdAt = "Date cannot be in the future";
-            }
         }
         
         setErrors(newErrors);

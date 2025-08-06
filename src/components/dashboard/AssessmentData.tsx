@@ -746,7 +746,7 @@ export const AssessmentData = () => {
                                     className="border-b hover:bg-gray-50"
                                 >
                                     <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
-                                    <td className="py-3 px-2 font-medium text-gray-800">
+                                    <td className="py-3 px-2 text-[15px] text-gray-800">
                                         {assessment.userName}
                                     </td>
                                     {/*<td className="py-3 px-2">*/}
@@ -766,10 +766,10 @@ export const AssessmentData = () => {
                                             {assessment.score}
                                         </Badge>
                                     </td>
-                                    <td className="py-3 px-2 text-gray-600">
+                                    <td className="py-3 px-2 text-[15px] text-gray-600">
                                         {assessment.duration} min
                                     </td>
-                                    <td className="py-3 px-2 text-gray-600">
+                                    <td className="py-3 px-2 text-[15px] text-gray-600">
                                         {new Date(assessment.date).toLocaleDateString()}
                                     </td>
                                     <td className="py-3 px-2">

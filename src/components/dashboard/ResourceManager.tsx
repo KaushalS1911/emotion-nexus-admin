@@ -813,8 +813,8 @@ export const ResourceManager = () => {
                                     <span className="text-xs text-gray-400">No Image</span>
                                 )}
                             </td>
-                            <td className="px-4 py-2 font-semibold text-gray-900 max-w-xs truncate">{resource.title}</td>
-                            <td className="px-4 py-2 text-gray-700">{resource.author}</td>
+                            <td className="px-4 py-2 font-semibold text-[15px] text-gray-900 max-w-xs truncate">{resource.title}</td>
+                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.author}</td>
                             <td className="px-4 py-2">
                                 <Badge
                                     className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
@@ -835,16 +835,16 @@ export const ResourceManager = () => {
                                     {platformOptions.find((p) => p.value === resource.platform)?.label || resource.platform}
                                 </Badge>
                             </td>
-                            <td className="px-4 py-2 text-gray-700">{resource.age}</td>
+                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.age}</td>
                             <td className="px-4 py-2">
                                 <Badge
                                     className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
                                     {statusOptions.find((s) => s.value === resource.status)?.label || resource.status}
                                 </Badge>
                             </td>
-                            <td className="px-4 py-2 text-gray-700">{new Date(resource.publishDate).toLocaleDateString()}</td>
-                            <td className="px-4 py-2 text-gray-700">{resource.views.toLocaleString()}</td>
-                            <td className="px-4 py-2 text-gray-700">{resource.likes}</td>
+                            <td className="px-4 py-2 text-gray-700 text-[15px]">{new Date(resource.publishDate).toLocaleDateString()}</td>
+                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.views.toLocaleString()}</td>
+                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.likes}</td>
                             <td className="px-4 py-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>

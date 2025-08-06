@@ -517,11 +517,11 @@ export const InquiriesManagement = () => {
                                 {paginatedInquiries.map((inquiry, idx) => (
                                     <tr key={inquiry.id}
                                         className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 px-2">{page * rowsPerPage + idx + 1}</td>
-                                        <td className="py-4 px-2">{inquiry.name}</td>
-                                        <td className="py-4 px-2">{inquiry.email}</td>
-                                        <td className="py-4 px-2">{inquiry.mobile || "-"}</td>
-                                        <td className="py-4 px-2">
+                                        <td className="py-4 px-2 text-[15px]">{page * rowsPerPage + idx + 1}</td>
+                                        <td className="py-4 px-2 text-[15px]">{inquiry.name}</td>
+                                        <td className="py-4 px-2 text-[15px]">{inquiry.email}</td>
+                                        <td className="py-4 px-2 text-[15px]">{inquiry.mobile || "-"}</td>
+                                        <td className="py-4 px-2 text-[15px]">
                                             {new Date(inquiry.created_at).toLocaleDateString("en-GB")}
                                         </td>
 
@@ -529,14 +529,14 @@ export const InquiriesManagement = () => {
                                             <Badge
                                                 className="bg-blue-100 text-blue-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">{inquiry.enquiry_type}</Badge>
                                         </td>
-                                        <td className="py-4 px-2">
+                                        <td className="py-4 px-2 text-[15px]">
                                             {inquiry.assignedTo ? (
                                                 <span className="text-[#000] font-medium">{inquiry.assignedTo}</span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
                                         </td>
-                                        <td className="py-4 px-2 max-w-xs truncate"
+                                        <td className="py-4 px-2 text-[15px] max-w-xs truncate"
                                             title={inquiry.message}>{inquiry.message}</td>
                                         <td className="py-4 px-2">
                                             <Badge className={

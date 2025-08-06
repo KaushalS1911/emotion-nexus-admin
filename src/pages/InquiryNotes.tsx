@@ -9,7 +9,7 @@ import {Label} from "@/components/ui/label";
 import {ArrowLeft} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {format} from "date-fns";
-import {Search, X} from "lucide-react";
+import {Search, X, Calendar, Clock} from "lucide-react";
 import { Eye } from "lucide-react";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
 import {MoreHorizontal} from "lucide-react";
@@ -25,6 +25,26 @@ interface Note {
 
 const API_SINGLE = (id: string | number) => `https://interactapiverse.com/mahadevasth/enquiry/${id}`;
 
+// Helper function to format time in AM/PM format
+const formatTimeAMPM = (timeString: string) => {
+    if (!timeString) return "";
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+};
+
+// Helper function to get current time in HH:mm format (IST: UTC+5:30)
+const getCurrentTime = () => {
+    const now = new Date();
+    // Add 5 hours and 30 minutes for IST
+    const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    const hours = istTime.getHours().toString().padStart(2, '0');
+    const minutes = istTime.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+
 export default function InquiryNotes() {
     const {id} = useParams();
     const navigate = useNavigate();
@@ -32,7 +52,7 @@ export default function InquiryNotes() {
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<Note>({
         note: "",
-        createdAt: "T",
+        createdAt: "",
         counsellor: "Admin User",
     });
     const [inquiryName, setInquiryName] = useState("");
@@ -45,6 +65,7 @@ export default function InquiryNotes() {
 
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [selectedNoteIdx, setSelectedNoteIdx] = useState<number | null>(null);
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
 
     // Validation states
     const [errors, setErrors] = useState<{note?: string; createdAt?: string}>({});
@@ -123,12 +144,6 @@ export default function InquiryNotes() {
             newErrors.note = "Note is required";
         }
         
-        // Check if date and time are properly selected
-        const [datePart, timePart] = form.createdAt.split('T');
-        if (!datePart || !timePart || datePart === '' || timePart === '') {
-            newErrors.createdAt = "Both date and time are required";
-        }
-        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -148,8 +163,9 @@ export default function InquiryNotes() {
         setNotes(newNotes);
         localStorage.setItem(`inquiry-notes-${id}`, JSON.stringify(newNotes));
         setModalOpen(false);
-        setForm({note: "", createdAt: "T", counsellor: "Admin User"});
+        setForm({note: "", createdAt: "", counsellor: "Admin User"});
         setErrors({});
+        setSuccessDialogOpen(true);
     };
 
     return (
@@ -163,7 +179,14 @@ export default function InquiryNotes() {
                     <h1 className="text-3xl font-bold text-[#FF7119]">Inquiries Notes</h1>
                     <p className="text-gray-600 mt-2 text-[#012765]">All notes for Inquiry #{id}</p>
                 </div>
-                <Button className="bg-[#012765] text-white" onClick={() => setModalOpen(true)}>
+                <Button className="bg-[#012765] text-white" onClick={() => {
+                    setForm({
+                        note: "",
+                        createdAt: new Date().toISOString().slice(0, 16).replace('T', 'T'),
+                        counsellor: "Admin User"
+                    });
+                    setModalOpen(true);
+                }}>
                     + Add Note
                 </Button>
             </div>
@@ -328,7 +351,7 @@ export default function InquiryNotes() {
                             onClick={() => {
                                 setModalOpen(false);
                                 setErrors({});
-                                setForm({note: "", createdAt: "T", counsellor: "Admin User"});
+                                setForm({note: "", createdAt: "", counsellor: "Admin User"});
                             }}
                             className="ml-2 rounded-full p-1 hover:bg-[#FF7119] transition-colors flex items-center justify-center"
                             style={{lineHeight: 0}}
@@ -359,38 +382,23 @@ export default function InquiryNotes() {
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
-                                    <DateInputButton
-                                        value={form.createdAt.split('T')[0] || ""}
-                                        onChange={(date) => {
-                                            const time = form.createdAt.split('T')[1] || "";
-                                            setForm(prev => ({
-                                                ...prev,
-                                                createdAt: `${date}T${time}`
-                                            }));
-                                        }}
-                                        placeholder="Select date"
-                                        title="Select Created Date"
-                                    />
+                                    <div className="h-10 flex items-center justify-between border border-gray-300 rounded-lg bg-gray-50 px-3 text-gray-700">
+                                        <span className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-[#FF6600]" />
+                                            {form.createdAt.split('T')[0]}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
-                                    <TimeInputButton
-                                        value={form.createdAt.split('T')[1] || ""}
-                                        onChange={(time) => {
-                                            const date = form.createdAt.split('T')[0] || "";
-                                            setForm(prev => ({
-                                                ...prev,
-                                                createdAt: `${date}T${time}`
-                                            }));
-                                        }}
-                                        placeholder="Select time"
-                                        title="Select Created Time"
-                                    />
+                                    <div className="h-10 flex items-center justify-between border border-gray-300 rounded-lg bg-gray-50 px-3 text-gray-700">
+                                        <span className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4 text-[#FF6600]" />
+                                            {formatTimeAMPM(form.createdAt.split('T')[1] || getCurrentTime())}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            {errors.createdAt && (
-                                <p className="text-red-500 text-sm mt-1">{errors.createdAt}</p>
-                            )}
                         </div>
                         
                         <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
@@ -454,6 +462,28 @@ export default function InquiryNotes() {
                             </div>
                         );
                     })()}
+                </DialogContent>
+            </Dialog>
+            
+            {/* Success Dialog */}
+            <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                <DialogContent className="max-w-md mx-auto">
+                    <div className="text-center space-y-6 p-6">
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-bold text-[#012765]">
+                                Note Added Successfully!
+                            </h2>
+                            <p className="text-[#012765] text-sm">
+                                Thank you for adding the note. It has been saved successfully!
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => setSuccessDialogOpen(false)}
+                            className="w-full bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                        >
+                            OK
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 

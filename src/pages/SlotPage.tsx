@@ -75,6 +75,7 @@ function SlotPage() {
     const [multiSlotDialogOpen, setMultiSlotDialogOpen] = useState(false);
     const [multiSlotDate, setMultiSlotDate] = useState<string | null>(null);
     const [timeOfDayFilter, setTimeOfDayFilter] = useState('all');
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
 
     // Fetch slots from API on mount
     useEffect(() => {
@@ -272,6 +273,7 @@ function SlotPage() {
                 setSlots(flat);
             });
         setDialogOpen(false);
+        setSuccessDialogOpen(true);
     };
 
     // Legend/filter options
@@ -622,6 +624,29 @@ function SlotPage() {
                     </div>
                 </DialogContent>
             </Dialog>
+            
+            {/* Success Dialog */}
+            <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                <DialogContent className="max-w-md mx-auto">
+                    <div className="text-center space-y-6 p-6">
+                        <div className="space-y-4">
+                            <h2 className="text-[20px] font-bold text-[#012765]">
+                                Slot Created Successfully!
+                            </h2>
+                            <p className="text-[#012765] text-sm">
+                                Thank you for creating the slot. It has been saved successfully!
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => setSuccessDialogOpen(false)}
+                            className="w-full bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                        >
+                            OK
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            
             {/* Style calendar navigation buttons */}
             <style>{`
                 .rbc-toolbar button {

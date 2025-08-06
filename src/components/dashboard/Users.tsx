@@ -65,6 +65,7 @@ export default function Users() {
     const [credentialsUser, setCredentialsUser] = useState<User | null>(null);
     const [credentialsForm, setCredentialsForm] = useState({user_id: null, username: '', password: ''});
     const [showPassword, setShowPassword] = useState(false);
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
     const {toast} = useToast();
 
     useEffect(() => {
@@ -182,11 +183,8 @@ export default function Users() {
             if (!response.ok) {
                 throw new Error("Failed to add credentials");
             }
-            toast({
-                title: "Credentials added",
-                description: "Credentials added successfully!",
-            });
             setAddCredentialsDialogOpen(false);
+            setSuccessDialogOpen(true);
         } catch (error: any) {
             toast({
                 title: "Error adding credentials",
@@ -452,6 +450,28 @@ export default function Users() {
                         </DialogContent>
                     </Dialog>
                     {/* End Add Credentials Dialog */}
+                    
+                    {/* Success Dialog */}
+                    <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                        <DialogContent className="max-w-md mx-auto">
+                            <div className="text-center space-y-6 p-6">
+                                <div className="space-y-4">
+                                    <h2 className="text-[20px] font-bold text-[#012765]">
+                                        Credentials Added Successfully!
+                                    </h2>
+                                    <p className="text-[#012765] text-sm">
+                                        Thank you for adding the credentials. They have been saved successfully!
+                                    </p>
+                                </div>
+                                <Button 
+                                    onClick={() => setSuccessDialogOpen(false)}
+                                    className="w-full bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                                >
+                                    OK
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                     {/* View User Dialog */}
                     {/*<Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>*/}
                     {/*    <DialogContent className="max-w-md p-0 bg-transparent">*/}

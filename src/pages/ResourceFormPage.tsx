@@ -7,6 +7,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Textarea} from "@/components/ui/textarea";
 import {ArrowLeft, X} from "lucide-react";
 import {Card} from "@/components/ui/card.tsx";
+import axios from "axios";
 
 // --- Types and helpers (from ResourceManager) ---
 type ResourceFormErrors = {
@@ -93,6 +94,11 @@ export default function ResourceFormPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const emptyInputRef = useRef<HTMLInputElement>(null);
 
+    // API states
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [apiSuccess, setApiSuccess] = useState<string | null>(null);
+
     // Load resource for edit
     useEffect(() => {
         if (isEdit) {
@@ -169,32 +175,131 @@ export default function ResourceFormPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    // --- Save ---
-    const handleSave = () => {
-        if (!validateForm()) return;
-        const stored = localStorage.getItem("resources");
-        let resources = stored ? JSON.parse(stored) : [];
-        if (isEdit) {
-            resources = resources.map((r: any) =>
-                String(r.id) === String(id)
-                    ? {...r, ...form, tags: form.tags, thumbnail: thumbPreview, emptyImage: emptyPreview}
-                    : r
-            );
-        } else {
-            const newResource = {
-                ...form,
-                id: Date.now(),
-                tags: form.tags,
-                thumbnail: thumbPreview,
-                emptyImage: emptyPreview,
-                publishDate: new Date().toISOString().slice(0, 10),
-                views: 0,
-                likes: 0,
-            };
-            resources = [newResource, ...resources];
+    // API function to create article
+    const createArticleAPI = async (formData: any) => {
+        console.log("hiii")
+        setIsLoading(true);
+        setApiError(null);
+        setApiSuccess(null);
+
+        try {
+            // const payload = {
+            //     title: formData.title || "Mindful Journaling",
+            //     description: formData.description || "Using journals to reflect and grow emotionally.",
+            //     author: formData.author || "Dr. Meena",
+            //     image: formData.thumbnail || "https://example.com/img.jpg",
+            //     type: "Article",
+            //     category: formData.category || "Reflection",
+            //     platform: formData.platform || "App",
+            //     audience_age: formData.age || "13+",
+            //     status: "Published",
+            //     tags: formData.tags || ["journaling", "mental health"],
+            //     resource_status: "Live",
+            //     admin_approval: "approved"
+            // };
+
+            const payload = {
+                title: "Mindful Journaling",
+                description: "Using journals to reflect and grow emotionally.",
+                author: "Dr. Meena",
+                image: "https://example.com/img.jpg",
+                type: "Article",
+                category: "Reflection",
+                platform: "App",
+                audience_age: "13+",
+                status: "Published",
+                tags: [
+                    "journaling",
+                    "mental health"
+                ],
+                resource_status: "Live",
+                admin_approval: "approved"
+            }
+            console.log(payload);
+
+            const response = await axios.post('https://www.interactapiverse.com/mahadevasth/shape/article', payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            console.log(response);
+
+            const createdArticle = response.data;
+            console.log('Created article response:', createdArticle);
+
+            setApiSuccess('Article created successfully via API!');
+            setTimeout(() => setApiSuccess(null), 3000);
+
+            return createdArticle;
+        } catch (error) {
+            console.error('Error creating article:', error);
+            if (axios.isAxiosError(error)) {
+                setApiError(`HTTP ${error.response?.status}: ${error.response?.data?.message || error.message}`);
+            } else {
+                setApiError(error instanceof Error ? error.message : 'Failed to create article via API');
+            }
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
-        localStorage.setItem("resources", JSON.stringify(resources));
-        navigate("/resources");
+    };
+
+    // --- Save ---
+    const handleSave = async () => {
+        if (!validateForm()) return;
+
+        try {
+            // First, try to create via API if it's a new resource
+            if (!isEdit) {
+                await createArticleAPI(form);
+            }
+
+            // Then save to localStorage as before
+            const stored = localStorage.getItem("resources");
+            let resources = stored ? JSON.parse(stored) : [];
+            if (isEdit) {
+                resources = resources.map((r: any) =>
+                    String(r.id) === String(id)
+                        ? {...r, ...form, tags: form.tags, thumbnail: thumbPreview, emptyImage: emptyPreview}
+                        : r
+                );
+            } else {
+                const newResource = {
+                    ...form,
+                    id: Date.now(),
+                    tags: form.tags,
+                    thumbnail: thumbPreview,
+                    emptyImage: emptyPreview,
+                    publishDate: new Date().toISOString().slice(0, 10),
+                    views: 0,
+                    likes: 0,
+                };
+                resources = [newResource, ...resources];
+            }
+            localStorage.setItem("resources", JSON.stringify(resources));
+            navigate("/resources");
+        } catch (error) {
+            // If API fails, still save to localStorage but show error
+            console.error('Error in handleSave:', error);
+            const stored = localStorage.getItem("resources");
+            let resources = stored ? JSON.parse(stored) : [];
+            if (!isEdit) {
+                const newResource = {
+                    ...form,
+                    id: Date.now(),
+                    tags: form.tags,
+                    thumbnail: thumbPreview,
+                    emptyImage: emptyPreview,
+                    publishDate: new Date().toISOString().slice(0, 10),
+                    views: 0,
+                    likes: 0,
+                };
+                resources = [newResource, ...resources];
+            }
+            localStorage.setItem("resources", JSON.stringify(resources));
+            navigate("/resources");
+        }
     };
 
     // --- Save Draft ---
@@ -240,9 +345,9 @@ export default function ResourceFormPage() {
             </Button>
             <form
                 style={{maxWidth: "100vw"}}
-                onSubmit={e => {
+                onSubmit={async e => {
                     e.preventDefault();
-                    if (!isView) handleSave();
+                    if (!isView) await handleSave();
                 }}
             >
                 <div>
@@ -256,6 +361,16 @@ export default function ResourceFormPage() {
                                 ? "Update the details of this resource."
                                 : "Fill in the details to add a new resource."}
                     </p>
+                    {apiError && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                            <strong>API Error:</strong> {apiError}
+                        </div>
+                    )}
+                    {apiSuccess && (
+                        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+                            <strong>Success:</strong> {apiSuccess}
+                        </div>
+                    )}
                     <Card className="p-6">
                         <div className="flex flex-col gap-4">
 
@@ -577,8 +692,9 @@ export default function ResourceFormPage() {
                                     <Button
                                         type="submit"
                                         className="w-full md:w-auto bg-[#012765] text-white"
+                                        disabled={isLoading}
                                     >
-                                        {isEdit ? "Save Changes" : "Add Resource"}
+                                        {isLoading ? "Creating..." : (isEdit ? "Save Changes" : "Add Resource")}
                                     </Button>
                                 )}
                             </div>

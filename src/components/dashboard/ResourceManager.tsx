@@ -16,7 +16,7 @@ import {
     Edit,
     Trash2,
     MoreVertical,
-    TrendingUp, FilePen
+    TrendingUp, FilePen, RefreshCw
 } from "lucide-react";
 import {
     Dialog,
@@ -233,6 +233,10 @@ export const ResourceManager = () => {
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
     // Add a state for topCardFilter to control which card is active
     const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
+    
+    // API states
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     // --- STATS ---
     const draftCount = resources.filter((r) => r.status === "draft").length;
@@ -271,6 +275,75 @@ export const ResourceManager = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
+    // API function to fetch articles
+    const fetchArticles = async () => {
+        setIsLoading(true);
+        setApiError(null);
+        try {
+            const response = await fetch('https://interactapiverse.com/mahadevasth/shape/articles');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Debug: Log the structure of the response
+            console.log('API Response structure:', typeof data, data);
+            
+            // Check if data is an array, if not, try to extract articles from the response
+            let articles = data;
+            if (!Array.isArray(data)) {
+                // Try different possible structures
+                if (data.articles && Array.isArray(data.articles)) {
+                    articles = data.articles;
+                } else if (data.data && Array.isArray(data.data)) {
+                    articles = data.data;
+                } else if (data.results && Array.isArray(data.results)) {
+                    articles = data.results;
+                } else {
+                    // If it's a single object, wrap it in an array
+                    articles = [data];
+                }
+            }
+            
+            // Ensure articles is an array
+            if (!Array.isArray(articles)) {
+                throw new Error('Invalid data structure received from API');
+            }
+            
+            // Transform API data to match our resource format
+            const transformedResources = articles.map((article: any, index: number) => ({
+                id: article.id || Date.now() + index,
+                title: article.title || article.name || `Article ${index + 1}`,
+                type: "article",
+                category: article.category || "general",
+                author: article.author || article.created_by || "Unknown Author",
+                publishDate: article.publish_date || article.created_at || new Date().toISOString(),
+                views: article.views || article.view_count || 0,
+                likes: article.likes || article.like_count || 0,
+                status: "live",
+                description: article.description || article.content || "No description available",
+                tags: article.tags ? (Array.isArray(article.tags) ? article.tags : [article.tags]) : [],
+                thumbnail: article.thumbnail || article.image || null,
+                emptyImage: null,
+                platform: "website",
+                age: "18+",
+            }));
+            
+            setResources(transformedResources);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setApiError(error instanceof Error ? error.message : 'Failed to fetch articles');
+            // Keep existing resources if API fails
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch articles on component mount
+    useEffect(() => {
+        fetchArticles();
+    }, []);
 
     // Save to localStorage whenever resources change
     useEffect(() => {
@@ -582,14 +655,29 @@ export const ResourceManager = () => {
                     <p className="text-gray-600 mt-2 text-[#012765]">
                         Manage wellness articles, videos, and tips
                     </p>
+                    {apiError && (
+                        <p className="text-red-600 mt-1 text-sm">
+                            API Error: {apiError}
+                        </p>
+                    )}
                 </div>
-                <Button
-                    className="mt-4 md:mt-0 bg-[#012765] text-white"
-                    onClick={() => navigate("/resources/new")}
-                >
-                    <Plus className="h-4 w-4 mr-2"/>
-                    Add Resource
-                </Button>
+                <div className="flex gap-2 mt-4 md:mt-0">
+                    {/*<Button*/}
+                    {/*    className="bg-[#012765] text-white"*/}
+                    {/*    onClick={fetchArticles}*/}
+                    {/*    disabled={isLoading}*/}
+                    {/*>*/}
+                    {/*    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}/>*/}
+                    {/*    {isLoading ? 'Loading...' : 'Refresh'}*/}
+                    {/*</Button>*/}
+                    <Button
+                        className="bg-[#012765] text-white"
+                        onClick={() => navigate("/resources/new")}
+                    >
+                        <Plus className="h-4 w-4 mr-2"/>
+                        Add Resource
+                    </Button>
+                </div>
             </div>
 
             {/* Stats Cards */}
@@ -789,91 +877,104 @@ export const ResourceManager = () => {
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                    {filteredResources.map((resource) => (
-                        <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-2">
-                                {resource.thumbnail ? (
-                                    <img
-                                        src={resource.thumbnail}
-                                        alt="Thumbnail"
-                                        className="h-12 w-12 object-cover rounded border border-gray-200"
-                                    />
-                                ) : (
-                                    <span className="text-xs text-gray-400">No Image</span>
-                                )}
-                            </td>
-                            <td className="px-4 py-2 font-semibold text-[15px] text-gray-900 max-w-xs truncate">{resource.title}</td>
-                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.author}</td>
-                            <td className="px-4 py-2">
-                                <Badge
-                                    className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                                    <div className="flex items-center space-x-1">
-                                        {getTypeIcon(resource.type)}
-                                        <span>{resource.type}</span>
-                                    </div>
-                                </Badge>
-                            </td>
-                            <td className="px-4 py-2">
-                                <Badge
-                                    className="bg-purple-100 text-purple-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">
-                                    {resource.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                                </Badge>
-                            </td>
-                            <td className="px-4 py-2">
-                                <Badge className="bg-gray-100 text-gray-800 hover:bg-[#012765] hover:text-white">
-                                    {platformOptions.find((p) => p.value === resource.platform)?.label || resource.platform}
-                                </Badge>
-                            </td>
-                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.age}</td>
-                            <td className="px-4 py-2">
-                                <Badge
-                                    className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                                    {statusOptions.find((s) => s.value === resource.status)?.label || resource.status}
-                                </Badge>
-                            </td>
-                            <td className="px-4 py-2 text-gray-700 text-[15px]">{new Date(resource.publishDate).toLocaleDateString()}</td>
-                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.views.toLocaleString()}</td>
-                            <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.likes}</td>
-                            <td className="px-4 py-2">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                                            <MoreVertical className="h-5 w-5 text-gray-500"/>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-44">
-                                        <DropdownMenuItem
-                                            onClick={() => navigate(`/resources/edit/${resource.id}?view=1`)}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Eye className="h-4 w-4 mr-2 text-gray-600"/>
-                                            View Resource
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => navigate(`/resources/edit/${resource.id}`)}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Edit className="h-4 w-4 mr-2 text-gray-600"/>
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleDelete(resource.id)}
-                                            className="flex items-center gap-2 text-red-600 focus:text-red-700"
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-2"/>
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </td>
-                        </tr>
-                    ))}
-                    {filteredResources.length === 0 && (
+                    {isLoading ? (
                         <tr>
-                            <td colSpan={12} className="text-center py-8 text-gray-400">
-                                No resources found.
+                            <td colSpan={12} className="text-center py-8">
+                                <div className="flex items-center justify-center space-x-2">
+                                    <RefreshCw className="h-5 w-5 animate-spin text-[#012765]"/>
+                                    <span className="text-gray-600">Loading articles...</span>
+                                </div>
                             </td>
                         </tr>
+                    ) : (
+                        <>
+                            {filteredResources.map((resource) => (
+                                <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-4 py-2">
+                                        {resource.thumbnail ? (
+                                            <img
+                                                src={resource.thumbnail}
+                                                alt="Thumbnail"
+                                                className="h-12 w-12 object-cover rounded border border-gray-200"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-gray-400">No Image</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2 font-semibold text-[15px] text-gray-900 max-w-xs truncate">{resource.title}</td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.author}</td>
+                                    <td className="px-4 py-2">
+                                        <Badge
+                                            className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                                            <div className="flex items-center space-x-1">
+                                                {getTypeIcon(resource.type)}
+                                                <span>{resource.type}</span>
+                                            </div>
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Badge
+                                            className="bg-purple-100 text-purple-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">
+                                            {resource.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Badge className="bg-gray-100 text-gray-800 hover:bg-[#012765] hover:text-white">
+                                            {platformOptions.find((p) => p.value === resource.platform)?.label || resource.platform}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.age}</td>
+                                    <td className="px-4 py-2">
+                                        <Badge
+                                            className={getStatusColor(resource.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                                            {statusOptions.find((s) => s.value === resource.status)?.label || resource.status}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{new Date(resource.publishDate).toLocaleDateString()}</td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.views.toLocaleString()}</td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.likes}</td>
+                                    <td className="px-4 py-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                                                    <MoreVertical className="h-5 w-5 text-gray-500"/>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-44">
+                                                <DropdownMenuItem
+                                                    onClick={() => navigate(`/resources/edit/${resource.id}?view=1`)}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Eye className="h-4 w-4 mr-2 text-gray-600"/>
+                                                    View Resource
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => navigate(`/resources/edit/${resource.id}`)}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Edit className="h-4 w-4 mr-2 text-gray-600"/>
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleDelete(resource.id)}
+                                                    className="flex items-center gap-2 text-red-600 focus:text-red-700"
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2"/>
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredResources.length === 0 && !isLoading && (
+                                <tr>
+                                    <td colSpan={12} className="text-center py-8 text-gray-400">
+                                        No resources found.
+                                    </td>
+                                </tr>
+                            )}
+                        </>
                     )}
                     </tbody>
                 </table>

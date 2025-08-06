@@ -1,6 +1,6 @@
 "use client"
 
-import {useState} from "react"
+import React, {useState} from "react"
 import {Bell, Search, Menu, X} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -20,6 +20,8 @@ import {
 import {Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {useNavigate, useLocation} from "react-router-dom"
 import {useUserContext} from "@/UserContext";
+import AppointmentPage from "@/pages/AppointmentPage.tsx";
+import SlotPage from "@/pages/SlotPage.tsx";
 
 interface DashboardHeaderProps {
     toggleSidebar: () => void
@@ -36,6 +38,8 @@ const pages = [
     {name: "Resources", path: "/resources"},
     {name: "Notification", path: "/notifications"},
     {name: "Settings", path: "/settings"},
+    {name: "Appointments", path: "/appointments"},
+    {name: "Slot", path: "/slot"},
 ]
 
 export const DashboardHeader = ({toggleSidebar}: DashboardHeaderProps) => {

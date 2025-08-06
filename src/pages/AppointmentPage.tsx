@@ -325,7 +325,7 @@ export default function AppointmentPage() {
                                                     {/* Status Submenu */}
                                                     <DropdownMenuSub>
                                                         <DropdownMenuSubTrigger className="flex items-center gap-2">
-                                                            <Settings className="h-4 w-4"/>
+                                                            <Clock className="h-4 w-4 text-yellow-500" />
                                                             Status
                                                         </DropdownMenuSubTrigger>
                                                         <DropdownMenuSubContent>

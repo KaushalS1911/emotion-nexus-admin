@@ -788,7 +788,7 @@ export const AssessmentData = () => {
                                                 <DropdownMenuItem
                                                     onClick={() => navigate(`/assessments/edit/${assessment.id}`)}
                                                     className="flex items-center gap-2">
-                                                    <Pencil className="h-4 w-4"/> Edit
+                                                    <Pencil className="h-4 w-4"/> Edit Assessment
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600 flex items-center gap-2"
                                                                   onClick={() => handleDeactivate(assessment.id)}>

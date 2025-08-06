@@ -321,16 +321,16 @@ export const Beneficiaries = () => {
                                     <td className="py-4 px-2">
                                         <div className="flex items-center space-x-3">
                                             <div
-                                                className="w-10 h-10 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-lg">
+                                                className="w-10 h-10 rounded-full bg-[#012765] flex items-center justify-center text-white font-semibold text-sm">
                                                 {getInitials(beneficiary.name)}
                                             </div>
-                                            <span className="font-medium text-gray-900">{beneficiary.name}</span>
+                                            <span className="font-medium text-gray-900 text-[15px]">{beneficiary.name}</span>
                                         </div>
                                     </td>
-                                    <td className="py-4 px-2 text-sm text-gray-600">{beneficiary.email}</td>
-                                    <td className="py-4 px-2 text-gray-600">{beneficiary.age}</td>
-                                    <td className="py-4 px-2 text-gray-600">{beneficiary.assessmentName}</td>
-                                    <td className="py-4 px-2 text-gray-600">{new Date(beneficiary.joinDate).toLocaleDateString()}</td>
+                                    <td className="py-4 px-2 text-[15px] text-gray-600">{beneficiary.email}</td>
+                                    <td className="py-4 px-2 text-[15px] text-gray-600">{beneficiary.age}</td>
+                                    <td className="py-4 px-2 text-[15px] text-gray-600">{beneficiary.assessmentName}</td>
+                                    <td className="py-4 px-2 text-[15px] text-gray-600">{new Date(beneficiary.joinDate).toLocaleDateString()}</td>
                                     <td className="py-4 px-2">
                                         <Badge
                                             className={getStatusColor(beneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>

@@ -7,9 +7,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/
 import {Search, Download, MoreHorizontal, Eye, Trash2, FileText, TrendingUp, Calendar} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Calendar as UiCalendar} from "@/components/ui/calendar";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {format} from "date-fns";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
 import {X} from "lucide-react"
 
 type BeneficiaryStatus = "Active" | "Inactive";
@@ -259,37 +257,27 @@ export const Beneficiaries = () => {
                         <div className="w-full md:w-80 flex flex-col justify-center">
                             {/* <label className="text-xs font-medium text-gray-600 mb-1">Join Date Range</label> */}
                             <div className="flex items-center gap-2">
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-start text-left">
-                                            {dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "From"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent align="start" className="p-0">
-                                        <UiCalendar
-                                            mode="single"
-                                            selected={dateRange.from ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({...r, from: date ?? null}))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                <span className="mx-1">-</span>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-start text-left">
-                                            {dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "To"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent align="start" className="p-0">
-                                        <UiCalendar
-                                            mode="single"
-                                            selected={dateRange.to ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({...r, to: date ?? null}))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
+                                <DateInputButton
+                                    value={dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : ""}
+                                    onChange={(date) => {
+                                        const dateObj = date ? new Date(date) : null;
+                                        setDateRange(r => ({...r, from: dateObj}));
+                                    }}
+                                    placeholder="From"
+                                    title="Select From Date"
+                                    className="flex-1"
+                                />
+                                <span className="mx-1 text-gray-500">-</span>
+                                <DateInputButton
+                                    value={dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : ""}
+                                    onChange={(date) => {
+                                        const dateObj = date ? new Date(date) : null;
+                                        setDateRange(r => ({...r, to: dateObj}));
+                                    }}
+                                    placeholder="To"
+                                    title="Select To Date"
+                                    className="flex-1"
+                                />
                             </div>
                         </div>
                     </div>

@@ -29,6 +29,7 @@ import {
     Settings
 } from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
 
 const INITIAL_APPOINTMENTS = [
     {
@@ -68,6 +69,8 @@ export default function AppointmentPage() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE);
     const role = sessionStorage.getItem("user-role");
+    
+
 
     // Load appointments from localStorage on component mount
     useEffect(() => {
@@ -237,20 +240,20 @@ export default function AppointmentPage() {
                                 className="pl-10"
                             />
                         </div>
-                        <Input
-                            type="date"
+                        <DateInputButton
                             value={dateFrom}
-                            onChange={e => setDateFrom(e.target.value)}
-                            className="md:w-48"
+                            onChange={setDateFrom}
                             placeholder="From date"
-                        />
-                        <div className="mt-1.5">to</div>
-                        <Input
-                            type="date"
-                            value={dateTo}
-                            onChange={e => setDateTo(e.target.value)}
+                            title="Select From Date"
                             className="md:w-48"
+                        />
+                        <div className="mt-1.5 text-gray-500">to</div>
+                        <DateInputButton
+                            value={dateTo}
+                            onChange={setDateTo}
                             placeholder="To date"
+                            title="Select To Date"
+                            className="md:w-48"
                         />
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger
@@ -440,6 +443,8 @@ export default function AppointmentPage() {
                     </div>
                 </CardContent>
             </Card>
+
+
         </div>
     );
 } 

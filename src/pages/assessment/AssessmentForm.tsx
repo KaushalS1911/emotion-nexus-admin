@@ -11,6 +11,7 @@ import {ArrowLeft, Plus, Edit, Trash2, Save} from "lucide-react";
 import {useToast} from "@/hooks/use-toast";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Badge} from "@/components/ui/badge";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
 
 // Mock data and types (replace with real data fetching in production)
 const mockAssessments = JSON.parse(localStorage.getItem("assessments") || "[]");
@@ -366,13 +367,12 @@ export default function AssessmentForm({view}) {
                                 </div>
                                 <div>
                                     <Label htmlFor="date">Date *</Label>
-                                    <Input 
-                                        id="date" 
-                                        type="date" 
+                                    <DateInputButton
                                         value={form.date}
-                                        onChange={e => handleFormChange('date', e.target.value)}
+                                        onChange={(date) => handleFormChange('date', date)}
+                                        placeholder="Select date"
+                                        title="Select Assessment Date"
                                         className="mt-1"
-                                        disabled={isViewMode}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">

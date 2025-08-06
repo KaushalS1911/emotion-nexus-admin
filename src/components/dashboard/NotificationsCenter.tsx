@@ -15,6 +15,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
 
 const mockNotifications = [
     {
@@ -213,7 +214,11 @@ export const NotificationsCenter = () => {
                                     <Label htmlFor="schedule">Schedule for later</Label>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input type="date"/>
+                                    <DateInputButton
+                                        onChange={() => {}}
+                                        placeholder="Select date"
+                                        title="Select Schedule Date"
+                                    />
                                     <Input type="time"/>
                                 </div>
                             </div>

@@ -7,6 +7,7 @@ import {Textarea} from "@/components/ui/textarea";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
 
 interface Note {
     note: string;
@@ -135,11 +136,30 @@ export default function UserNotes() {
                         </div>
                         <div>
                             <Label htmlFor="createdAt">Created At</Label>
+                            <DateInputButton
+                                value={form.createdAt.split('T')[0]}
+                                onChange={(date) => {
+                                    const time = form.createdAt.split('T')[1] || '00:00';
+                                    setForm(prev => ({
+                                        ...prev,
+                                        createdAt: `${date}T${time}`
+                                    }));
+                                }}
+                                placeholder="Select date"
+                                title="Select Created Date"
+                            />
                             <Input
-                                id="createdAt"
-                                type="datetime-local"
-                                value={form.createdAt}
-                                onChange={handleInput}
+                                id="createdAtTime"
+                                type="time"
+                                value={form.createdAt.split('T')[1] || '00:00'}
+                                onChange={(e) => {
+                                    const date = form.createdAt.split('T')[0];
+                                    setForm(prev => ({
+                                        ...prev,
+                                        createdAt: `${date}T${e.target.value}`
+                                    }));
+                                }}
+                                className="mt-2"
                             />
                         </div>
                         <div>

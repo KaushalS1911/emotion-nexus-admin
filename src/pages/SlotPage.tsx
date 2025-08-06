@@ -309,7 +309,7 @@ function SlotPage() {
                         onChange={setFilterDate}
                         placeholder="Filter by date"
                         title="Select Filter Date"
-                        className="w-36"
+                        className="w-38"
                     />
                 </div>
                 <div>

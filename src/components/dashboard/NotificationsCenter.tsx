@@ -16,6 +16,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import {DateInputButton} from "@/components/ui/DatePickerDialog";
+import {TimeInputButton} from "@/components/ui/TimePickerDialog";
 
 const mockNotifications = [
     {
@@ -219,7 +220,11 @@ export const NotificationsCenter = () => {
                                         placeholder="Select date"
                                         title="Select Schedule Date"
                                     />
-                                    <Input type="time"/>
+                                    <TimeInputButton
+                                        onChange={() => {}}
+                                        placeholder="Select time"
+                                        title="Select Schedule Time"
+                                    />
                                 </div>
                             </div>
                             <div className="flex justify-end space-x-2">

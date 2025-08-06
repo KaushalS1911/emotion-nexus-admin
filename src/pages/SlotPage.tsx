@@ -12,6 +12,8 @@ import {enUS} from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {addMinutes} from 'date-fns';
 import {Select} from "@/components/ui/select";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
+import {TimeInputButton} from "@/components/ui/TimePickerDialog";
 
 const locales = {'en-US': enUS};
 const localizer = dateFnsLocalizer({
@@ -285,7 +287,7 @@ function SlotPage() {
     const slotCount = filteredSlots.length;
 
     return (
-        <div className="font-sans  min-h-screen p-2">
+        <div className="font-sans min-h-screen p-2">
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-[#012765]">Slot Management</h1>
                 <Button onClick={() => openCreateDialog()}
@@ -300,18 +302,33 @@ function SlotPage() {
             <div className="flex items-center gap-4 mb-6 ">
                 <div>
                     <label className="block text-xs font-semibold text-[#012765] mb-1">Filter by Date</label>
-                    <Input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
-                           className="w-36 rounded-md border-gray-300 focus:ring-2 focus:ring-[#FF7119]"/>
+                    <DateInputButton
+                        value={filterDate}
+                        onChange={setFilterDate}
+                        placeholder="Filter by date"
+                        title="Select Filter Date"
+                        className="w-36"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-semibold text-[#012765] mb-1">Start Time</label>
-                    <Input type="time" value={filterStartTime} onChange={e => setFilterStartTime(e.target.value)}
-                           className="w-28 rounded-md border-gray-300 focus:ring-2 focus:ring-[#FF7119]" step="1800"/>
+                    <TimeInputButton
+                        value={filterStartTime}
+                        onChange={setFilterStartTime}
+                        placeholder="Start time"
+                        title="Select Start Time"
+                        className="w-32"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-semibold text-[#012765] mb-1">End Time</label>
-                    <Input type="time" value={filterEndTime} onChange={e => setFilterEndTime(e.target.value)}
-                           className="w-28 rounded-md border-gray-300 focus:ring-2 focus:ring-[#FF7119]" step="1800"/>
+                    <TimeInputButton
+                        value={filterEndTime}
+                        onChange={setFilterEndTime}
+                        placeholder="End time"
+                        title="Select End Time"
+                        className="w-32"
+                    />
                 </div>
                 <Button variant="outline"
                         className="ml-2 mt-5 rounded-lg border-[#FF7119] text-[#FF7119] hover:bg-[#FF7119] hover:text-white transition-colors font-semibold"
@@ -450,11 +467,12 @@ function SlotPage() {
                 }}
                 modal={true}
             >
-                <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden">
+                <DialogContent className="max-w-lg rounded-2xl p-0 ">
                     <div className="bg-[#012765] px-6 py-4 flex items-center justify-between">
                         <DialogHeader>
-                            <DialogTitle
-                                className="text-white text-xl font-bold">Create Slot</DialogTitle>
+                            <DialogTitle className="text-white text-xl font-bold">
+                                Create Slot
+                            </DialogTitle>
                         </DialogHeader>
                         <button
                             type="button"
@@ -469,61 +487,85 @@ function SlotPage() {
                             <X className="h-6 w-6 text-white"/>
                         </button>
                     </div>
-                    <form className="space-y-5 px-6 py-6 bg-white relative" onSubmit={handleSubmit}>
+                    <form className="space-y-6 px-6 py-6 bg-white" onSubmit={handleSubmit}>
                         <div>
-                            <label className="block text-sm font-semibold mb-1 text-[#012765]">Date</label>
-                            <Input type="date" value={editSlotDate}
-                                   onChange={e => setEditSlotDate(e.target.value)}
-                                   className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"/>
-                            {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
+                            <label className="block text-sm font-semibold mb-2 text-[#012765]">Date</label>
+                            <DateInputButton
+                                value={editSlotDate}
+                                onChange={setEditSlotDate}
+                                placeholder="Select date"
+                                title="Select Slot Date"
+                            />
+                            {errors.date && (
+                                <div className="text-red-500 text-xs mt-1">{errors.date}</div>
+                            )}
                         </div>
-                        <div className="flex flex-col gap-4">
-                            {slotTimes.map((t, idx) => (
-                                <div key={idx} className="flex gap-4">
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">Start
-                                            Time</label>
-                                        <Input type="time" value={t.startTime}
-                                               onChange={e => handleTimeChange(idx, 'startTime', e.target.value)}
-                                               className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
-                                               step="1800"/>
-                                        {errors[`startTime${idx}`] && <div
-                                            className="text-red-500 text-xs mt-1">{errors[`startTime${idx}`]}</div>}
+                        
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-semibold text-[#012765]">Time Slots</label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-[#012765] text-[#012765] hover:bg-[#012765] hover:text-white transition-colors text-xs"
+                                    onClick={handleAddTimeRange}
+                                >
+                                    Add Time Range
+                                </Button>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                {slotTimes.map((t, idx) => (
+                                    <div key={idx} className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-semibold mb-2 text-[#012765]">
+                                                Start Time
+                                            </label>
+                                            <TimeInputButton
+                                                value={t.startTime}
+                                                onChange={(time) => handleTimeChange(idx, 'startTime', time)}
+                                                placeholder="Start time"
+                                                title="Select Start Time"
+                                            />
+                                            {errors[`startTime${idx}`] && (
+                                                <div className="text-red-500 text-xs mt-1">{errors[`startTime${idx}`]}</div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-semibold mb-2 text-[#012765]">
+                                                End Time
+                                            </label>
+                                            <TimeInputButton
+                                                value={t.endTime}
+                                                onChange={(time) => handleTimeChange(idx, 'endTime', time)}
+                                                placeholder="End time"
+                                                title="Select End Time"
+                                            />
+                                            {errors[`endTime${idx}`] && (
+                                                <div className="text-red-500 text-xs mt-1">{errors[`endTime${idx}`]}</div>
+                                            )}
+                                        </div>
+                                        {slotTimes.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveTimeRange(idx)}
+                                                className="mt-8 p-2 rounded-full hover:bg-red-100 transition-colors"
+                                                title="Remove time slot"
+                                            >
+                                                <Trash className="h-4 w-4 text-red-600"/>
+                                            </button>
+                                        )}
                                     </div>
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-semibold mb-1 text-[#012765]">End
-                                            Time</label>
-                                        <Input type="time" value={t.endTime}
-                                               onChange={e => handleTimeChange(idx, 'endTime', e.target.value)}
-                                               className="focus:ring-2 focus:ring-[#FF7119] focus:border-[#FF7119]"
-                                               step="1800"/>
-                                        {errors[`endTime${idx}`] &&
-                                            <div className="text-red-500 text-xs mt-1">{errors[`endTime${idx}`]}</div>}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveTimeRange(idx)}
-                                        className="mt-8 self-center"
-                                        style={{lineHeight: 0}}
-                                    >
-                                        <Trash className="h-5 w-5 text-red-600"/>
-                                    </button>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="border-[#012765] text-[#012765] hover:bg-[#012765] hover:text-white transition-colors"
-                                onClick={handleAddTimeRange}
-                            >
-                                Add Time Range
-                            </Button>
-                        </div>
-                        <div className="flex gap-2 justify-end pt-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="border-[#012765] text-[#012765] hover:bg-[#012765] hover:text-white transition-colors"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                                 onClick={() => {
                                     setDialogForceOpen(true);
                                     setDialogOpen(false);
@@ -531,13 +573,16 @@ function SlotPage() {
                             >
                                 Cancel
                             </Button>
-                            <Button type="submit"
-                                    className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors">Create
-                                Slot</Button>
+                            <Button 
+                                type="submit"
+                                className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                            >
+                                Create Slot
+                            </Button>
                         </div>
+                    </form>
                         {/* Delete button in left bottom corner, only in edit mode */}
                         {/* This section is removed as per the new_code, as the dialog is now for creating a single slot */}
-                    </form>
                 </DialogContent>
             </Dialog>
             {/* Multi-slot dialog */}

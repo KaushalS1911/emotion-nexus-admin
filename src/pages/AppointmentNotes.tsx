@@ -7,12 +7,13 @@ import {Textarea} from "@/components/ui/textarea";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Calendar} from "@/components/ui/calendar";
+
 import {format} from "date-fns";
 import {ArrowLeft, Search} from "lucide-react";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu";
 import {MoreHorizontal, Eye, X} from "lucide-react";
+import {DateInputButton} from "@/components/ui/DatePickerDialog";
+import {TimeInputButton} from "@/components/ui/TimePickerDialog";
 
 interface Note {
     note: string;
@@ -29,7 +30,7 @@ export default function AppointmentNotes() {
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<Note>({
         note: "",
-        createdAt: "",
+        createdAt: "T",
         counsellor: "Admin User",
     });
     const [appointmentName, setAppointmentName] = useState("");
@@ -184,8 +185,10 @@ export default function AppointmentNotes() {
             newErrors.note = "Note is required";
         }
 
-        if (!form.createdAt) {
-            newErrors.createdAt = "Date and time is required";
+        // Check if date and time are properly selected
+        const [datePart, timePart] = form.createdAt.split('T');
+        if (!datePart || !timePart || datePart === '' || timePart === '') {
+            newErrors.createdAt = "Both date and time are required";
         }
 
         setErrors(newErrors);
@@ -207,7 +210,7 @@ export default function AppointmentNotes() {
         setNotes(newNotes);
         localStorage.setItem(`appointment-notes-${id}`, JSON.stringify(newNotes));
         setModalOpen(false);
-        setForm({note: "", createdAt: "", counsellor: "Admin User"});
+        setForm({note: "", createdAt: "T", counsellor: "Admin User"});
         setErrors({});
     };
 
@@ -243,37 +246,27 @@ export default function AppointmentNotes() {
                         </div>
                         <div className="w-full md:w-80 flex flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-start text-left">
-                                            {dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "From"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent align="start" className="p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={dateRange.from ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({...r, from: date ?? null}))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                <span className="mx-1">-</span>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-start text-left">
-                                            {dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "To"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent align="start" className="p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={dateRange.to ?? undefined}
-                                            onSelect={(date) => setDateRange(r => ({...r, to: date ?? null}))}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
+                                <DateInputButton
+                                    value={dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : ""}
+                                    onChange={(date) => {
+                                        const dateObj = date ? new Date(date) : null;
+                                        setDateRange(r => ({...r, from: dateObj}));
+                                    }}
+                                    placeholder="From"
+                                    title="Select From Date"
+                                    className="flex-1"
+                                />
+                                <span className="mx-1 text-gray-500">-</span>
+                                <DateInputButton
+                                    value={dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : ""}
+                                    onChange={(date) => {
+                                        const dateObj = date ? new Date(date) : null;
+                                        setDateRange(r => ({...r, to: dateObj}));
+                                    }}
+                                    placeholder="To"
+                                    title="Select To Date"
+                                    className="flex-1"
+                                />
                             </div>
                         </div>
                     </div>
@@ -390,51 +383,105 @@ export default function AppointmentNotes() {
                 </CardContent>
             </Card>
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>Add Note</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
+                <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden">
+                    <div className="bg-[#012765] px-6 py-4 flex items-center justify-between">
+                        <DialogHeader>
+                            <DialogTitle className="text-white text-xl font-bold">
+                                Add Note
+                            </DialogTitle>
+                        </DialogHeader>
+                        <button
+                            type="button"
+                            aria-label="Close"
+                            onClick={() => {
+                                setModalOpen(false);
+                                setErrors({});
+                                setForm({note: "", createdAt: "T", counsellor: "Admin User"});
+                            }}
+                            className="ml-2 rounded-full p-1 hover:bg-[#FF7119] transition-colors flex items-center justify-center"
+                            style={{lineHeight: 0}}
+                        >
+                            <X className="h-6 w-6 text-white"/>
+                        </button>
+                    </div>
+                    <form className="space-y-6 px-6 py-6 bg-white" onSubmit={(e) => { 
+                        e.preventDefault(); 
+                        handleSubmit(); 
+                    }}>
                         <div>
-                            <Label htmlFor="note">Note</Label>
+                            <Label htmlFor="note" className="block text-md font-semibold mb-2 text-[#012765]">Note</Label>
                             <Textarea
                                 id="note"
                                 value={form.note}
                                 onChange={handleInput}
                                 placeholder="Enter note..."
-                                className={`min-h-[80px] ${errors.note ? 'border-red-500 focus:ring-red-500' : ''}`}
+                                className={`min-h-[80px] border-gray-300 focus:ring-2 focus:ring-[#FF6600] focus:border-transparent ${errors.note ? 'border-red-500 focus:ring-red-500' : ''}`}
                             />
                             {errors.note && (
                                 <p className="text-red-500 text-sm mt-1">{errors.note}</p>
                             )}
                         </div>
+                        
                         <div>
-                            <Label htmlFor="createdAt">Created At</Label>
-                            <Input
-                                id="createdAt"
-                                type="datetime-local"
-                                value={form.createdAt}
-                                onChange={handleInput}
-                                placeholder="Select date and time"
-                                className={errors.createdAt ? 'border-red-500 focus:ring-red-500' : ''}
-                            />
+                            <Label htmlFor="createdAt" className="block text-md font-semibold mb-4 text-[#012765]">Created At</Label>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                                    <DateInputButton
+                                        value={form.createdAt.split('T')[0] || ""}
+                                        onChange={(date) => {
+                                            const time = form.createdAt.split('T')[1] || "";
+                                            setForm(prev => ({
+                                                ...prev,
+                                                createdAt: `${date}T${time}`
+                                            }));
+                                        }}
+                                        placeholder="Select date"
+                                        title="Select Created Date"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+                                    <TimeInputButton
+                                        value={form.createdAt.split('T')[1] || ""}
+                                        onChange={(time) => {
+                                            const date = form.createdAt.split('T')[0] || "";
+                                            setForm(prev => ({
+                                                ...prev,
+                                                createdAt: `${date}T${time}`
+                                            }));
+                                        }}
+                                        placeholder="Select time"
+                                        title="Select Created Time"
+                                    />
+                                </div>
+                            </div>
                             {errors.createdAt && (
                                 <p className="text-red-500 text-sm mt-1">{errors.createdAt}</p>
                             )}
                         </div>
-                        <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={() => {
-                                setModalOpen(false);
-                                setErrors({});
-                                setForm({note: "", createdAt: "", counsellor: "Admin User"});
-                            }}>
+                        
+                        <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                            <Button 
+                                type="button"
+                                variant="outline"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                                onClick={() => {
+                                    setModalOpen(false);
+                                    setErrors({});
+                                    setForm({note: "", createdAt: "", counsellor: "Admin User"});
+                                }}
+                            >
                                 Cancel
                             </Button>
-                            <Button onClick={handleSubmit} className="bg-[#FF7119] text-white">
+                            <Button 
+                                type="submit"
+                                className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                            >
                                 Submit
                             </Button>
                         </div>
-                    </div>
+                    </form>
                 </DialogContent>
             </Dialog>
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>

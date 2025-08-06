@@ -8,6 +8,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/
 import {Label} from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import {DateInputButton} from "@/components/ui/DatePickerDialog";
+import {TimeInputButton} from "@/components/ui/TimePickerDialog";
 
 interface Note {
     note: string;
@@ -148,17 +149,17 @@ export default function UserNotes() {
                                 placeholder="Select date"
                                 title="Select Created Date"
                             />
-                            <Input
-                                id="createdAtTime"
-                                type="time"
+                            <TimeInputButton
                                 value={form.createdAt.split('T')[1] || '00:00'}
-                                onChange={(e) => {
+                                onChange={(time) => {
                                     const date = form.createdAt.split('T')[0];
                                     setForm(prev => ({
                                         ...prev,
-                                        createdAt: `${date}T${e.target.value}`
+                                        createdAt: `${date}T${time}`
                                     }));
                                 }}
+                                placeholder="Select time"
+                                title="Select Created Time"
                                 className="mt-2"
                             />
                         </div>

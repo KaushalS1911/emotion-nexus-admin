@@ -308,21 +308,21 @@ export default function Users() {
                                 {paginatedUsers.map((user, idx) => (
                                     <tr key={user.id}
                                         className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 px-2">
+                                        <td className="py-4 px-2 ">
                                             {user.profilePic ? (
                                                 <img src={user.profilePic} alt="Profile"
                                                      className="w-10 h-10 rounded-full object-cover"/>
                                             ) : (
                                                 <div
-                                                    className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-xl">
+                                                    className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-white font-semibold text-lg">
                                                     {user.full_name?.[0] || "?"}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="py-4 px-2">{user.full_name}</td>
-                                        <td className="py-4 px-2">{user.email}</td>
-                                        <td className="py-4 px-2">{user.phone}</td>
-                                        <td className="py-4 px-2">{user.role}</td>
+                                        <td className="py-4 px-2 text-[15px]">{user.full_name}</td>
+                                        <td className="py-4 px-2 text-[15px]">{user.email}</td>
+                                        <td className="py-4 px-2 text-[15px]">{user.phone}</td>
+                                        <td className="py-4 px-2 text-[15px]">{user.role}</td>
                                         <td className="py-4 px-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>

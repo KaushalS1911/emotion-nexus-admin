@@ -219,13 +219,13 @@ export const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
                     >
                         Now
                     </Button>
-                    <Button
-                        variant="outline"
-                        onClick={onClose}
-                        className="flex-1 text-sm border-gray-300 hover:bg-gray-50"
-                    >
-                        Cancel
-                    </Button>
+                    {/*<Button*/}
+                    {/*    variant="outline"*/}
+                    {/*    onClick={onClose}*/}
+                    {/*    className="flex-1 text-sm border-gray-300 hover:bg-gray-50"*/}
+                    {/*>*/}
+                    {/*    Cancel*/}
+                    {/*</Button>*/}
                     <Button
                         onClick={handleOK}
                         className="flex-1 text-sm bg-[#FF6600] text-white hover:bg-[#FF6600]/90"

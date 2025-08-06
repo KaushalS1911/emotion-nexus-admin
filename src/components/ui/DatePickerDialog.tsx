@@ -59,14 +59,19 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
 
     const handleDateSelect = (date: Date) => {
         setTempSelectedDate(date);
-        const formattedDate = formatDate(date);
-        onDateSelect(formattedDate);
-        onClose();
+    };
+
+    const handleOK = () => {
+        if (tempSelectedDate) {
+            const formattedDate = formatDate(tempSelectedDate);
+            onDateSelect(formattedDate);
+            onClose();
+        }
     };
 
     const handleToday = () => {
         const today = new Date();
-        handleDateSelect(today);
+        setTempSelectedDate(today);
     };
 
     if (!isOpen) return null;
@@ -158,20 +163,26 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
 
                 {/* Quick Actions */}
                 <div className="flex gap-2 pt-4 border-t border-gray-200">
-                                <Button
-                variant="outline"
-                onClick={handleToday}
-                className="flex-1 text-sm border-gray-300 hover:bg-gray-50"
-            >
-                Today
-            </Button>
-            <Button
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 text-sm border-gray-300 hover:bg-gray-50"
-            >
-                Cancel
-            </Button>
+                    <Button
+                        variant="outline"
+                        onClick={handleToday}
+                        className="flex-1 text-sm border-gray-300 hover:bg-gray-50"
+                    >
+                        Today
+                    </Button>
+                    {/*<Button*/}
+                    {/*    variant="outline"*/}
+                    {/*    onClick={onClose}*/}
+                    {/*    className="flex-1 text-sm border-gray-300 hover:bg-gray-50"*/}
+                    {/*>*/}
+                    {/*    Cancel*/}
+                    {/*</Button>*/}
+                    <Button
+                        onClick={handleOK}
+                        className="flex-1 text-sm bg-[#FF6600] text-white hover:bg-[#FF6600]/90"
+                    >
+                        OK
+                    </Button>
                 </div>
             </div>
         </div>

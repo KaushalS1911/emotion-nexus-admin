@@ -336,9 +336,7 @@ export const InquiriesManagement = () => {
                 console.log(`Successfully assigned inquiry ${assignInquiryId} to ${selectedTeamMember}`);
 
                 // Show success dialog instead of toast
-                const message = previouslyAssigned
-                    ? `Successfully reassigned inquiry from ${previouslyAssigned} to ${selectedTeamMember}`
-                    : `Successfully assigned inquiry to ${selectedTeamMember}`;
+                const message =`Successfully assigned inquiry to ${selectedTeamMember}`;
                 setSuccessMessage(message);
                 setSuccessDialogOpen(true);
 

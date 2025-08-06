@@ -333,16 +333,7 @@ export default function AssessmentForm({view}) {
     return (
         <div className="p-2">
             <div className="mx-auto">
-                {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
-                    <Button
-                        onClick={() => navigate(-1)}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                    >
-                        <ArrowLeft className="h-4 w-4"/>
-                        Back
-                    </Button>
                     <div>
                         <h1 className="text-2xl font-bold text-[#012765]">
                             {isViewMode ? "View Assessment" : isEdit ? "Edit Assessment" : "Create Assessment"}

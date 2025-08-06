@@ -275,7 +275,7 @@ export default function AppointmentPage() {
                             <thead>
                             <tr className="border-b border-gray-100 text-left text-gray-600">
                                 {/*<th className="py-4 px-2 font-medium">#</th>*/}
-                                <th className="py-4 px-2 font-medium">User ID</th>
+                                <th className="py-4 px-2 font-medium">#</th>
                                 <th className="py-4 px-2 font-medium">Date</th>
                                 <th className="py-4 px-2 font-medium">Slot</th>
                                 <th className="py-4 px-2 font-medium">Client Name</th>

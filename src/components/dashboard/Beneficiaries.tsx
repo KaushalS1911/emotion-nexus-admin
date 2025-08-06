@@ -423,7 +423,7 @@ export const Beneficiaries = () => {
 
             {/* View Beneficiary Dialog */}
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>Beneficiary Details</DialogTitle>
                     </DialogHeader>
@@ -443,23 +443,43 @@ export const Beneficiaries = () => {
                                 </div>
                                 <span className="text-lg font-semibold text-gray-900">{viewBeneficiary.name}</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="font-medium text-gray-600">Email</div>
-                                <div className="bg-gray-50 rounded px-2 py-1">{viewBeneficiary.email}</div>
-                                <div className="font-medium text-gray-600">Age</div>
-                                <div className="bg-gray-50 rounded px-2 py-1">{viewBeneficiary.age}</div>
-                                <div className="font-medium text-gray-600">Assessment Name</div>
-                                <div className="bg-gray-50 rounded px-2 py-1">{viewBeneficiary.assessmentName}</div>
-                                <div className="font-medium text-gray-600">Join Date</div>
-                                <div
-                                    className="bg-gray-50 rounded px-2 py-1">{new Date(viewBeneficiary.joinDate).toLocaleDateString()}</div>
-                                <div className="font-medium text-gray-600">Status</div>
-                                <div className="bg-gray-50 rounded px-2 py-1">
-                                    <Badge
-                                        className={getStatusColor(viewBeneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                                        {capitalizeFirst(viewBeneficiary.status)}
-                                    </Badge>
-                                </div>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm border border-gray-200 rounded-lg bg-white">
+                                    <tbody>
+                                        <tr className="border-b">
+                                            <td className="font-medium text-gray-600 px-4 py-2">Name</td>
+                                            <td className="px-4 py-2 bg-gray-50">{viewBeneficiary.name}</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="font-medium text-gray-600 px-4 py-2">Email</td>
+                                            <td className="px-4 py-2 bg-gray-50">{viewBeneficiary.email}</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="font-medium text-gray-600 px-4 py-2">Age</td>
+                                            <td className="px-4 py-2 bg-gray-50">{viewBeneficiary.age}</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="font-medium text-gray-600 px-4 py-2">Assessment Name</td>
+                                            <td className="px-4 py-2 bg-gray-50">{viewBeneficiary.assessmentName}</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="font-medium text-gray-600 px-4 py-2">Join Date</td>
+                                            <td className="px-4 py-2 bg-gray-50">
+                                                {new Date(viewBeneficiary.joinDate).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-medium text-gray-600 px-4 py-2">Status</td>
+                                            <td className="px-4 py-2 bg-gray-50">
+                                                <Badge
+                                                    className={getStatusColor(viewBeneficiary.status) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
+                                                    {capitalizeFirst(viewBeneficiary.status)}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     )}

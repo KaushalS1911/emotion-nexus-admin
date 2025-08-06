@@ -152,6 +152,10 @@ export const InquiriesManagement = () => {
     const [editStatus, setEditStatus] = useState<string>("");
     const [editLoading, setEditLoading] = useState(false);
 
+    // Success dialog state
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+
 
     useEffect(() => {
         setLoading(true);
@@ -331,14 +335,12 @@ export const InquiriesManagement = () => {
 
                 console.log(`Successfully assigned inquiry ${assignInquiryId} to ${selectedTeamMember}`);
 
-                // Show success message
+                // Show success dialog instead of toast
                 const message = previouslyAssigned
                     ? `Successfully reassigned inquiry from ${previouslyAssigned} to ${selectedTeamMember}`
                     : `Successfully assigned inquiry to ${selectedTeamMember}`;
-                toast({
-                    title: "Inquiry Assigned",
-                    description: message,
-                });
+                setSuccessMessage(message);
+                setSuccessDialogOpen(true);
 
                 setAssignDialogOpen(false);
                 setAssignInquiryId(null);
@@ -760,13 +762,16 @@ export const InquiriesManagement = () => {
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Name</th>
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Email</th>
                                         <th className="text-left py-4 px-2 font-medium text-gray-600">Phone</th>
+                                        {/*<th className="text-left py-4 px-2 font-medium text-gray-600">Select</th>*/}
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {paginatedCounselors.map((counselor, idx) => (
                                         <tr key={counselor.id}
                                             className={`border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
-                                                selectedTeamMember === counselor.full_name ? 'bg-blue-50' : ''
+                                                selectedTeamMember === counselor.full_name 
+                                                    ? 'bg-blue-50 border-2 border-blue-500' 
+                                                    : ''
                                             }`}
                                             onClick={() => setSelectedTeamMember(counselor.full_name)}
                                         >
@@ -785,6 +790,15 @@ export const InquiriesManagement = () => {
                                             <td className="py-4 px-2">{counselor.full_name}</td>
                                             <td className="py-4 px-2">{counselor.email}</td>
                                             <td className="py-4 px-2">{counselor.phone || "-"}</td>
+                                            <td className="py-4 px-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedTeamMember === counselor.full_name}
+                                                    onChange={() => setSelectedTeamMember(counselor.full_name)}
+                                                    className="h-4 w-4 text-white border-gray-300  rounded-full focus:ring-[#012765] focus:ring-2 checked:bg-[#012765]"
+                                                />
+                                            </td>
+
                                         </tr>
                                     ))}
                                     </tbody>
@@ -897,6 +911,31 @@ export const InquiriesManagement = () => {
                                 )}
                             </Button>
                         </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Dialog */}
+            <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <div className="text-center space-y-4">
+                        <div className="mx-auto flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-[#012765] mb-2">
+                                Inquiry Assigned Successfully!
+                            </h3>
+                            <p className="text-sm text-[#012765]">
+                                {successMessage}
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => setSuccessDialogOpen(false)}
+                            className="bg-[#FF7119] text-white hover:bg-[#FF7119]/90 font-bold uppercase px-8 py-2"
+                        >
+                            OK
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

@@ -334,11 +334,11 @@ export default function Users() {
                                                     {/*<DropdownMenuItem onClick={() => handleView(user)}>*/}
                                                     {/*    <Eye className="h-4 w-4 mr-2 text-blue-600"/> View*/}
                                                     {/*</DropdownMenuItem>*/}
+                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                        <span className="mr-2">✏️</span> Edit User
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleAddCredentials(user)}>
                                                         <Key className="h-4 w-4 mr-2 text-yellow-600"/> Add Credentials
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                        <span className="mr-2">✏️</span> Edit
                                                     </DropdownMenuItem>
                                                     {user.role === "counsellor" && (
                                                         <DropdownMenuItem onClick={() =>

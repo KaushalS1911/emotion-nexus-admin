@@ -352,7 +352,7 @@ const RescheduleCall = () => {
 
                 <div className="p-2 mt-4 font-poppins">
                     {/* Page Title */}
-                    <h1 className="text-4xl font-bold text-[#012765] mb-4 tracking-wide font-poppins">
+                    <h1 className="text-3xl font-bold text-[#012765] mb-1">
                         Reschedule Appointment
                     </h1>
 
@@ -392,7 +392,7 @@ const RescheduleCall = () => {
                     )}
 
                     {/* Counselor Slider */}
-                    <h3 className="text-xl font-bold text-[#012765] mb-4 tracking-wide font-poppins">
+                    <h3 className="text-xl font-bold text-[#012765] mb-4 ">
                         Choose Your Counselor
                     </h3>
 
@@ -473,7 +473,7 @@ const RescheduleCall = () => {
                     </div>
 
                     {/* Date Picker */}
-                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide font-poppins">
+                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg">
                         Choose New Date
                     </h3>
                     <div className="flex gap-3 overflow-x-auto pb-4 px-1 sm:px-0 scrollbar-hide font-poppins">
@@ -504,7 +504,7 @@ const RescheduleCall = () => {
                     </div>
 
                     {/* Time Slots */}
-                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg tracking-wide font-poppins">
+                    <h3 className="text-xl font-bold text-[#012765] mt-12 mb-4 text-lg">
                         Choose New Time Slot
                     </h3>
                     <div className="flex flex-wrap gap-3 mb-4 font-poppins">

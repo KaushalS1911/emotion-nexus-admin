@@ -291,7 +291,7 @@ function SlotPage() {
     return (
         <div className="font-sans min-h-screen p-2">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-[#012765]">Slot Management</h1>
+                <h1 className="text-3xl font-bold text-[#FF7119]">Slot Management</h1>
                 <Button onClick={() => openCreateDialog()}
                         className="bg-[#FF7119] hover:bg-[#ff8c42] text-white font-semibold flex items-center gap-2 shadow-md rounded-lg px-5 py-2 text-base">
                     <Plus className="h-5 w-5"/>

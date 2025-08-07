@@ -31,6 +31,8 @@ import AppointmentPage from "@/pages/AppointmentPage.tsx";
 import ResourceFormPage from "@/pages/ResourceFormPage";
 import RescheduleCall from "@/pages/RescheduleCall";
 import Recommendations from "@/pages/Recommendations";
+import {ReflectionCards} from "@/components/dashboard/ReflectionCardsComponent.tsx";
+import {ReflectionCardDetails} from "@/components/dashboard/ReflectionCardDetails.tsx";
 
 // Role constants
 const ROLE = {
@@ -83,6 +85,8 @@ const adminRoutes = [
     {path: "/dashboard", element: <DashboardOverview/>},
     {path: "/beneficieries", element: <Beneficiaries/>},
     {path: "/users", element: <Users/>},
+    {path: "/reflection-cards", element: <ReflectionCards/>},
+    {path:"/reflection-cards/:id", element: <ReflectionCardDetails />},
     {path: "/new-user", element: <NewUserPage/>},
     {path: "/edit-user", element: <NewUserPage/>},
     {path: "/assessments", element: <AssessmentData/>},

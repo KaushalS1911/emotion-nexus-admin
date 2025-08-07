@@ -41,6 +41,7 @@ const menuItems: MenuItem[] = [
     {id: "assessments", label: "Assessments", icon: FileText, route: "/assessments"},
     {id: "inquiries", label: "Inquiries", icon: MessageSquare, route: "/inquiries"},
     {id: "users", label: "Users", icon: Users, route: "/users"},
+    {id: "reflection-cards", label: "Reflection Cards", icon: Users, route: "/reflection-cards"},
     // {id: "feedback", label: "Feedback", icon: Star, route: "/feedback"},
     {id: "resources", label: "Resources", icon: BookOpen, route: "/resources"},
     // {id: "notifications", label: "Notifications", icon: Bell, route: "/notifications"},

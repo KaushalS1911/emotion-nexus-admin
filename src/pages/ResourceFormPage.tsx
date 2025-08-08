@@ -226,7 +226,7 @@ export default function ResourceFormPage() {
 
         try {
             const payload = {
-                admin_approval: form.admin_approval,
+                admin_approval:'pending',
                 article: form.description,
                 audience_age: form.age,
                 category_id: getSelectedCategoryId(),
@@ -557,28 +557,28 @@ export default function ResourceFormPage() {
                                     )}
                                 </div>
 
-                                <div className="flex-1">
-                                    <Label>Admin Approval</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.admin_approval}
-                                            onValueChange={(v) => handleSelect("admin_approval", v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select admin approval"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="approved">Approved</SelectItem>
-                                                <SelectItem value="pending">Pending</SelectItem>
-                                                <SelectItem value="rejected">Rejected</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </div>
+                            {/*    <div className="flex-1">*/}
+                            {/*        <Label>Admin Approval</Label>*/}
+                            {/*        {isView ? (*/}
+                            {/*            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">*/}
+                            {/*                {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}*/}
+                            {/*            </div>*/}
+                            {/*        ) : (*/}
+                            {/*            <Select*/}
+                            {/*                value={form.admin_approval}*/}
+                            {/*                onValueChange={(v) => handleSelect("admin_approval", v)}*/}
+                            {/*            >*/}
+                            {/*                <SelectTrigger>*/}
+                            {/*                    <SelectValue placeholder="Select admin approval"/>*/}
+                            {/*                </SelectTrigger>*/}
+                            {/*                <SelectContent>*/}
+                            {/*                    <SelectItem value="approved">Approved</SelectItem>*/}
+                            {/*                    <SelectItem value="pending">Pending</SelectItem>*/}
+                            {/*                    <SelectItem value="rejected">Rejected</SelectItem>*/}
+                            {/*                </SelectContent>*/}
+                            {/*            </Select>*/}
+                            {/*        )}*/}
+                            {/*    </div>*/}
                             </div>
 
                             {/* Description */}

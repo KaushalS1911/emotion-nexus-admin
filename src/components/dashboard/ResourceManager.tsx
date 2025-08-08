@@ -6,21 +6,21 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Search,
-  Plus,
-  Eye,
-  Heart,
-  BookOpen,
-  Video,
-  FileText,
-  Edit,
-  Trash2,
-  MoreVertical,
-  TrendingUp,
-  FilePen,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight
+    Search,
+    Plus,
+    Eye,
+    Heart,
+    BookOpen,
+    Video,
+    FileText,
+    Edit,
+    Trash2,
+    MoreVertical,
+    TrendingUp,
+    FilePen,
+    RefreshCw,
+    ChevronLeft,
+    ChevronRight, Calendar, Clock
 } from "lucide-react";
 import {
   Dialog,
@@ -36,6 +36,7 @@ import { format } from "date-fns";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {useArticleCategories} from "@/hooks/useArticleCategories.tsx";
+import {toast} from "sonner";
 
 // Types and constants
 type ResourceFormErrors = {
@@ -152,7 +153,8 @@ export const ResourceManager = () => {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
   const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
-  
+  const [approveModel, setApproveModel] = useState({open:false,id:null});
+
   // Pagination states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -258,6 +260,7 @@ export const ResourceManager = () => {
         }
         return {
           id: article.id || Date.now() + index,
+          admin_approval: article.admin_approval ||'',
           title: article.title || article.name || `Article ${index + 1}`,
           type: 'article',
           category_name: article.category_name || 'general',
@@ -621,8 +624,61 @@ export const ResourceManager = () => {
         : "bg-gray-100 text-gray-800";
   };
 
+  const handleSubmitArticle = async () => {
+      try {
+          const response = await fetch(`https://interactapiverse.com/mahadevasth/shape/article/${approveModel.id}/approval`, {
+              method: "PATCH",
+              headers: {
+                  "Content-Type": "application/json",
+              }
+          });
+
+          if (!response.ok) {
+              throw new Error("Failed to approve article");
+          }
+          setApproveModel({open:false,id:null})
+          toast({
+              title: "Article approved!",
+              description: "The article has been successfully approved.",
+          });
+
+
+      } catch (error: any) {
+          setApproveModel({open:false,id:null})
+          toast({
+              title: error.message || "An error occurred while approving the article.",
+              variant: "destructive",
+          });
+      }
+  }
+
   return (
     <div className="space-y-6">
+        <Dialog open={approveModel?.open} onOpenChange={()=>setApproveModel({open:false,id:null})}>
+            <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden p-3 pt-4">
+                <div>Are you sure you want to approve this article?</div>
+
+                <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                                setApproveModel({open:false,id:null});
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                            onClick={handleSubmitArticle}
+                        >
+                            Ok
+                        </Button>
+                    </div>
+            </DialogContent>
+        </Dialog>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#FF7119]">
@@ -911,6 +967,14 @@ export const ResourceManager = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
+                                disabled={resource?.admin_approval === "approved"}
+                                onClick={() => setApproveModel({open:true,id:resource.id})}
+                              className="cursor-pointer"
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              Approve Article
+                            </DropdownMenuItem>
+                              <DropdownMenuItem
                                 onClick={() => navigate(`/resources/edit/${resource.id}`)}
                               className="cursor-pointer"
                             >

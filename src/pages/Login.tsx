@@ -4,30 +4,13 @@ import { useUserContext } from "@/UserContext";
 import logo from "../../public/Emotionally Yours Logo.png";
 import { Eye, EyeOff } from "lucide-react";
 
-
-const DUMMY_USERS = [
-    {
-        id: "1",
-        name: "Admin",
-        email: "admin@example.com",
-        password: "admin123",
-        role: "admin" as const,
-    },
-    {
-        id: "2",
-        name: "Counsellor",
-        email: "counsellor@example.com",
-        password: "counsellor123",
-        role: "counsellor" as const,
-    },
-];
-
 export default function Login() {
     const { setUser } = useUserContext();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,17 +21,50 @@ export default function Login() {
         }
     }, [navigate]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const found = DUMMY_USERS.find(u => u.email === email && u.password === password);
-        if (found) {
-            setUser({ id: found.id, name: found.name, email: found.email, role: found.role });
-            sessionStorage.setItem("user-token", found.id);
-            sessionStorage.setItem("user-role", found.role);
-            if (found.role === "admin") navigate("/dashboard");
-            else if (found.role === "counsellor") navigate("/slot");
-        } else {
-            setError("Invalid email or password");
+        setError("");
+        setLoading(true);
+
+        try {
+            const res = await fetch("https://interactapiverse.com/mahadevasth/users/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: email, // API expects `username`
+                    password: password, // API expects `password`
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.status === 200) {
+                // Set context user
+                setUser({
+                    id: data.user.user_id,
+                    name: data.user.full_name,
+                    email: data.user.username,
+                    role: data.user.role,
+                });
+
+                // Store in sessionStorage
+                sessionStorage.setItem("user-token", data.user.user_id);
+                sessionStorage.setItem("user-role", data.user.role);
+
+                // Redirect based on role
+                if (data.user.role === "admin") navigate("/dashboard");
+                else if (data.user.role === "counsellor") navigate("/slot");
+                else navigate("/");
+            } else {
+                setError(data.message || "Invalid username or password");
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -72,15 +88,15 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-[#012765]">Email</label>
+                        <label htmlFor="email" className="block text-sm font-medium text-[#012765]">Username</label>
                         <input
                             id="email"
-                            type="email"
+                            type="text"
                             autoComplete="username"
                             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#FF7119] focus:ring-[#FF7119] text-[#012765]"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
-                            placeholder="Enter your email"
+                            placeholder="Enter your username"
                             required
                         />
                     </div>
@@ -114,14 +130,15 @@ export default function Login() {
                     {error && <div className="text-red-500 text-sm text-center">{error}</div>}
                     <button
                         type="submit"
-                        className="w-full py-2 px-4 bg-[#FF7119] text-white font-semibold rounded hover:bg-[#012765] transition-colors"
+                        disabled={loading}
+                        className="w-full py-2 px-4 bg-[#FF7119] text-white font-semibold rounded hover:bg-[#012765] transition-colors disabled:opacity-50"
                     >
-                        Sign In
+                        {loading ? "Signing in..." : "Sign In"}
                     </button>
                 </form>
                 <div className="mt-6 text-center text-sm text-gray-500">
-                    Don&apos;t have an account? <a href="/register"
-                                                   className="text-[#FF7119] hover:underline">Register</a>
+                    Don&apos;t have an account?{" "}
+                    <a href="/register" className="text-[#FF7119] hover:underline">Register</a>
                 </div>
             </div>
         </div>

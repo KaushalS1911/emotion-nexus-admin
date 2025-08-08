@@ -9,12 +9,11 @@ import {ArrowLeft, X} from "lucide-react";
 import {Card} from "@/components/ui/card.tsx";
 import axios from "axios";
 
-// --- Types and helpers (from ResourceManager) ---
 type ResourceFormErrors = {
     title?: string;
     author?: string;
     type?: string;
-    category?: string;
+    category_name?: string;
     platform?: string;
     age?: string;
     description?: string;
@@ -27,7 +26,7 @@ const getInitialForm = () => ({
     title: "",
     author: "",
     type: "",
-    category: "",
+    category_name: "",
     description: "",
     tags: [],
     thumbnail: null,
@@ -35,6 +34,7 @@ const getInitialForm = () => ({
     platform: "",
     age: "",
     status: "live",
+    admin_approval: "approved",
 });
 
 const getTagsArray = (tags: any) => {
@@ -45,26 +45,14 @@ const getTagsArray = (tags: any) => {
     return [];
 };
 
-const resourceTypes = [
-    {value: "article", label: "Article"},
-    {value: "video", label: "Video"},
-    {value: "tip", label: "Tip"},
-];
-const categories = [
-    "stress-management",
-    "mindfulness",
-    "exam-prep",
-    "self-esteem",
-    "relationships",
-    "productivity",
-    "mental-health",
-];
 const platforms = [
-    {value: "website", label: "Website"},
+    {value: "web", label: "Web"},
     {value: "app", label: "App"},
     {value: "both", label: "Both"},
 ];
-const ages = ["13+", "16+", "18+"];
+
+const ages = ["13+", "14+", "16+", "18+"];
+
 const statusOptions = [
     {value: "live", label: "Live"},
     {value: "hide", label: "Hide"},
@@ -84,14 +72,11 @@ export default function ResourceFormPage() {
     const navigate = useNavigate();
     const {id} = useParams();
     const location = useLocation();
-    const isEdit = Boolean(id);
     const isView = new URLSearchParams(location.search).get('view') === '1';
     const [form, setForm] = useState(getInitialForm());
     const [tagInput, setTagInput] = useState("");
-    const [thumbPreview, setThumbPreview] = useState<string | null>(null);
     const [emptyPreview, setEmptyPreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<ResourceFormErrors>({});
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const emptyInputRef = useRef<HTMLInputElement>(null);
 
     // API states
@@ -99,41 +84,129 @@ export default function ResourceFormPage() {
     const [apiError, setApiError] = useState<string | null>(null);
     const [apiSuccess, setApiSuccess] = useState<string | null>(null);
 
-    // Load resource for edit
-    useEffect(() => {
-        if (isEdit) {
-            const stored = localStorage.getItem("resources");
-            const resources = stored ? JSON.parse(stored) : [];
-            const found = resources.find((r: any) => String(r.id) === String(id));
-            if (found) {
-                setForm({...found, tags: getTagsArray(found.tags)});
-                setThumbPreview(found.thumbnail || null);
-                setEmptyPreview(found.emptyImage || null);
-            }
-        } else {
-            setForm(getInitialForm());
-            setThumbPreview(null);
-            setEmptyPreview(null);
-        }
-    }, [id, isEdit]);
+    // Categories states
+    const [categories, setCategories] = useState<{ category: string; id: number }[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(false);
+    const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
-    // --- Form Handlers ---
+    // Counsellors state
+    const [counsellors, setCounsellors] = useState<{ full_name: string; user_id: number }[]>([]);
+    const [counsellorsLoading, setCounsellorsLoading] = useState(false);
+    const [counsellorsError, setCounsellorsError] = useState<string | null>(null);
+
+    // Load resource for edit/view
+    useEffect(() => {
+        const fetchResource = async () => {
+            if (!id) return;
+
+            setIsLoading(true);
+            setApiError(null);
+            try {
+                const response = await axios.get(`https://interactapiverse.com/mahadevasth/shape/articles/${id}`);
+                const data = response.data?.data?.[0] || response.data;
+                setForm({
+                    title: data.title || "",
+                    author: data.counsellor_name || data.author || "",
+                    type: data.type || "",
+                    category_name: data.category_name || "",
+                    description: data.article || data.description || "",
+                    tags: getTagsArray(data.tags),
+                    thumbnail: data.image || null,
+                    emptyImage: data.image || null,
+                    platform: data.platform || "",
+                    age: data.audience_age || data.age || "",
+                    status: data.status || "live",
+                    admin_approval: data.admin_approval || "approved",
+                });
+                setEmptyPreview(data.image || null);
+            } catch (error) {
+                setApiError("Failed to fetch resource from API");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchResource();
+    }, [id, isView]);
+
+    // Fetch categories on mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            setCategoriesLoading(true);
+            setCategoriesError(null);
+            try {
+                const response = await axios.get('https://interactapiverse.com/mahadevasth/shape/articles/article-categories');
+                let cats = response.data?.data || response.data?.categories || response.data;
+                if (Array.isArray(cats)) {
+                    setCategories(cats.filter((c) => c && typeof c.category === 'string' && c.category));
+                } else {
+                    setCategories([]);
+                }
+            } catch (err) {
+                setCategoriesError('Failed to load categories');
+                setCategories([]);
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // Fetch counsellors on mount
+    useEffect(() => {
+        const fetchCounsellors = async () => {
+            setCounsellorsLoading(true);
+            setCounsellorsError(null);
+            try {
+                const response = await axios.get('https://interactapiverse.com/mahadevasth/counsellors');
+                let data = response.data?.data || response.data;
+                if (Array.isArray(data)) {
+                    setCounsellors(data.filter((c) => c && typeof c.full_name === 'string' && c.full_name));
+                } else {
+                    setCounsellors([]);
+                }
+            } catch (err) {
+                setCounsellorsError('Failed to load counsellors');
+                setCounsellors([]);
+            } finally {
+                setCounsellorsLoading(false);
+            }
+        };
+        fetchCounsellors();
+    }, []);
+
+    const getSelectedCategoryId = () => {
+        const cat = categories.find((c) => c.category === form.category_name);
+        return cat ? cat.id : undefined;
+    };
+
+    const getSelectedCounsellorId = () => {
+        const counsellor = counsellors.find((c) => c.full_name === form.author);
+        return counsellor ? counsellor.user_id : undefined;
+    };
+
+    // Form Handlers
     const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm((f) => ({...f, [e.target.id]: e.target.value}));
     };
+
     const handleSelect = (field: string, value: string) => {
         setForm((f) => ({...f, [field]: value}));
     };
+
     const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 1024 * 1024) return;
+            if (file.size > 1024 * 1024) {
+                setApiError("Image size should be less than 1MB");
+                return;
+            }
             const base64 = await fileToBase64(file);
-            if (field === "thumbnail") setThumbPreview(base64);
-            if (field === "emptyImage") setEmptyPreview(base64);
+            setEmptyPreview(base64);
             setForm((f) => ({...f, [field]: base64}));
         }
     };
+
     const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
             e.preventDefault();
@@ -143,30 +216,23 @@ export default function ResourceFormPage() {
             setTagInput("");
         }
     };
+
     const handleRemoveTag = (tag: string) => {
         setForm((f) => ({...f, tags: f.tags.filter((t: string) => t !== tag)}));
     };
 
-    // Add image remove handlers
-    const handleRemoveImage = (field: 'thumbnail' | 'emptyImage') => {
-        if (field === 'thumbnail') {
-            setThumbPreview(null);
-            setForm(f => ({...f, thumbnail: null}));
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        } else {
-            setEmptyPreview(null);
-            setForm(f => ({...f, emptyImage: null}));
-            if (emptyInputRef.current) emptyInputRef.current.value = '';
-        }
+    const handleRemoveImage = () => {
+        setEmptyPreview(null);
+        setForm(f => ({...f, emptyImage: null}));
+        if (emptyInputRef.current) emptyInputRef.current.value = '';
     };
 
-    // --- Validation ---
+    // Validation
     const validateForm = () => {
         const newErrors: ResourceFormErrors = {};
         if (!form.title.trim()) newErrors.title = "Title is required";
         if (!form.author.trim()) newErrors.author = "Author is required";
-        if (!form.type) newErrors.type = "Type is required";
-        if (!form.category) newErrors.category = "Category is required";
+        if (!form.category_name) newErrors.category_name = "Category is required";
         if (!form.platform) newErrors.platform = "Platform is required";
         if (!form.age.trim()) newErrors.age = "Age is required";
         if (!form.description.trim()) newErrors.description = "Description is required";
@@ -175,295 +241,242 @@ export default function ResourceFormPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    // API function to create article
-    const createArticleAPI = async (formData: any) => {
-        console.log("hiii")
+    // Save to API
+    const saveToAPI = async (isDraft: boolean = false) => {
         setIsLoading(true);
         setApiError(null);
         setApiSuccess(null);
 
         try {
-            // const payload = {
-            //     title: formData.title || "Mindful Journaling",
-            //     description: formData.description || "Using journals to reflect and grow emotionally.",
-            //     author: formData.author || "Dr. Meena",
-            //     image: formData.thumbnail || "https://example.com/img.jpg",
-            //     type: "Article",
-            //     category: formData.category || "Reflection",
-            //     platform: formData.platform || "App",
-            //     audience_age: formData.age || "13+",
-            //     status: "Published",
-            //     tags: formData.tags || ["journaling", "mental health"],
-            //     resource_status: "Live",
-            //     admin_approval: "approved"
-            // };
-
             const payload = {
-                title: "Mindful Journaling",
-                description: "Using journals to reflect and grow emotionally.",
-                author: "Dr. Meena",
-                image: "https://example.com/img.jpg",
-                type: "Article",
-                category: "Reflection",
-                platform: "App",
-                audience_age: "13+",
-                status: "Published",
-                tags: [
-                    "journaling",
-                    "mental health"
-                ],
-                resource_status: "Live",
-                admin_approval: "approved"
-            }
-            console.log(payload);
+                admin_approval: form.admin_approval,
+                article: form.description,
+                audience_age: form.age,
+                category_id: getSelectedCategoryId(),
+                category_name: form.category_name,
+                counsellor_code: getSelectedCounsellorId(),
+                counsellor_name: form.author,
+                created_at: new Date().toISOString(),
+                image: form.emptyImage,
+                platform: form.platform,
+                resource_status: isDraft ? "draft" : form.status,
+                status: isDraft ? "draft" : "live",
+                tags: JSON.stringify(form.tags || []),
+                title: form.title,
+                ...(id && { id: id }) // Only include ID if we're updating
+            };
 
-            const response = await axios.post('https://www.interactapiverse.com/mahadevasth/shape/article', payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            console.log(response);
-
-            const createdArticle = response.data;
-            console.log('Created article response:', createdArticle);
-
-            setApiSuccess('Article created successfully via API!');
-            setTimeout(() => setApiSuccess(null), 3000);
-
-            return createdArticle;
-        } catch (error) {
-            console.error('Error creating article:', error);
-            if (axios.isAxiosError(error)) {
-                setApiError(`HTTP ${error.response?.status}: ${error.response?.data?.message || error.message}`);
+            let response;
+            if (id) {
+                // Update existing resource
+                response = await axios.put(
+                    `https://interactapiverse.com/mahadevasth/shape/articles/${id}`,
+                    payload
+                );
             } else {
-                setApiError(error instanceof Error ? error.message : 'Failed to create article via API');
+                // Create new resource
+                response = await axios.post(
+                    "https://interactapiverse.com/mahadevasth/shape/articles/upload",
+                    payload
+                );
             }
+
+            setApiSuccess(id ? "Resource updated successfully!" : "Resource created successfully!");
+            setTimeout(() => navigate("/resources"), 2000);
+
+            return response.data;
+        } catch (error) {
+            console.error("API Error:", error);
+            let errorMsg = "Failed to save resource";
+            if (axios.isAxiosError(error)) {
+                errorMsg = error.response?.data?.message || error.message;
+            }
+            setApiError(errorMsg);
             throw error;
         } finally {
             setIsLoading(false);
         }
     };
 
-    // --- Save ---
-    const handleSave = async () => {
+    // Save to local storage as fallback
+    const saveToLocal = (isDraft: boolean = false) => {
+        const stored = localStorage.getItem("resources");
+        let resources = stored ? JSON.parse(stored) : [];
+
+        const resourceData = {
+            ...form,
+            id: id || Date.now(),
+            tags: form.tags,
+            thumbnail: emptyPreview,
+            emptyImage: emptyPreview,
+            publishDate: new Date().toISOString(),
+            views: 0,
+            likes: 0,
+            status: isDraft ? "draft" : form.status
+        };
+
+        if (id) {
+            resources = resources.map((r: any) =>
+                String(r.id) === String(id) ? resourceData : r
+            );
+        } else {
+            resources = [resourceData, ...resources];
+        }
+
+        localStorage.setItem("resources", JSON.stringify(resources));
+        navigate("/resources");
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
+        e.preventDefault();
+
         if (!validateForm()) return;
 
         try {
-            // First, try to create via API if it's a new resource
-            if (!isEdit) {
-                await createArticleAPI(form);
-            }
-
-            // Then save to localStorage as before
-            const stored = localStorage.getItem("resources");
-            let resources = stored ? JSON.parse(stored) : [];
-            if (isEdit) {
-                resources = resources.map((r: any) =>
-                    String(r.id) === String(id)
-                        ? {...r, ...form, tags: form.tags, thumbnail: thumbPreview, emptyImage: emptyPreview}
-                        : r
-                );
-            } else {
-                const newResource = {
-                    ...form,
-                    id: Date.now(),
-                    tags: form.tags,
-                    thumbnail: thumbPreview,
-                    emptyImage: emptyPreview,
-                    publishDate: new Date().toISOString().slice(0, 10),
-                    views: 0,
-                    likes: 0,
-                };
-                resources = [newResource, ...resources];
-            }
-            localStorage.setItem("resources", JSON.stringify(resources));
-            navigate("/resources");
+            // First try to save to API
+            await saveToAPI(isDraft);
         } catch (error) {
-            // If API fails, still save to localStorage but show error
-            console.error('Error in handleSave:', error);
-            const stored = localStorage.getItem("resources");
-            let resources = stored ? JSON.parse(stored) : [];
-            if (!isEdit) {
-                const newResource = {
-                    ...form,
-                    id: Date.now(),
-                    tags: form.tags,
-                    thumbnail: thumbPreview,
-                    emptyImage: emptyPreview,
-                    publishDate: new Date().toISOString().slice(0, 10),
-                    views: 0,
-                    likes: 0,
-                };
-                resources = [newResource, ...resources];
-            }
-            localStorage.setItem("resources", JSON.stringify(resources));
-            navigate("/resources");
+            // If API fails, save to local storage
+            console.log("API failed, saving to local storage");
+            saveToLocal(isDraft);
         }
-    };
-
-    // --- Save Draft ---
-    const handleSaveDraft = () => {
-        if (!validateForm()) return;
-        const stored = localStorage.getItem("resources");
-        let resources = stored ? JSON.parse(stored) : [];
-        if (isEdit) {
-            resources = resources.map((r: any) =>
-                String(r.id) === String(id)
-                    ? {
-                        ...r, ...form,
-                        status: "draft",
-                        tags: form.tags,
-                        thumbnail: thumbPreview,
-                        emptyImage: emptyPreview
-                    }
-                    : r
-            );
-        } else {
-            const newResource = {
-                ...form,
-                id: Date.now(),
-                tags: form.tags,
-                thumbnail: thumbPreview,
-                emptyImage: emptyPreview,
-                publishDate: new Date().toISOString().slice(0, 10),
-                views: 0,
-                likes: 0,
-                status: "draft",
-            };
-            resources = [newResource, ...resources];
-        }
-        localStorage.setItem("resources", JSON.stringify(resources));
-        navigate("/resources");
     };
 
     return (
         <>
             <Button variant="outline" className="mb-4" onClick={() => navigate(-1)}>
-                <ArrowLeft className=" h-4 w-4"/>
+                <ArrowLeft className="h-4 w-4"/>
                 Back
             </Button>
-            <form
-                style={{maxWidth: "100vw"}}
-                onSubmit={async e => {
-                    e.preventDefault();
-                    if (!isView) await handleSave();
-                }}
-            >
+
+            <form onSubmit={(e) => handleSubmit(e, false)}>
                 <div>
-                    <h1 className="text-3xl font-bold text-[#FF7119] mb-2  text-center md:text-left">
-                        {isView ? "Resource Details" : isEdit ? "Edit Resource" : "Add New Resource"}
+                    <h1 className="text-3xl font-bold text-[#FF7119] mb-2 text-center md:text-left">
+                        {isView ? "Resource Details" : id ? "Edit Resource" : "Add New Resource"}
                     </h1>
                     <p className="text-gray-600 mb-5 text-center md:text-left">
-                        {isView
-                            ? "View all details for this resource."
-                            : isEdit
-                                ? "Update the details of this resource."
-                                : "Fill in the details to add a new resource."}
+                        {isView ? "View all details for this resource." : "Fill in the details below."}
                     </p>
+
                     {apiError && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                            <strong>API Error:</strong> {apiError}
+                            <strong>Error:</strong> {apiError}
                         </div>
                     )}
+
                     {apiSuccess && (
                         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
                             <strong>Success:</strong> {apiSuccess}
                         </div>
                     )}
+
                     <Card className="p-6">
                         <div className="flex flex-col gap-4">
-
+                            {/* Title and Category */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Label>Title</Label>
                                     {isView ? (
-                                        <div
-                                            className="py-2 px-3 bg-gray-50 rounded border text-gray-800">{form.title}</div>
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.title}
+                                        </div>
                                     ) : (
                                         <Input
                                             id="title"
                                             value={form.title}
                                             onChange={handleInput}
                                             placeholder="Resource title..."
-                                            className={errors && errors.title ? 'border-red-500' : ''}
+                                            className={errors.title ? 'border-red-500' : ''}
                                         />
                                     )}
-                                    {errors && errors.title && !isView && (
+                                    {errors.title && !isView && (
                                         <div className="text-red-500 text-xs mt-1">{errors.title}</div>
                                     )}
                                 </div>
+
                                 <div className="flex-1">
-                                    <Label>Author</Label>
+                                    <Label>Category</Label>
                                     {isView ? (
-                                        <div
-                                            className="py-2 px-3 bg-gray-50 rounded border text-gray-800">{form.author}</div>
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.category_name || "-"}
+                                        </div>
                                     ) : (
-                                        <Input
-                                            id="author"
-                                            value={form.author}
-                                            onChange={handleInput}
-                                            placeholder="Author name..."
-                                            className={errors && errors.author ? 'border-red-500' : ''}
-                                        />
+                                        <Select
+                                            value={form.category_name}
+                                            onValueChange={(v) => handleSelect("category_name", v)}
+                                            disabled={categoriesLoading}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={categoriesLoading ? "Loading..." : "Select category"}/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {categoriesError && (
+                                                    <div className="text-red-500 text-xs p-2">{categoriesError}</div>
+                                                )}
+                                                {categories.map((cat) => (
+                                                    <SelectItem key={cat.id} value={cat.category}>
+                                                        {cat.category}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     )}
-                                    {errors && errors.author && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.author}</div>
+                                    {errors.category_name && !isView && (
+                                        <div className="text-red-500 text-xs mt-1">{errors.category_name}</div>
                                     )}
                                 </div>
                             </div>
 
+                            {/* Author and Image */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
-                                    <Label>Thumbnail Image</Label>
-                                    {thumbPreview ? (
-                                        <div className="relative mt-2 w-full max-w-xs">
-                                            <img
-                                                src={thumbPreview}
-                                                alt="Thumbnail Preview"
-                                                className="w-full h-32 object-cover rounded"
-                                            />
-                                            {!isView && (
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                    onClick={() => handleRemoveImage('thumbnail')}
-                                                    aria-label="Remove thumbnail"
-                                                >
-                                                    <X className="w-4 h-4 text-gray-700"/>
-                                                </button>
-                                            )}
+                                    <Label>Author</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.author}
                                         </div>
-                                    ) : isView ? (
-                                        <div className="py-2 px-3 text-gray-400">No image</div>
                                     ) : (
-                                        <>
-                                            <Input
-                                                id="thumbnail"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleFile("thumbnail", e)}
-                                                ref={fileInputRef}
-                                            />
-                                            <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
-                                        </>
+                                        <Select
+                                            value={form.author}
+                                            onValueChange={(v) => handleSelect("author", v)}
+                                            disabled={counsellorsLoading}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={counsellorsLoading ? "Loading..." : "Select author"}/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {counsellorsError && (
+                                                    <div className="text-red-500 text-xs p-2">{counsellorsError}</div>
+                                                )}
+                                                {counsellors.map((c) => (
+                                                    <SelectItem key={c.user_id} value={c.full_name}>
+                                                        {c.full_name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                    {errors.author && !isView && (
+                                        <div className="text-red-500 text-xs mt-1">{errors.author}</div>
                                     )}
                                 </div>
+
                                 <div className="flex-1">
-                                    <Label>Empty State Image</Label>
+                                    <Label>Image</Label>
                                     {emptyPreview ? (
                                         <div className="relative mt-2 w-full max-w-xs">
                                             <img
                                                 src={emptyPreview}
-                                                alt="Empty State Preview"
+                                                alt="Preview"
                                                 className="w-full h-32 object-cover rounded"
                                             />
                                             {!isView && (
                                                 <button
                                                     type="button"
                                                     className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                    onClick={() => handleRemoveImage('emptyImage')}
-                                                    aria-label="Remove empty state image"
+                                                    onClick={handleRemoveImage}
+                                                    aria-label="Remove image"
                                                 >
                                                     <X className="w-4 h-4 text-gray-700"/>
                                                 </button>
@@ -486,56 +499,8 @@ export default function ResourceFormPage() {
                                 </div>
                             </div>
 
+                            {/* Platform, Age, Status, Approval */}
                             <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
-                                    <Label>Type</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {resourceTypes.find(t => t.value === form.type)?.label || form.type}
-                                        </div>
-                                    ) : (
-                                        <Select value={form.type} onValueChange={(v) => handleSelect("type", v)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select type"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {resourceTypes.map((type) => (
-                                                    <SelectItem key={type.value} value={type.value}>
-                                                        {type.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors && errors.type && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.type}</div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <Label>Category</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {categories.find(c => c === form.category)?.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase()) || form.category}
-                                        </div>
-                                    ) : (
-                                        <Select value={form.category}
-                                                onValueChange={(v) => handleSelect("category", v)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select category"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category} value={category}>
-                                                        {category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors && errors.category && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.category}</div>
-                                    )}
-                                </div>
                                 <div className="flex-1">
                                     <Label>Platform</Label>
                                     {isView ? (
@@ -543,8 +508,10 @@ export default function ResourceFormPage() {
                                             {platforms.find(p => p.value === form.platform)?.label || form.platform}
                                         </div>
                                     ) : (
-                                        <Select value={form.platform}
-                                                onValueChange={(v) => handleSelect("platform", v)}>
+                                        <Select
+                                            value={form.platform}
+                                            onValueChange={(v) => handleSelect("platform", v)}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select platform"/>
                                             </SelectTrigger>
@@ -557,13 +524,11 @@ export default function ResourceFormPage() {
                                             </SelectContent>
                                         </Select>
                                     )}
-                                    {errors && errors.platform && !isView && (
+                                    {errors.platform && !isView && (
                                         <div className="text-red-500 text-xs mt-1">{errors.platform}</div>
                                     )}
                                 </div>
-                            </div>
 
-                            <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Label>Age</Label>
                                     {isView ? (
@@ -571,7 +536,10 @@ export default function ResourceFormPage() {
                                             {form.age}
                                         </div>
                                     ) : (
-                                        <Select value={form.age} onValueChange={(v) => handleSelect("age", v)}>
+                                        <Select
+                                            value={form.age}
+                                            onValueChange={(v) => handleSelect("age", v)}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select age"/>
                                             </SelectTrigger>
@@ -582,10 +550,11 @@ export default function ResourceFormPage() {
                                             </SelectContent>
                                         </Select>
                                     )}
-                                    {errors && errors.age && !isView && (
+                                    {errors.age && !isView && (
                                         <div className="text-red-500 text-xs mt-1">{errors.age}</div>
                                     )}
                                 </div>
+
                                 <div className="flex-1">
                                     <Label>Status</Label>
                                     {isView ? (
@@ -593,52 +562,87 @@ export default function ResourceFormPage() {
                                             {statusOptions.find(s => s.value === form.status)?.label || form.status}
                                         </div>
                                     ) : (
-                                        <Select value={form.status} onValueChange={(v) => handleSelect("status", v)}>
+                                        <Select
+                                            value={form.status}
+                                            onValueChange={(v) => handleSelect("status", v)}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select status"/>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {statusOptions.map((opt) => (
-                                                    <SelectItem key={opt.value}
-                                                                value={opt.value}>{opt.label}</SelectItem>
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </SelectItem>
                                                 ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
+
+                                <div className="flex-1">
+                                    <Label>Admin Approval</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}
+                                        </div>
+                                    ) : (
+                                        <Select
+                                            value={form.admin_approval}
+                                            onValueChange={(v) => handleSelect("admin_approval", v)}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select admin approval"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="approved">Approved</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                                <SelectItem value="rejected">Rejected</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}
                                 </div>
                             </div>
 
+                            {/* Description */}
                             <div>
                                 <Label>Description</Label>
                                 {isView ? (
-                                    <div
-                                        className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">{form.description}</div>
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
+                                        {form.description}
+                                    </div>
                                 ) : (
                                     <Textarea
                                         id="description"
                                         value={form.description}
                                         onChange={handleInput}
                                         placeholder="Resource description..."
-                                        className={errors && errors.description ? 'border-red-500' : ''}
+                                        className={errors.description ? 'border-red-500' : ''}
+                                        rows={6}
                                     />
                                 )}
-                                {errors && errors.description && !isView && (
+                                {errors.description && !isView && (
                                     <div className="text-red-500 text-xs mt-1">{errors.description}</div>
                                 )}
                             </div>
 
+                            {/* Tags */}
                             <div>
                                 <Label>Tags</Label>
                                 {isView ? (
                                     <div className="flex flex-wrap gap-2 mb-2">
-                                        {form.tags && form.tags.length > 0 ? form.tags.map((tag: string) => (
-                                            <span
-                                                key={tag}
-                                                className="bg-[#FF7119] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1"
-                                            >
-                                            {tag}
-                                        </span>
-                                        )) : <span className="text-gray-400">No tags</span>}
+                                        {form.tags && form.tags.length > 0 ? (
+                                            form.tags.map((tag: string) => (
+                                                <span
+                                                    key={tag}
+                                                    className="bg-[#FF7119] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-gray-400">No tags</span>
+                                        )}
                                     </div>
                                 ) : (
                                     <>
@@ -648,15 +652,15 @@ export default function ResourceFormPage() {
                                                     key={tag}
                                                     className="bg-[#FF7119] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1"
                                                 >
-                                                {tag}
+                                                    {tag}
                                                     <button
                                                         type="button"
                                                         className="ml-1 text-white hover:text-gray-200"
                                                         onClick={() => handleRemoveTag(tag)}
                                                     >
-                                                    ×
-                                                </button>
-                                            </span>
+                                                        ×
+                                                    </button>
+                                                </span>
                                             ))}
                                         </div>
                                         <Input
@@ -664,41 +668,34 @@ export default function ResourceFormPage() {
                                             onChange={(e) => setTagInput(e.target.value)}
                                             onKeyDown={handleTagKeyDown}
                                             placeholder="Type a tag and press Enter"
-                                            className={errors && errors.tags ? 'border-red-500' : ''}
+                                            className={errors.tags ? 'border-red-500' : ''}
                                         />
-                                        {errors && errors.tags && (
+                                        {errors.tags && (
                                             <div className="text-red-500 text-xs mt-1">{errors.tags}</div>
                                         )}
                                     </>
                                 )}
                             </div>
                         </div>
+
                         {!isView && (
-                            <div className="flex flex-col md:flex-row gap-2 mt-10 mb-2 md:mb-0 justify-end w-full">
-
-                                {!isEdit && !isView && (
-                                    <Button
-                                        type="button"
-                                        variant="secondary"
-                                        className="w-full md:w-auto"
-                                        onClick={handleSaveDraft}
-                                    >
-                                        Save Draft
-                                    </Button>
-                                )}
-
-
-                                {!isView && (
-                                    <Button
-                                        type="submit"
-                                        className="w-full md:w-auto bg-[#012765] text-white"
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? "Creating..." : (isEdit ? "Save Changes" : "Add Resource")}
-                                    </Button>
-                                )}
+                            <div className="flex flex-col md:flex-row gap-2 mt-10 justify-end">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={(e) => handleSubmit(e, true)}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? "Saving..." : "Save Draft"}
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    className="bg-[#012765] text-white"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? "Publishing..." : "Publish Resource"}
+                                </Button>
                             </div>
-
                         )}
                     </Card>
                 </div>

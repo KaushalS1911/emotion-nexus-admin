@@ -34,14 +34,14 @@ import {useNavigate} from "react-router-dom";
 
 type ResourceFormErrors = {
     title?: string;
-    author?: string;
+    counsellor_code?: string;
     type?: string;
-    category?: string;
+    category_name?: string;
     platform?: string;
     age?: string;
     description?: string;
     tags?: string;
-    thumbnail?: string;
+    image?: string;
     emptyImage?: string;
 };
 
@@ -50,15 +50,15 @@ const mockResources = [
         id: 1,
         title: "5 Breathing Techniques for Instant Stress Relief",
         type: "article",
-        category: "stress-management",
-        author: "Dr. Sarah Wilson",
+        category_name: "stress-management",
+        counsellor_code: "Dr. Sarah Wilson",
         publishDate: "2024-06-20",
         views: 1247,
         likes: 89,
         status: "live",
         description: "Learn simple yet effective breathing techniques that can help you manage stress and anxiety in just a few minutes.",
         tags: ["breathing", "stress", "anxiety", "mindfulness"],
-        thumbnail: null,
+        image: null,
         emptyImage: null,
         platform: "website",
         age: "18+",
@@ -67,15 +67,15 @@ const mockResources = [
         id: 2,
         title: "Mindfulness Meditation for Beginners",
         type: "video",
-        category: "mindfulness",
-        author: "Wellness Team",
+        category_name: "mindfulness",
+        counsellor_code: "Wellness Team",
         publishDate: "2024-06-18",
         views: 2156,
         likes: 156,
         status: "live",
         description: "A 10-minute guided meditation session perfect for those new to mindfulness practice.",
         tags: ["meditation", "mindfulness", "beginners", "guided"],
-        thumbnail: null,
+        image: null,
         emptyImage: null,
         platform: "app",
         age: "13+",
@@ -84,15 +84,15 @@ const mockResources = [
         id: 3,
         title: "Exam Anxiety: A Complete Guide",
         type: "article",
-        category: "exam-prep",
-        author: "Prof. Michael Chen",
+        category_name: "exam-prep",
+        counsellor_code: "Prof. Michael Chen",
         publishDate: "2024-06-15",
         views: 892,
         likes: 67,
         status: "hide",
         description: "Comprehensive strategies to overcome exam anxiety and improve academic performance.",
         tags: ["exams", "anxiety", "students", "performance"],
-        thumbnail: null,
+        image: null,
         emptyImage: null,
         platform: "both",
         age: "16+",
@@ -101,15 +101,15 @@ const mockResources = [
         id: 4,
         title: "Workplace Stress Management Tips",
         type: "tip",
-        category: "workplace",
-        author: "HR Team",
+        category_name: "workplace",
+        counsellor_code: "HR Team",
         publishDate: "2024-06-12",
         views: 1456,
         likes: 98,
         status: "draft",
         description: "Practical tips for managing stress in professional environments.",
         tags: ["workplace", "stress", "productivity", "balance"],
-        thumbnail: null,
+        image: null,
         emptyImage: null,
         platform: "website",
         age: "21+",
@@ -118,15 +118,15 @@ const mockResources = [
         id: 5,
         title: "Building Emotional Resilience in Children",
         type: "video",
-        category: "children",
-        author: "Child Psychologist Team",
+        category_name: "children",
+        counsellor_code: "Child Psychologist Team",
         publishDate: "2024-06-10",
         views: 2890,
         likes: 234,
         status: "live",
         description: "Expert advice on helping children develop emotional resilience and coping skills.",
         tags: ["children", "resilience", "parenting", "emotional-health"],
-        thumbnail: null,
+        image: null,
         emptyImage: null,
         platform: "both",
         age: "6+",
@@ -151,7 +151,7 @@ const categories = [
 ];
 
 const platformOptions = [
-    {value: "website", label: "Website"},
+    {value: "web", label: "Website"},
     {value: "app", label: "App"},
     {value: "both", label: "Both"},
 ];
@@ -174,12 +174,12 @@ const fileToBase64 = (file: File): Promise<string> => {
 // 1. Change form.tags to be an array, add tagInput state
 const getInitialForm = () => ({
     title: "",
-    author: "",
+    counsellor_code: "",
     type: "",
-    category: "",
+    category_name: "",
     description: "",
     tags: [], // now an array
-    thumbnail: null,
+    image: null,
     emptyImage: null,
     platform: "",
     age: "",
@@ -233,7 +233,7 @@ export const ResourceManager = () => {
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({from: null, to: null});
     // Add a state for topCardFilter to control which card is active
     const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
-    
+
     // API states
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -265,9 +265,9 @@ export const ResourceManager = () => {
     const validateForm = () => {
         const newErrors: ResourceFormErrors = {};
         if (!form.title.trim()) newErrors.title = "Title is required";
-        if (!form.author.trim()) newErrors.author = "Author is required";
+        if (!form.counsellor_code.trim()) newErrors.counsellor_code = "Author is required";
         if (!form.type) newErrors.type = "Type is required";
-        if (!form.category) newErrors.category = "Category is required";
+        if (!form.category_name) newErrors.category_name = "Category is required";
         if (!form.platform) newErrors.platform = "Platform is required";
         if (!form.age.trim()) newErrors.age = "Age is required";
         if (!form.description.trim()) newErrors.description = "Description is required";
@@ -286,10 +286,10 @@ export const ResourceManager = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            
+
             // Debug: Log the structure of the response
             console.log('API Response structure:', typeof data, data);
-            
+
             // Check if data is an array, if not, try to extract articles from the response
             let articles = data;
             if (!Array.isArray(data)) {
@@ -305,31 +305,61 @@ export const ResourceManager = () => {
                     articles = [data];
                 }
             }
-            
+
             // Ensure articles is an array
             if (!Array.isArray(articles)) {
                 throw new Error('Invalid data structure received from API');
             }
-            
+
             // Transform API data to match our resource format
-            const transformedResources = articles.map((article: any, index: number) => ({
-                id: article.id || Date.now() + index,
-                title: article.title || article.name || `Article ${index + 1}`,
-                type: "article",
-                category: article.category || "general",
-                author: article.author || article.created_by || "Unknown Author",
-                publishDate: article.publish_date || article.created_at || new Date().toISOString(),
-                views: article.views || article.view_count || 0,
-                likes: article.likes || article.like_count || 0,
-                status: "live",
-                description: article.description || article.content || "No description available",
-                tags: article.tags ? (Array.isArray(article.tags) ? article.tags : [article.tags]) : [],
-                thumbnail: article.thumbnail || article.image || null,
-                emptyImage: null,
-                platform: "website",
-                age: "18+",
-            }));
-            
+            const transformedResources = articles.map((article: any, index: number) => {
+                // --- Robust image key handling ---
+                let imageUrl = article.image;
+                // If image is a JSON string (e.g., '["url"]'), parse it
+                if (typeof imageUrl === 'string' && imageUrl.trim().startsWith('[')) {
+                    try {
+                        const arr = JSON.parse(imageUrl);
+                        if (Array.isArray(arr)) imageUrl = arr[0] || null;
+                    } catch {}
+                }
+                // If image is an array
+                if (Array.isArray(imageUrl)) {
+                    imageUrl = imageUrl[0] || null;
+                }
+                // If image is an object
+                if (typeof imageUrl === 'object' && imageUrl !== null) {
+                    imageUrl = imageUrl.url || null;
+                }
+                // --- Robust tags handling ---
+                let tags = article.tags;
+                if (typeof tags === 'string' && tags.trim().startsWith('[')) {
+                    try {
+                        tags = JSON.parse(tags);
+                    } catch {}
+                }
+                if (!Array.isArray(tags)) {
+                    tags = tags ? [tags] : [];
+                }
+                return {
+                    id: article.id || Date.now() + index,
+                    title: article.title || article.name || `Article ${index + 1}`,
+                    type: 'article',
+                    category_name: article.category_name || 'general',
+                    counsellor_code: article.counsellor_code || article.created_by || 'Unknown Author',
+                    publishDate: article.publish_date || article.created_at || new Date().toISOString(),
+                    views: article.views || article.view_count || 0,
+                    likes: article.likes || article.like_count || 0,
+                    status: 'live',
+                    description: article.description || article.content || article.article || 'No description available',
+                    tags,
+                    image: imageUrl,
+                    image: imageUrl,
+                    emptyImage: null,
+                    platform: 'website',
+                    age: '18+',
+                };
+            });
+
             setResources(transformedResources);
         } catch (error) {
             console.error('Error fetching articles:', error);
@@ -381,7 +411,7 @@ export const ResourceManager = () => {
             setErrors((prev) => ({...prev, [field]: undefined}));
             const base64 = await fileToBase64(file);
             setForm((f) => ({...f, [field]: base64}));
-            if (field === "thumbnail") setThumbPreview(base64);
+            if (field === "image") setThumbPreview(base64);
             if (field === "emptyImage") setEmptyPreview(base64);
         }
     };
@@ -407,19 +437,19 @@ export const ResourceManager = () => {
         setEditingResource(resource);
         setForm({
             title: resource.title,
-            author: resource.author,
+            counsellor_code: resource.counsellor_code,
             type: resource.type,
-            category: resource.category,
+            category_name: resource.category_name,
             description: resource.description,
             tags: getTagsArray(resource.tags),
-            thumbnail: resource.thumbnail,
+            image: resource.image,
             emptyImage: resource.emptyImage,
             platform: resource.platform,
             age: resource.age,
             status: resource.status,
         });
         setTagInput("");
-        setThumbPreview(resource.thumbnail);
+        setThumbPreview(resource.image);
         setEmptyPreview(resource.emptyImage);
         setEditDialogOpen(true);
     };
@@ -439,16 +469,16 @@ export const ResourceManager = () => {
         const newResource = {
             id: Date.now(),
             title: form.title,
-            author: form.author,
+            counsellor_code: form.counsellor_code,
             type: form.type,
-            category: form.category,
+            category_name: form.category_name,
             description: form.description,
             tags: form.tags,
             status: form.status, // use selected status
             publishDate: new Date().toISOString(),
             views: 0,
             likes: 0,
-            thumbnail: thumbPreview,
+            image: thumbPreview,
             emptyImage: emptyPreview,
             platform: form.platform,
             age: form.age,
@@ -474,12 +504,12 @@ export const ResourceManager = () => {
                     ? {
                         ...r,
                         title: form.title,
-                        author: form.author,
+                        counsellor_code: form.counsellor_code,
                         type: form.type,
-                        category: form.category,
+                        category_name: form.category_name,
                         description: form.description,
                         tags: form.tags,
-                        thumbnail: thumbPreview,
+                        image: thumbPreview,
                         emptyImage: emptyPreview,
                         platform: form.platform,
                         age: form.age,
@@ -503,16 +533,16 @@ export const ResourceManager = () => {
         const newResource = {
             id: Date.now(),
             title: form.title,
-            author: form.author,
+            counsellor_code: form.counsellor_code,
             type: form.type,
-            category: form.category,
+            category_name: form.category_name,
             description: form.description,
             tags: form.tags,
             status: form.status, // use selected status
             publishDate: new Date().toISOString(),
             views: 0,
             likes: 0,
-            thumbnail: thumbPreview,
+            image: thumbPreview,
             emptyImage: emptyPreview,
             platform: form.platform,
             age: form.age,
@@ -550,7 +580,7 @@ export const ResourceManager = () => {
             matchesType = resource.type === typeFilter;
         }
         const matchesCategory =
-            categoryFilter === "all" || resource.category === categoryFilter;
+            categoryFilter === "all" || resource.category_name === categoryFilter;
         const matchesStatus = statusFilter === "all" || resource.status === statusFilter;
         const matchesPlatform = platformFilter === "all" || resource.platform === platformFilter;
         let matchesDate = true;
@@ -604,12 +634,12 @@ export const ResourceManager = () => {
                     ? {
                         ...r,
                         title: form.title,
-                        author: form.author,
+                        counsellor_code: form.counsellor_code,
                         type: form.type,
-                        category: form.category,
+                        category_name: form.category_name,
                         description: form.description,
                         tags: form.tags,
-                        thumbnail: thumbPreview,
+                        image: thumbPreview,
                         emptyImage: emptyPreview,
                         platform: form.platform,
                         age: form.age,
@@ -865,7 +895,7 @@ export const ResourceManager = () => {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thumbnail</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        {/*<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>*/}
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
@@ -891,9 +921,9 @@ export const ResourceManager = () => {
                             {filteredResources.map((resource) => (
                                 <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-4 py-2">
-                                        {resource.thumbnail ? (
+                                        {resource.image ? (
                                             <img
-                                                src={resource.thumbnail}
+                                                src={resource.image}
                                                 alt="Thumbnail"
                                                 className="h-12 w-12 object-cover rounded border border-gray-200"
                                             />
@@ -902,20 +932,22 @@ export const ResourceManager = () => {
                                         )}
                                     </td>
                                     <td className="px-4 py-2 font-semibold text-[15px] text-gray-900 max-w-xs truncate">{resource.title}</td>
-                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.author}</td>
-                                    <td className="px-4 py-2">
-                                        <Badge
-                                            className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>
-                                            <div className="flex items-center space-x-1">
-                                                {getTypeIcon(resource.type)}
-                                                <span>{resource.type}</span>
-                                            </div>
-                                        </Badge>
-                                    </td>
+                                    <td className="px-4 py-2 text-gray-700 text-[15px]">{resource.counsellor_code}</td>
+                                    {/*<td className="px-4 py-2">*/}
+                                    {/*    <Badge*/}
+                                    {/*        className={getTypeColor(resource.type) + " transition-colors duration-150 hover:bg-[#012765] hover:text-white"}>*/}
+                                    {/*        <div className="flex items-center space-x-1">*/}
+                                    {/*            {getTypeIcon(resource.type)}*/}
+                                    {/*            <span>{resource.type}</span>*/}
+                                    {/*        </div>*/}
+                                    {/*    </Badge>*/}
+                                    {/*</td>*/}
                                     <td className="px-4 py-2">
                                         <Badge
                                             className="bg-purple-100 text-purple-800 transition-colors duration-150 hover:bg-[#012765] hover:text-white">
-                                            {resource.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                                            {typeof resource.category_name === 'string' && resource.category_name
+                                                ? resource.category_name.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+                                                : '-'}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-2">
@@ -947,13 +979,6 @@ export const ResourceManager = () => {
                                                 >
                                                     <Eye className="h-4 w-4 mr-2 text-gray-600"/>
                                                     View Resource
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => navigate(`/resources/edit/${resource.id}`)}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Edit className="h-4 w-4 mr-2 text-gray-600"/>
-                                                    Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     onClick={() => handleDelete(resource.id)}

@@ -8,6 +8,7 @@ import {Textarea} from "@/components/ui/textarea";
 import {ArrowLeft, X} from "lucide-react";
 import {Card} from "@/components/ui/card.tsx";
 import axios from "axios";
+import {useArticleCategories} from "@/hooks/useArticleCategories.tsx";
 
 type ResourceFormErrors = {
     title?: string;
@@ -85,9 +86,7 @@ export default function ResourceFormPage() {
     const [apiSuccess, setApiSuccess] = useState<string | null>(null);
 
     // Categories states
-    const [categories, setCategories] = useState<{ category: string; id: number }[]>([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(false);
-    const [categoriesError, setCategoriesError] = useState<string | null>(null);
+    const { categories, categoriesLoading, categoriesError } = useArticleCategories();
 
     // Counsellors state
     const [counsellors, setCounsellors] = useState<{ full_name: string; user_id: number }[]>([]);
@@ -129,28 +128,6 @@ export default function ResourceFormPage() {
         fetchResource();
     }, [id, isView]);
 
-    // Fetch categories on mount
-    useEffect(() => {
-        const fetchCategories = async () => {
-            setCategoriesLoading(true);
-            setCategoriesError(null);
-            try {
-                const response = await axios.get('https://interactapiverse.com/mahadevasth/shape/articles/article-categories');
-                let cats = response.data?.data || response.data?.categories || response.data;
-                if (Array.isArray(cats)) {
-                    setCategories(cats.filter((c) => c && typeof c.category === 'string' && c.category));
-                } else {
-                    setCategories([]);
-                }
-            } catch (err) {
-                setCategoriesError('Failed to load categories');
-                setCategories([]);
-            } finally {
-                setCategoriesLoading(false);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     // Fetch counsellors on mount
     useEffect(() => {

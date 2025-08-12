@@ -115,7 +115,7 @@ export default function ResourceFormPage() {
                     platform: data.platform || "",
                     age: data.audience_age || data.age || "",
                     status: data.status || "live",
-                    admin_approval: data.admin_approval || "approved",
+                    admin_approval: "pending",
                 });
                 setEmptyPreview(data.image || null);
             } catch (error) {

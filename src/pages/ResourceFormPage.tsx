@@ -257,11 +257,11 @@ export default function ResourceFormPage() {
                 );
             } else {
                 // Create new resource
-                console.log(payload)
-                // response = await axios.post(
-                //     "https://interactapiverse.com/mahadevasth/shape/articles/upload",
-                //     payload
-                // );
+                // console.log(payload)
+                response = await axios.post(
+                    "https://interactapiverse.com/mahadevasth/shape/articles/upload",
+                    payload
+                );
             }
 
             setApiSuccess(id ? "Resource updated successfully!" : "Resource created successfully!");

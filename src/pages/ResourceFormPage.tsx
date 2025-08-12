@@ -35,7 +35,7 @@ const getInitialForm = () => ({
     platform: "",
     age: "",
     status: "published",
-    resource_status: "live",
+    resource_status: "Live",
     admin_approval: "approved",
 });
 
@@ -62,7 +62,7 @@ const resourceStatusOptions = [
 ];
 
 const statusOptions = [
-    {value: "published", label: "Published"},
+    {value: "Published", label: "Published"},
     {value: "Unpublished", label: "Unpublished"},
 ];
 
@@ -242,7 +242,7 @@ export default function ResourceFormPage() {
                 image: form.emptyImage,
                 platform: form.platform,
                 resource_status: isDraft ? "draft" : form.resource_status,
-                status: "published",
+                status: form.status || "published",
                 tags: form.tags || [],
                 title: form.title,
                 ...(id && { id: id }) // Only include ID if we're updating
@@ -320,6 +320,7 @@ export default function ResourceFormPage() {
             // First try to save to API
             await saveToAPI(isDraft);
         } catch (error) {
+            console.log(error)
             // If API fails, save to local storage
             console.log("API failed, saving to local storage");
             saveToLocal(isDraft);

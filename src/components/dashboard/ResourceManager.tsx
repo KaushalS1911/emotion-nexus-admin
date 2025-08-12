@@ -58,6 +58,8 @@ type Resource = {
   type: string;
   category_name: string;
   counsellor_code: string;
+  counsellor_name: string;
+  admin_approval: string;
   publishDate: string;
   views: number;
   likes: number;
@@ -265,7 +267,7 @@ export const ResourceManager = () => {
           title: article.title || article.name || `Article ${index + 1}`,
           type: 'article',
           category_name: article.category_name || 'general',
-          counsellor_code: article.counsellor_code || article.created_by || 'Unknown Author',
+          counsellor_name: article.counsellor_name,
           publishDate: article.publish_date || article.created_at || new Date().toISOString(),
           views: article.views || article.view_count || 0,
           likes: article.likes || article.like_count || 0,
@@ -937,7 +939,7 @@ export const ResourceManager = () => {
                           {resource.tags.length > 2 && <span>+{resource.tags.length - 2}</span>}
                         </div>
                       </td>
-                      <td className="py-2 px-4">{resource.counsellor_code}</td>
+                      <td className="py-2 px-4">{resource.counsellor_name}</td>
                       <td className="py-2 px-4">
                         <Badge className={`${getTypeColor(resource.type)} flex items-center gap-1 font-normal`}>
                           {getTypeIcon(resource.type)}

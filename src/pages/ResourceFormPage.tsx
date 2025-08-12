@@ -34,7 +34,8 @@ const getInitialForm = () => ({
     emptyImage: null,
     platform: "",
     age: "",
-    status: "live",
+    status: "published",
+    resource_status: "live",
     admin_approval: "approved",
 });
 
@@ -47,17 +48,22 @@ const getTagsArray = (tags: any) => {
 };
 
 const platforms = [
-    {value: "web", label: "Web"},
-    {value: "app", label: "App"},
-    {value: "both", label: "Both"},
+    {value: "Web", label: "Web"},
+    {value: "App", label: "App"},
+    {value: "Both", label: "Both"},
 ];
 
 const ages = ["13+", "14+", "16+", "18+"];
 
+const resourceStatusOptions = [
+    {value: "Live", label: "Live"},
+    {value: "Hide", label: "Hide"},
+    {value: "Draft", label: "Draft"},
+];
+
 const statusOptions = [
-    {value: "live", label: "Live"},
-    {value: "hide", label: "Hide"},
-    {value: "draft", label: "Draft"},
+    {value: "published", label: "Published"},
+    {value: "Unpublished", label: "Unpublished"},
 ];
 
 const fileToBase64 = (file: File): Promise<string> => {
@@ -114,7 +120,8 @@ export default function ResourceFormPage() {
                     emptyImage: data.image || null,
                     platform: data.platform || "",
                     age: data.audience_age || data.age || "",
-                    status: data.status || "live",
+                    status: data.status,
+                    resource_status: data.resource_status,
                     admin_approval: "pending",
                 });
                 setEmptyPreview(data.image || null);
@@ -226,19 +233,17 @@ export default function ResourceFormPage() {
 
         try {
             const payload = {
-                admin_approval:'pending',
+                admin_approval: 'pending',
                 article: form.description,
                 audience_age: form.age,
-                category_id: getSelectedCategoryId(),
-                category_name: form.category_name,
+                category: getSelectedCategoryId(),
                 counsellor_code: getSelectedCounsellorId(),
-                counsellor_name: form.author,
                 created_at: new Date().toISOString(),
                 image: form.emptyImage,
                 platform: form.platform,
-                resource_status: isDraft ? "draft" : form.status,
-                status: isDraft ? "draft" : "live",
-                tags: JSON.stringify(form.tags || []),
+                resource_status: isDraft ? "draft" : form.resource_status,
+                status: "published",
+                tags: form.tags || [],
                 title: form.title,
                 ...(id && { id: id }) // Only include ID if we're updating
             };
@@ -252,10 +257,11 @@ export default function ResourceFormPage() {
                 );
             } else {
                 // Create new resource
-                response = await axios.post(
-                    "https://interactapiverse.com/mahadevasth/shape/articles/upload",
-                    payload
-                );
+                console.log(payload)
+                // response = await axios.post(
+                //     "https://interactapiverse.com/mahadevasth/shape/articles/upload",
+                //     payload
+                // );
             }
 
             setApiSuccess(id ? "Resource updated successfully!" : "Resource created successfully!");
@@ -532,6 +538,58 @@ export default function ResourceFormPage() {
                                     )}
                                 </div>
 
+
+                            {/*    <div className="flex-1">*/}
+                            {/*        <Label>Admin Approval</Label>*/}
+                            {/*        {isView ? (*/}
+                            {/*            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">*/}
+                            {/*                {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}*/}
+                            {/*            </div>*/}
+                            {/*        ) : (*/}
+                            {/*            <Select*/}
+                            {/*                value={form.admin_approval}*/}
+                            {/*                onValueChange={(v) => handleSelect("admin_approval", v)}*/}
+                            {/*            >*/}
+                            {/*                <SelectTrigger>*/}
+                            {/*                    <SelectValue placeholder="Select admin approval"/>*/}
+                            {/*                </SelectTrigger>*/}
+                            {/*                <SelectContent>*/}
+                            {/*                    <SelectItem value="approved">Approved</SelectItem>*/}
+                            {/*                    <SelectItem value="pending">Pending</SelectItem>*/}
+                            {/*                    <SelectItem value="rejected">Rejected</SelectItem>*/}
+                            {/*                </SelectContent>*/}
+                            {/*            </Select>*/}
+                            {/*        )}*/}
+                            {/*    </div>*/}
+                            </div>
+
+
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="flex-1">
+                                    <Label>Resource Status</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {resourceStatusOptions.find(s => s.value === form.resource_status)?.label || form.resource_status}
+                                        </div>
+                                    ) : (
+                                        <Select
+                                            value={form.resource_status}
+                                            onValueChange={(v) => handleSelect("resource_status", v)}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select resource status"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {resourceStatusOptions.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
+
                                 <div className="flex-1">
                                     <Label>Status</Label>
                                     {isView ? (
@@ -556,29 +614,6 @@ export default function ResourceFormPage() {
                                         </Select>
                                     )}
                                 </div>
-
-                            {/*    <div className="flex-1">*/}
-                            {/*        <Label>Admin Approval</Label>*/}
-                            {/*        {isView ? (*/}
-                            {/*            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">*/}
-                            {/*                {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}*/}
-                            {/*            </div>*/}
-                            {/*        ) : (*/}
-                            {/*            <Select*/}
-                            {/*                value={form.admin_approval}*/}
-                            {/*                onValueChange={(v) => handleSelect("admin_approval", v)}*/}
-                            {/*            >*/}
-                            {/*                <SelectTrigger>*/}
-                            {/*                    <SelectValue placeholder="Select admin approval"/>*/}
-                            {/*                </SelectTrigger>*/}
-                            {/*                <SelectContent>*/}
-                            {/*                    <SelectItem value="approved">Approved</SelectItem>*/}
-                            {/*                    <SelectItem value="pending">Pending</SelectItem>*/}
-                            {/*                    <SelectItem value="rejected">Rejected</SelectItem>*/}
-                            {/*                </SelectContent>*/}
-                            {/*            </Select>*/}
-                            {/*        )}*/}
-                            {/*    </div>*/}
                             </div>
 
                             {/* Description */}

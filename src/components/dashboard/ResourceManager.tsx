@@ -118,7 +118,7 @@ const getInitialForm = () => ({
 });
 
 // 2. Update getInitialResources to support both string and array tags
-const getTagsArray = (tags: any): string[] => {
+const getTagsArray = (tags): string[] => {
   if (Array.isArray(tags)) return tags;
   if (typeof tags === "string") {
     return tags.split(",").map((t) => t.trim()).filter(Boolean);
@@ -130,7 +130,7 @@ const getInitialResources = (): Resource[] => {
   const stored = localStorage.getItem("resources");
   if (stored) {
     try {
-      return JSON.parse(stored).map((r: any) => ({
+      return JSON.parse(stored).map((r) => ({
         ...r,
         tags: getTagsArray(r.tags),
       }));
@@ -230,7 +230,7 @@ export const ResourceManager = () => {
       }
 
       // Transform API data to match our resource format
-      const transformedResources = articles.map((article: any, index: number) => {
+      const transformedResources = articles.map((article, index: number) => {
         // --- Robust image key handling ---
         let imageUrl = article.image;
         // If image is a JSON string (e.g., '["url"]'), parse it
@@ -238,7 +238,7 @@ export const ResourceManager = () => {
           try {
             const arr = JSON.parse(imageUrl);
             if (Array.isArray(arr)) imageUrl = arr[0] || null;
-          } catch {}
+          } catch { /* empty */ }
         }
         // If image is an array
         if (Array.isArray(imageUrl)) {
@@ -253,8 +253,9 @@ export const ResourceManager = () => {
         if (typeof tags === 'string' && tags.trim().startsWith('[')) {
           try {
             tags = JSON.parse(tags);
-          } catch {}
+          } catch { /* empty */ }
         }
+
         if (!Array.isArray(tags)) {
           tags = tags ? [tags] : [];
         }

@@ -53,24 +53,20 @@ type ResourceFormErrors = {
 };
 
 type Resource = {
-  id: number;
+  id: string;
+  admin_approval: string;
   title: string;
   type: string;
   category_name: string;
-  counsellor_code: string;
   counsellor_name: string;
-  admin_approval: string;
   publishDate: string;
-  views: number;
-  likes: number;
   status: string;
   description: string;
-  tags: string[];
-  image: string | null;
-  emptyImage: string | null;
+  tags: any;
+  image: string;
   platform: string;
   age: string;
-};
+}
 
 const mockResources = [
   // Mock resources array - remained the same
@@ -83,15 +79,20 @@ const resourceTypes = [
 ];
 
 const platformOptions = [
-  { value: "web", label: "Website" },
-  { value: "app", label: "App" },
-  { value: "both", label: "Both" },
+  { value: "Web", label: "Web" },
+  { value: "App", label: "App" },
+  { value: "Both", label: "Both" },
+];
+
+const resourceStatusOptions = [
+  { value: "Live", label: "Live" },
+  { value: "Hide", label: "Hide" },
+  { value: "Draft", label: "Draft" },
 ];
 
 const statusOptions = [
-  { value: "live", label: "Live" },
-  { value: "hide", label: "Hide" },
-  { value: "draft", label: "Draft" },
+  { value: "Published", label: "Published" },
+  { value: "Unpublished", label: "Unpublished" },
 ];
 
 // Helper functions
@@ -147,10 +148,11 @@ export const ResourceManager = () => {
   const navigate = useNavigate();
   
   // State management
-  const [resources, setResources] = useState<Resource[]>(getInitialResources);
+  const [resources, setResources] = useState<Resource[] | []>(getInitialResources);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [resourceStatusFilter, setResourceStatusFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
@@ -189,8 +191,6 @@ export const ResourceManager = () => {
   // Stats calculations
   const draftCount = resources.filter((r) => r.status === "draft").length;
   const liveCount = resources.filter((r) => r.status === "live").length;
-  const totalViews = resources.reduce((sum, resource) => sum + resource.views, 0);
-  const totalLikes = resources.reduce((sum, resource) => sum + resource.likes, 0);
   const publishedCount = resources.filter((r) => r.status === "live").length;
 
   const { categories, categoriesLoading, categoriesError } = useArticleCategories();
@@ -261,27 +261,27 @@ export const ResourceManager = () => {
         if (!Array.isArray(tags)) {
           tags = tags ? [tags] : [];
         }
+
         return {
           id: article.id || Date.now() + index,
-          admin_approval: article.admin_approval ||'',
-          title: article.title || article.name || `Article ${index + 1}`,
+          admin_approval: article.admin_approval || '',
+          title: article.title || ``,
           type: 'article',
-          category_name: article.category_name || 'general',
+          category_name: article.category_name || '',
           counsellor_name: article.counsellor_name,
           publishDate: article.publish_date || article.created_at || new Date().toISOString(),
-          views: article.views || article.view_count || 0,
-          likes: article.likes || article.like_count || 0,
-          status: 'live',
-          description: article.description || article.content || article.article || 'No description available',
+          status: article.status || '',
+          resource_status: article.resource_status || '',
+          description: article.article || '',
           tags,
           image: imageUrl,
-          emptyImage: null,
-          platform: 'website',
-          age: '18+',
+          platform: article.platform || '',
+          age: article.audience_age || '',
         };
       });
 
-      setResources(transformedResources);
+      const articlesList = (articles && articles.length > 0) ? transformedResources : [];
+      setResources(articlesList);
       // Reset to first page when new data is fetched
       setPage(0);
     } catch (error) {
@@ -306,7 +306,7 @@ export const ResourceManager = () => {
   // Reset page to 0 when filters change
   useEffect(() => {
     setPage(0);
-  }, [searchTerm, typeFilter, categoryFilter, statusFilter, platformFilter, dateRange, topCardFilter, rowsPerPage]);
+  }, [searchTerm, typeFilter, categoryFilter, statusFilter, resourceStatusFilter, platformFilter, dateRange, topCardFilter, rowsPerPage]);
 
   // Filter resources based on current filters
   const filteredResources = resources.filter((resource) => {
@@ -329,9 +329,10 @@ export const ResourceManager = () => {
       matchesType = resource.type === typeFilter;
     }
     
-    const matchesCategory = categoryFilter === "all" || resource.category_name === categoryFilter;
-    const matchesStatus = statusFilter === "all" || resource.status === statusFilter;
-    const matchesPlatform = platformFilter === "all" || resource.platform === platformFilter;
+    const matchesCategory = categoryFilter === "all" || resource.category_name.toLowerCase() === categoryFilter.toLowerCase();
+    const matchesResourceStatus = resourceStatusFilter === "all" || resource.resource_status.toLowerCase() === resourceStatusFilter.toLowerCase();
+    const matchesStatus = statusFilter === "all" || resource.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesPlatform = platformFilter === "all" || resource.platform.toLowerCase() === platformFilter.toLowerCase();
     
     let matchesDate = true;
     if (dateRange.from && dateRange.to) {
@@ -345,7 +346,7 @@ export const ResourceManager = () => {
       matchesDate = d <= dateRange.to;
     }
     
-    return matchesSearch && matchesType && matchesCategory && matchesStatus && matchesPlatform && matchesDate;
+    return matchesSearch && matchesType && matchesCategory && matchesStatus && matchesPlatform && matchesDate && matchesResourceStatus;
   });
 
   // Apply pagination
@@ -577,20 +578,17 @@ export const ResourceManager = () => {
     setEditingResource(resource);
     setForm({
       title: resource.title,
-      counsellor_code: resource.counsellor_code,
       type: resource.type,
       category_name: resource.category_name,
       description: resource.description,
       tags: getTagsArray(resource.tags),
       image: resource.image,
-      emptyImage: resource.emptyImage,
       platform: resource.platform,
       age: resource.age,
       status: resource.status,
     });
     setTagInput("");
     setThumbPreview(resource.image);
-    setEmptyPreview(resource.emptyImage);
     setEditDialogOpen(true);
   };
 
@@ -620,9 +618,9 @@ export const ResourceManager = () => {
   };
 
   const getStatusColor = (status: string) => {
-    return status === "live"
+    return status.toLowerCase() === "live"
       ? "bg-green-100 text-green-800"
-      : status === "hide"
+      : status.toLowerCase() === "hide"
         ? "bg-yellow-100 text-yellow-800"
         : "bg-gray-100 text-gray-800";
   };
@@ -807,6 +805,18 @@ export const ResourceManager = () => {
                 ))}
               </SelectContent>
             </Select>
+            {/* Resource Status filter */}
+            <Select value={resourceStatusFilter} onValueChange={setResourceStatusFilter}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="Status"/>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Resources</SelectItem>
+                {resourceStatusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {/* Status filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-40">
@@ -912,6 +922,7 @@ export const ResourceManager = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Author</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Type</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Category</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">Resource Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Published</th>
                   <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
@@ -950,6 +961,11 @@ export const ResourceManager = () => {
                         {resource.category_name
                           .replace("-", " ")
                           .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </td>
+                      <td className="py-2 px-4">
+                        <Badge className={getStatusColor(resource.resource_status)}>
+                          {resource.resource_status.charAt(0).toUpperCase() + resource.resource_status.slice(1)}
+                        </Badge>
                       </td>
                       <td className="py-2 px-4">
                         <Badge className={getStatusColor(resource.status)}>
@@ -1023,6 +1039,7 @@ export const ResourceManager = () => {
                               setCategoryFilter("all");
                               setPlatformFilter("all");
                               setStatusFilter("all");
+                              setResourceStatusFilter("all");
                               setTopCardFilter("all");
                               setDateRange({ from: null, to: null });
                             }}

@@ -42,7 +42,7 @@ const getInitialForm = () => ({
 const getTagsArray = (tags: any) => {
     if (Array.isArray(tags)) return tags;
     if (typeof tags === "string") {
-        return tags.split(",").map((t) => t.trim()).filter(Boolean);
+        return (tags.split(",").map((t) => JSON.parse(t).at(0)))
     }
     return [];
 };
@@ -489,7 +489,7 @@ export default function ResourceFormPage() {
                                     <Label>Platform</Label>
                                     {isView ? (
                                         <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {platforms.find(p => p.value === form.platform)?.label || form.platform}
+                                            {platforms.find(p => p. value.toLowerCase() === form.platform)?.label.toLowerCase() || form.platform.toLowerCase() }
                                         </div>
                                     ) : (
                                         <Select

@@ -21,6 +21,7 @@ type ResourceFormErrors = {
     tags?: string;
     thumbnail?: string;
     emptyImage?: string;
+    file?: string;
 };
 
 const getInitialForm = () => ({
@@ -32,6 +33,7 @@ const getInitialForm = () => ({
     tags: [],
     thumbnail: null,
     emptyImage: null,
+    file: null,
     platform: "",
     age: "",
     status: "published",
@@ -42,7 +44,11 @@ const getInitialForm = () => ({
 const getTagsArray = (tags: any) => {
     if (Array.isArray(tags)) return tags;
     if (typeof tags === "string") {
-        return (tags.split(",").map((t) => JSON.parse(t).at(0)))
+        try {
+            return JSON.parse(tags);
+        } catch {
+            return tags.split(",").map(t => t.trim());
+        }
     }
     return [];
 };
@@ -83,8 +89,11 @@ export default function ResourceFormPage() {
     const [form, setForm] = useState(getInitialForm());
     const [tagInput, setTagInput] = useState("");
     const [emptyPreview, setEmptyPreview] = useState<string | null>(null);
+    const [filePreview, setFilePreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<ResourceFormErrors>({});
     const emptyInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const type = sessionStorage.getItem('resourceType') || "article";
 
     // API states
     const [isLoading, setIsLoading] = useState(false);
@@ -107,24 +116,34 @@ export default function ResourceFormPage() {
             setIsLoading(true);
             setApiError(null);
             try {
-                const response = await axios.get(`https://interactapiverse.com/mahadevasth/shape/articles/${id}`);
+                const endpoint = type === "video"
+                    ? `https://interactapiverse.com/mahadevasth/shape/videos/${id}`
+                    : `https://interactapiverse.com/mahadevasth/shape/articles/${id}`;
+
+                const response = await axios.get(endpoint);
                 const data = response.data?.data?.[0] || response.data;
+
                 setForm({
                     title: data.title || "",
                     author: data.counsellor_name || data.author || "",
-                    type: data.type || "",
-                    category_name: data.category_name || "",
+                    type: type,
+                    category_name: data.category_name || data.category || "",
                     description: data.article || data.description || "",
                     tags: getTagsArray(data.tags),
                     thumbnail: data.image || null,
                     emptyImage: data.image || null,
+                    file: type === "video" ? data.file || null : null,
                     platform: data.platform || "",
                     age: data.audience_age || data.age || "",
                     status: data.status,
                     resource_status: data.resource_status,
                     admin_approval: "pending",
                 });
+
                 setEmptyPreview(data.image || null);
+                if (type === "video" && data.file) {
+                    setFilePreview(data.file);
+                }
             } catch (error) {
                 setApiError("Failed to fetch resource from API");
             } finally {
@@ -133,8 +152,7 @@ export default function ResourceFormPage() {
         };
 
         fetchResource();
-    }, [id, isView]);
-
+    }, [id, isView, type]);
 
     // Fetch counsellors on mount
     useEffect(() => {
@@ -181,13 +199,21 @@ export default function ResourceFormPage() {
     const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 1024 * 1024) {
-                setApiError("Image size should be less than 1MB");
+            if (file.size > 50 * 1024 * 1024) { // 50MB max for videos
+                setApiError(`File size should be less than ${field === 'file' ? '50MB' : '1MB'}`);
                 return;
             }
-            const base64 = await fileToBase64(file);
-            setEmptyPreview(base64);
-            setForm((f) => ({...f, [field]: base64}));
+
+            if (field === 'file') {
+                // For video files, we'll store the file object directly
+                setForm((f) => ({...f, [field]: file}));
+                setFilePreview(URL.createObjectURL(file));
+            } else {
+                // For images, convert to base64
+                const base64 = await fileToBase64(file);
+                setEmptyPreview(base64);
+                setForm((f) => ({...f, [field]: base64}));
+            }
         }
     };
 
@@ -211,16 +237,24 @@ export default function ResourceFormPage() {
         if (emptyInputRef.current) emptyInputRef.current.value = '';
     };
 
+    const handleRemoveFile = () => {
+        setFilePreview(null);
+        setForm(f => ({...f, file: null}));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     // Validation
     const validateForm = () => {
         const newErrors: ResourceFormErrors = {};
-        if (!form.title.trim()) newErrors.title = "Title is required";
+        if (type === "article" && !form.title.trim()) newErrors.title = "Title is required";
         if (!form.author.trim()) newErrors.author = "Author is required";
         if (!form.category_name) newErrors.category_name = "Category is required";
         if (!form.platform) newErrors.platform = "Platform is required";
         if (!form.age.trim()) newErrors.age = "Age is required";
-        if (!form.description.trim()) newErrors.description = "Description is required";
+        if (type === "article" && !form.description.trim()) newErrors.description = "Description is required";
         if (!form.tags || form.tags.length === 0) newErrors.tags = "At least one tag is required";
+        if (type === "video" && !form.file) newErrors.file = "Video file is required";
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -232,45 +266,78 @@ export default function ResourceFormPage() {
         setApiSuccess(null);
 
         try {
-            const payload = {
-                admin_approval: 'pending',
-                article: form.description,
-                audience_age: form.age,
-                category: getSelectedCategoryId(),
-                counsellor_code: getSelectedCounsellorId(),
-                created_at: new Date().toISOString(),
-                image: form.emptyImage,
-                platform: form.platform,
-                resource_status: isDraft ? "draft" : form.resource_status,
-                status: form.status || "published",
-                tags: form.tags || [],
-                title: form.title,
-                ...(id && { id: id }) // Only include ID if we're updating
-            };
+            if (type === "video") {
+                // Handle video upload
+                const formData = new FormData();
+                formData.append('file', form.file);
+                formData.append('age', form.age);
+                formData.append('category', form.category_name);
+                formData.append('tags', JSON.stringify(form.tags));
+                formData.append('platform', form.platform);
+                formData.append('author', form.author);
 
-            let response;
-            if (id) {
-                // Update existing resource
-                response = await axios.put(
-                    `https://interactapiverse.com/mahadevasth/shape/articles/${id}`,
-                    payload
-                );
+                let response;
+                if (id) {
+                    response = await axios.put(
+                        `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        }
+                    );
+                } else {
+                    response = await axios.post(
+                        "https://interactapiverse.com/mahadevasth/shape/upload",
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        }
+                    );
+                }
+
+                setApiSuccess(id ? "Video updated successfully!" : "Video uploaded successfully!");
             } else {
-                // Create new resource
-                // console.log(payload)
-                response = await axios.post(
-                    "https://interactapiverse.com/mahadevasth/shape/articles/upload",
-                    payload
-                );
+                // Handle article upload
+                const payload = {
+                    admin_approval: 'pending',
+                    article: form.description,
+                    audience_age: form.age,
+                    category: getSelectedCategoryId(),
+                    counsellor_code: getSelectedCounsellorId(),
+                    created_at: new Date().toISOString(),
+                    image: form.emptyImage,
+                    platform: form.platform,
+                    resource_status: isDraft ? "draft" : form.resource_status,
+                    status: form.status || "published",
+                    tags: form.tags || [],
+                    title: form.title,
+                    ...(id && { id: id }) // Only include ID if we're updating
+                };
+
+                let response;
+                if (id) {
+                    response = await axios.put(
+                        `https://interactapiverse.com/mahadevasth/shape/articles/${id}`,
+                        payload
+                    );
+                } else {
+                    response = await axios.post(
+                        "https://interactapiverse.com/mahadevasth/shape/articles/upload",
+                        payload
+                    );
+                }
+
+                setApiSuccess(id ? "Article updated successfully!" : "Article created successfully!");
             }
 
-            setApiSuccess(id ? "Resource updated successfully!" : "Resource created successfully!");
             setTimeout(() => navigate("/resources"), 2000);
-
-            return response.data;
         } catch (error) {
             console.error("API Error:", error);
-            let errorMsg = "Failed to save resource";
+            let errorMsg = `Failed to save ${type}`;
             if (axios.isAxiosError(error)) {
                 errorMsg = error.response?.data?.message || error.message;
             }
@@ -281,35 +348,6 @@ export default function ResourceFormPage() {
         }
     };
 
-    // Save to local storage as fallback
-    const saveToLocal = (isDraft: boolean = false) => {
-        const stored = localStorage.getItem("resources");
-        let resources = stored ? JSON.parse(stored) : [];
-
-        const resourceData = {
-            ...form,
-            id: id || Date.now(),
-            tags: form.tags,
-            thumbnail: emptyPreview,
-            emptyImage: emptyPreview,
-            publishDate: new Date().toISOString(),
-            views: 0,
-            likes: 0,
-            status: isDraft ? "draft" : form.status
-        };
-
-        if (id) {
-            resources = resources.map((r: any) =>
-                String(r.id) === String(id) ? resourceData : r
-            );
-        } else {
-            resources = [resourceData, ...resources];
-        }
-
-        localStorage.setItem("resources", JSON.stringify(resources));
-        navigate("/resources");
-    };
-
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
@@ -317,13 +355,10 @@ export default function ResourceFormPage() {
         if (!validateForm()) return;
 
         try {
-            // First try to save to API
             await saveToAPI(isDraft);
         } catch (error) {
-            console.log(error)
-            // If API fails, save to local storage
-            console.log("API failed, saving to local storage");
-            saveToLocal(isDraft);
+            console.log(error);
+            // If API fails, you could implement a fallback to local storage here if needed
         }
     };
 
@@ -337,10 +372,10 @@ export default function ResourceFormPage() {
             <form onSubmit={(e) => handleSubmit(e, false)}>
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119] mb-2 text-center md:text-left">
-                        {isView ? "Resource Details" : id ? "Edit Resource" : "Add New Resource"}
+                        {isView ? `${type === 'video' ? 'Video' : 'Resource'} Details` : id ? `Edit ${type === 'video' ? 'Video' : 'Resource'}` : `Add New ${type === 'video' ? 'Video' : 'Resource'}`}
                     </h1>
                     <p className="text-gray-600 mb-5 text-center md:text-left">
-                        {isView ? "View all details for this resource." : "Fill in the details below."}
+                        {isView ? `View all details for this ${type}.` : "Fill in the details below."}
                     </p>
 
                     {apiError && (
@@ -359,7 +394,7 @@ export default function ResourceFormPage() {
                         <div className="flex flex-col gap-4">
                             {/* Title and Category */}
                             <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
+                                {type === 'article' && (  <div className="flex-1">
                                     <Label>Title</Label>
                                     {isView ? (
                                         <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
@@ -370,7 +405,7 @@ export default function ResourceFormPage() {
                                             id="title"
                                             value={form.title}
                                             onChange={handleInput}
-                                            placeholder="Resource title..."
+                                            placeholder={`${type === 'video' ? 'Video' : 'Resource'} title...`}
                                             className={errors.title ? 'border-red-500' : ''}
                                         />
                                     )}
@@ -378,6 +413,7 @@ export default function ResourceFormPage() {
                                         <div className="text-red-500 text-xs mt-1">{errors.title}</div>
                                     )}
                                 </div>
+                                )}
 
                                 <div className="flex-1">
                                     <Label>Category</Label>
@@ -412,7 +448,7 @@ export default function ResourceFormPage() {
                                 </div>
                             </div>
 
-                            {/* Author and Image */}
+                            {/* Author and Image/Video */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Label>Author</Label>
@@ -447,49 +483,92 @@ export default function ResourceFormPage() {
                                 </div>
 
                                 <div className="flex-1">
-                                    <Label>Image</Label>
-                                    {emptyPreview ? (
-                                        <div className="relative mt-2 w-full max-w-xs">
-                                            <img
-                                                src={emptyPreview}
-                                                alt="Preview"
-                                                className="w-full h-32 object-cover rounded"
-                                            />
-                                            {!isView && (
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                    onClick={handleRemoveImage}
-                                                    aria-label="Remove image"
-                                                >
-                                                    <X className="w-4 h-4 text-gray-700"/>
-                                                </button>
+                                    {type === 'video' ? (
+                                        <>
+                                            <Label>Video File</Label>
+                                            {filePreview ? (
+                                                <div className="relative mt-2 w-full max-w-xs">
+                                                    <video
+                                                        src={filePreview}
+                                                        controls
+                                                        className="w-full h-32 object-cover rounded"
+                                                    />
+                                                    {!isView && (
+                                                        <button
+                                                            type="button"
+                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                            onClick={handleRemoveFile}
+                                                            aria-label="Remove video"
+                                                        >
+                                                            <X className="w-4 h-4 text-gray-700"/>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : isView ? (
+                                                <div className="py-2 px-3 text-gray-400">No video</div>
+                                            ) : (
+                                                <>
+                                                    <Input
+                                                        id="file"
+                                                        type="file"
+                                                        accept="video/*"
+                                                        onChange={(e) => handleFile("file", e)}
+                                                        ref={fileInputRef}
+                                                    />
+                                                    <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI. 50MB max.</div>
+                                                    {errors.file && (
+                                                        <div className="text-red-500 text-xs mt-1">{errors.file}</div>
+                                                    )}
+                                                </>
                                             )}
-                                        </div>
-                                    ) : isView ? (
-                                        <div className="py-2 px-3 text-gray-400">No image</div>
+                                        </>
                                     ) : (
                                         <>
-                                            <Input
-                                                id="emptyImage"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleFile("emptyImage", e)}
-                                                ref={emptyInputRef}
-                                            />
-                                            <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
+                                            <Label>Thumbnail Image</Label>
+                                            {emptyPreview ? (
+                                                <div className="relative mt-2 w-full max-w-xs">
+                                                    <img
+                                                        src={emptyPreview}
+                                                        alt="Preview"
+                                                        className="w-full h-32 object-cover rounded"
+                                                    />
+                                                    {!isView && (
+                                                        <button
+                                                            type="button"
+                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                            onClick={handleRemoveImage}
+                                                            aria-label="Remove image"
+                                                        >
+                                                            <X className="w-4 h-4 text-gray-700"/>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : isView ? (
+                                                <div className="py-2 px-3 text-gray-400">No image</div>
+                                            ) : (
+                                                <>
+                                                    <Input
+                                                        id="emptyImage"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleFile("emptyImage", e)}
+                                                        ref={emptyInputRef}
+                                                    />
+                                                    <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Platform, Age, Status, Approval */}
+                            {/* Platform, Age, Status */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Label>Platform</Label>
                                     {isView ? (
                                         <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {platforms.find(p => p. value.toLowerCase() === form.platform)?.label.toLowerCase() || form.platform.toLowerCase() }
+                                            {platforms.find(p => p.value.toLowerCase() === form.platform.toLowerCase())?.label || form.platform}
                                         </div>
                                     ) : (
                                         <Select
@@ -538,33 +617,9 @@ export default function ResourceFormPage() {
                                         <div className="text-red-500 text-xs mt-1">{errors.age}</div>
                                     )}
                                 </div>
-
-
-                            {/*    <div className="flex-1">*/}
-                            {/*        <Label>Admin Approval</Label>*/}
-                            {/*        {isView ? (*/}
-                            {/*            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">*/}
-                            {/*                {form.admin_approval?.charAt(0).toUpperCase() + form.admin_approval?.slice(1) || "-"}*/}
-                            {/*            </div>*/}
-                            {/*        ) : (*/}
-                            {/*            <Select*/}
-                            {/*                value={form.admin_approval}*/}
-                            {/*                onValueChange={(v) => handleSelect("admin_approval", v)}*/}
-                            {/*            >*/}
-                            {/*                <SelectTrigger>*/}
-                            {/*                    <SelectValue placeholder="Select admin approval"/>*/}
-                            {/*                </SelectTrigger>*/}
-                            {/*                <SelectContent>*/}
-                            {/*                    <SelectItem value="approved">Approved</SelectItem>*/}
-                            {/*                    <SelectItem value="pending">Pending</SelectItem>*/}
-                            {/*                    <SelectItem value="rejected">Rejected</SelectItem>*/}
-                            {/*                </SelectContent>*/}
-                            {/*            </Select>*/}
-                            {/*        )}*/}
-                            {/*    </div>*/}
                             </div>
-
-
+                            {type === 'article' && (
+                                <>
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Label>Resource Status</Label>
@@ -617,27 +672,31 @@ export default function ResourceFormPage() {
                                 </div>
                             </div>
 
-                            {/* Description */}
-                            <div>
-                                <Label>Description</Label>
-                                {isView ? (
-                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
-                                        {form.description}
-                                    </div>
-                                ) : (
-                                    <Textarea
-                                        id="description"
-                                        value={form.description}
-                                        onChange={handleInput}
-                                        placeholder="Resource description..."
-                                        className={errors.description ? 'border-red-500' : ''}
-                                        rows={6}
-                                    />
-                                )}
-                                {errors.description && !isView && (
-                                    <div className="text-red-500 text-xs mt-1">{errors.description}</div>
-                                )}
-                            </div>
+                            {/* Description - Only for articles */}
+                                <div>
+                                    <Label>Description</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
+                                            {form.description}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Textarea
+                                                id="description"
+                                                value={form.description}
+                                                onChange={handleInput}
+                                                placeholder="Resource description..."
+                                                className={errors.description ? 'border-red-500' : ''}
+                                                rows={6}
+                                            />
+                                            {errors.description && (
+                                                <div className="text-red-500 text-xs mt-1">{errors.description}</div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                                </>
+                            )}
 
                             {/* Tags */}
                             <div>
@@ -706,7 +765,9 @@ export default function ResourceFormPage() {
                                     className="bg-[#012765] text-white"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? "Publishing..." : "Publish Resource"}
+                                    {isLoading
+                                        ? type === 'video' ? "Uploading..." : "Publishing..."
+                                        : type === 'video' ? "Upload Video" : "Publish Resource"}
                                 </Button>
                             </div>
                         )}

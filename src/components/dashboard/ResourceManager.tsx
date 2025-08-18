@@ -280,6 +280,9 @@ export const ResourceManager = () => {
                 if (!Array.isArray(articles)) {
                     articles = [data];
                 }
+                // if(platform === "both"){
+                //     articles = articles.filter(data)
+                // }
             } else {
                 // Fetch from both APIs for 'all' or 'both' platform
                 articles = await fetchFromMultipleApis();
@@ -323,7 +326,6 @@ export const ResourceManager = () => {
                     publishDate: article.publish_date || article.created_at || new Date().toISOString(),
                     status: article.status || '',
                     resource_status: article.resource_status || '',
-                    description: article.article || '',
                     tags,
                     image: imageUrl,
                     platform: article.platform || 'web',
@@ -399,7 +401,6 @@ export const ResourceManager = () => {
                 matchesPlatform = resource?.platform.toLowerCase() === platformFilter.toLowerCase();
             }
         }
-        console.log(matchesPlatform,"ffffffffff")
         let matchesDate = true;
         if (dateRange.from && dateRange.to) {
             const d = new Date(resource?.publishDate);
@@ -414,7 +415,6 @@ export const ResourceManager = () => {
 
         return matchesSearch && matchesType && matchesCategory && matchesStatus && matchesPlatform && matchesDate && matchesResourceStatus;
     });
-    console.log(filteredResources,"filteredResources")
     // Apply pagination
     const totalPages = Math.ceil(filteredResources.length / rowsPerPage);
     const paginatedResources = filteredResources.slice(
@@ -761,10 +761,23 @@ export const ResourceManager = () => {
                 <div className="flex gap-2 mt-4 md:mt-0">
                     <Button
                         className="bg-[#012765] text-white"
-                        onClick={() => navigate("/resources/new")}
+                        onClick={() => {
+                            navigate("/resources/new")
+                            sessionStorage.setItem('resourceType',"article")
+                        }}
                     >
                         <Plus className="h-4 w-4 mr-2"/>
-                        Add Resource
+                        Add Article
+                    </Button>
+                    <Button
+                        className="bg-[#012765] text-white"
+                        onClick={() => {
+                            navigate("/resources/new")
+                            sessionStorage.setItem('resourceType',"video")
+                        }}
+                    >
+                        <Plus className="h-4 w-4 mr-2"/>
+                        Add Video
                     </Button>
                 </div>
             </div>

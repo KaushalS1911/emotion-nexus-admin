@@ -307,12 +307,12 @@ export default function ResourceFormPage() {
                 let response;
                 if (id) {
                     response = await axios.put(
-                        `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
+                        `https://interactapiverse.com/shape/videos/${id}`,
                         formData,
                     );
                 } else {
                     response = await axios.post(
-                        "https://interactapiverse.com/mahadevasth/shape/upload",
+                        "https://interactapiverse.com/shape/upload",
                         formData,
                     );
                 }

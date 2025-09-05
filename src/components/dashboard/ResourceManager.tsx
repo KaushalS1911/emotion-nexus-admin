@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,11 +61,21 @@ type Resource = {
     counsellor_name: string;
     publishDate: string;
     status: string;
+    resource_status: string;
     description: string;
     tags: any;
     image: string;
     platform: string;
     age: string;
+    views?: number;
+    likes?: number;
+    // Video-specific fields
+    duration?: number;
+    file_size?: number;
+    s3_url?: string;
+    content_type?: string;
+    width?: number;
+    height?: number;
 }
 
 const mockResources = [
@@ -78,10 +88,15 @@ const resourceTypes = [
     { value: "tip", label: "Tip", icon: BookOpen },
 ];
 
+const videoTypeOptions = [
+    { value: "session", label: "Session" },
+    { value: "shorts", label: "Shorts" },
+];
+
 const platformOptions = [
-    { value: "Web", label: "Web" },
-    { value: "App", label: "App" },
-    { value: "Both", label: "Both" },
+    { value: "web", label: "Web" },
+    { value: "app", label: "App" },
+    { value: "both", label: "Both" },
 ];
 
 const resourceStatusOptions = [
@@ -148,7 +163,7 @@ export const ResourceManager = () => {
     const navigate = useNavigate();
 
     // State management
-    const [resources, setResources] = useState<Resource[] | []>([]);
+    const [resources, setResources] = useState<Resource[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
     const [categoryFilter, setCategoryFilter] = useState("all");
@@ -158,6 +173,7 @@ export const ResourceManager = () => {
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
     const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
     const [approveModel, setApproveModel] = useState({open:false,id:null});
+    const [videoTypeFilter, setVideoTypeFilter] = useState("session");
     // Pagination states
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -181,11 +197,23 @@ export const ResourceManager = () => {
 
     // API states
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingArticles, setIsLoadingArticles] = useState(false);
+    const [isLoadingVideos, setIsLoadingVideos] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
 
     // Stats states
     const [statsImage, setStatsImage] = useState(null);
     const [statsImagePreview, setStatsImagePreview] = useState(null);
+    
+    // Resource type counts
+    const [articleCount, setArticleCount] = useState(0);
+    const [videoCount, setVideoCount] = useState(0);
+    const [tipCount, setTipCount] = useState(0);
+    
+    // Store all resources separately
+    const [allArticles, setAllArticles] = useState<Resource[]>([]);
+    const [allVideos, setAllVideos] = useState<Resource[]>([]);
+    const [allTips, setAllTips] = useState<Resource[]>([]);
 
     // Stats calculations
     const draftCount = resources.filter((r) => r.status === "draft").length;
@@ -256,12 +284,116 @@ export const ResourceManager = () => {
         }
     };
 
-    // Fetch articles from API based on platform
-    const fetchArticles = async (platform: string = 'all') => {
-        setIsLoading(true);
+    // Fetch videos from API
+    const fetchVideos = useCallback(async () => {
+        if (isLoadingVideos) return; // Prevent multiple calls
+        setIsLoadingVideos(true);
         setApiError(null);
 
         try {
+            const baseUrl = 'https://interactapiverse.com/shape/videos';
+            const params = new URLSearchParams({
+                type: videoTypeFilter,
+                platform: platformFilter === 'all' ? 'app' : platformFilter.toLowerCase(),
+                status: statusFilter === 'all' ? 'all' : statusFilter.toLowerCase(),
+                category: categoryFilter === 'all' ? '' : categoryFilter.toLowerCase(),
+                page: String(page + 1),
+                per_page: String(rowsPerPage)
+            });
+
+            const response = await fetch(`${baseUrl}?${params}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);  
+            }
+
+            const data = await response.json();
+            // Extract videos from the correct API response structure
+            let videos = [];
+            if (data && data.data && data.data.videos) {
+                videos = data.data.videos;
+            } else if (Array.isArray(data)) {
+                videos = data;
+            } else if (data.videos) {
+                videos = data.videos;
+            } else if (data.data) {
+                videos = data.data;
+            } else {
+                videos = [data];
+            }
+
+            if (!Array.isArray(videos)) {
+                videos = [];
+            }
+
+            // Transform video data to match our resource format
+            const transformedVideos = videos.map((video, index: number) => {
+                // Handle tags - the API returns tags as an array
+                let tags = video.tags || [];
+                if (typeof tags === 'string' && tags.trim().startsWith('[')) {
+                    try {
+                        tags = JSON.parse(tags);
+                    } catch { /* empty */ }
+                }
+                if (!Array.isArray(tags)) {
+                    tags = tags ? [tags] : [];
+                }
+
+                // Handle status - API returns 1 for active, 0 for inactive
+                const status = video.status === 1 ? 'live' : 'draft';
+                const resourceStatus = video.status === 1 ? 'live' : 'draft';
+
+                return {
+                    id: video.id || Date.now() + index,
+                    admin_approval: video.admin_approval || '',
+                    title: video.original_filename || video.filename || `Video ${index + 1}`,
+                    type: 'video',
+                    category_name: video.category || 'General',
+                    counsellor_name: video.author || '',
+                    publishDate: video.created_at_utc || video.created_at_ist || new Date().toISOString(),
+                    status: status,
+                    resource_status: resourceStatus,
+                    description: video.description || `Video content: ${video.original_filename || video.filename}`,
+                    tags,
+                    image: video.s3_url || '', // Use S3 URL as thumbnail
+                    platform: video.platform?.toLowerCase() || 'app',
+                    age: video.age_band || '',
+                    views: video.views || 0,
+                    likes: video.likes || 0,
+                    // Additional video-specific fields
+                    duration: video.duration_seconds,
+                    file_size: video.file_size,
+                    s3_url: video.s3_url,
+                    content_type: video.content_type,
+                    width: video.width,
+                    height: video.height,
+                };
+            });
+
+            setAllVideos(transformedVideos);
+            setVideoCount(transformedVideos.length);
+            setPage(0); // Reset to first page when new data is fetched
+
+        } catch (error) {
+            console.error('Error fetching videos:', error);
+            setApiError(error instanceof Error ? error.message : 'Failed to fetch videos');
+        } finally {
+            setIsLoadingVideos(false);
+        }
+    }, [videoTypeFilter, platformFilter, statusFilter, categoryFilter, page, rowsPerPage, isLoadingVideos]);
+
+    // Fetch articles from API based on platform
+    const fetchArticles = useCallback(async (platform: string = 'all') => {
+        if (isLoadingArticles) return; // Prevent multiple calls
+        setIsLoadingArticles(true);
+        setApiError(null);
+
+        try {
+            // If video type is selected, fetch videos instead
+            if (typeFilter === 'video') {
+                await fetchVideos();
+                return;
+            }
+
             let articles = [];
             const apiUrl = getApiUrl(platform);
 
@@ -326,14 +458,18 @@ export const ResourceManager = () => {
                     publishDate: article.publish_date || article.created_at || new Date().toISOString(),
                     status: article.status || '',
                     resource_status: article.resource_status || '',
+                    description: article.description || '',
                     tags,
                     image: imageUrl,
                     platform: article.platform || 'web',
                     age: article.audience_age || '',
+                    views: article.views || 0,
+                    likes: article.likes || 0,
                 };
             });
             const articlesList = (articles && articles.length > 0) ? transformedResources : [];
-            setResources(articlesList);
+            setAllArticles(articlesList);
+            setArticleCount(articlesList.length);
             setPage(0); // Reset to first page when new data is fetched
 
         } catch (error) {
@@ -341,20 +477,53 @@ export const ResourceManager = () => {
             setApiError(error instanceof Error ? error.message : 'Failed to fetch articles');
             // Keep existing resources if API fails
         } finally {
-            setIsLoading(false);
+            setIsLoadingArticles(false);
         }
-    };
+    }, [platformFilter, isLoadingArticles, typeFilter, fetchVideos]);
 
     // Handle platform filter change
     const handleChangePlatform = (value: string) => {
         setPlatformFilter(value);
-        fetchArticles(value);
+        if (typeFilter === 'video') {
+            fetchVideos();
+        } else {
+            fetchArticles(value);
+        }
+    };
+
+    // Handle video type filter change
+    const handleVideoTypeChange = (value: string) => {
+        setVideoTypeFilter(value);
+        if (typeFilter === 'video') {
+            fetchVideos();
+        }
     };
 
     // Fetch resources on component mount
     useEffect(() => {
         fetchArticles('all');
+        fetchVideos();
     }, []);
+
+    // Handle type filter changes - only fetch when needed
+    useEffect(() => {
+        if (typeFilter === 'video') {
+            fetchVideos();
+        } else if (typeFilter === 'article') {
+            fetchArticles(platformFilter);
+        }
+    }, [typeFilter, videoTypeFilter, categoryFilter, statusFilter, platformFilter]);
+
+    // Update resources when data changes
+    useEffect(() => {
+        if (typeFilter === 'all') {
+            setResources([...allArticles, ...allVideos, ...allTips]);
+        } else if (typeFilter === 'article') {
+            setResources(allArticles);
+        } else if (typeFilter === 'video') {
+            setResources(allVideos);
+        }
+    }, [allArticles, allVideos, allTips, typeFilter]);
 
     // Save to localStorage whenever resources change
     useEffect(() => {
@@ -387,7 +556,7 @@ export const ResourceManager = () => {
         }
 
         const matchesCategory = categoryFilter === "all" || resource?.category_name.toLowerCase() === categoryFilter.toLowerCase();
-        const matchesResourceStatus = resourceStatusFilter === "all" || resource?.resource_status.toLowerCase() === resourceStatusFilter.toLowerCase();
+        const matchesResourceStatus = typeFilter === 'video' ? true : (resourceStatusFilter === "all" || resource?.resource_status.toLowerCase() === resourceStatusFilter.toLowerCase());
         const matchesStatus = statusFilter === "all" || resource?.status.toLowerCase() === statusFilter.toLowerCase();
 
         // Updated platform matching logic
@@ -439,8 +608,9 @@ export const ResourceManager = () => {
 
     // Helper function for average rate (likes per resource)
     const getAverageRate = () => {
-        if (resources.length === 0) return 0;
-        return (resources.reduce((sum, r) => sum + (r.likes || 0), 0) / resources.length).toFixed(2);
+        if (resources.length === 0) return "0.00";
+        const totalLikes = resources.reduce((sum: number, r: Resource) => sum + (r.likes || 0), 0);
+        return (totalLikes / resources.length).toFixed(2);
     };
 
     // Event handlers
@@ -514,20 +684,21 @@ export const ResourceManager = () => {
     // 6. Update openEditDialog to support array tags
     const handlePublish = () => {
         if (!validateForm()) return;
-        const newResource = {
-            id: Date.now(),
+        const newResource: Resource = {
+            id: String(Date.now()),
+            admin_approval: '',
             title: form.title,
-            counsellor_code: form.counsellor_code,
+            counsellor_name: form.counsellor_code,
             type: form.type,
             category_name: form.category_name,
             description: form.description,
             tags: form.tags,
             status: form.status,
+            resource_status: form.status,
             publishDate: new Date().toISOString(),
             views: 0,
             likes: 0,
-            image: thumbPreview,
-            emptyImage: emptyPreview,
+            image: thumbPreview || '',
             platform: form.platform,
             age: form.age,
         };
@@ -546,20 +717,21 @@ export const ResourceManager = () => {
             setErrors((prev) => ({ ...prev, title: "Title is required" }));
             return;
         }
-        const newResource = {
-            id: Date.now(),
+        const newResource: Resource = {
+            id: String(Date.now()),
+            admin_approval: '',
             title: form.title,
-            counsellor_code: form.counsellor_code,
+            counsellor_name: form.counsellor_code,
             type: form.type,
             category_name: form.category_name,
             description: form.description,
             tags: form.tags,
             status: "draft",
+            resource_status: "draft",
             publishDate: new Date().toISOString(),
             views: 0,
             likes: 0,
-            image: thumbPreview,
-            emptyImage: emptyPreview,
+            image: thumbPreview || '',
             platform: form.platform,
             age: form.age,
         };
@@ -643,11 +815,13 @@ export const ResourceManager = () => {
         setEditingResource(resource);
         setForm({
             title: resource.title,
+            counsellor_code: resource.counsellor_name,
             type: resource.type,
             category_name: resource.category_name,
             description: resource.description,
             tags: getTagsArray(resource.tags),
             image: resource.image,
+            emptyImage: null,
             platform: resource.platform,
             age: resource.age,
             status: resource.status,
@@ -662,7 +836,7 @@ export const ResourceManager = () => {
         setViewDialogOpen(true);
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = (id: string) => {
         setResources((prev) => prev.filter((r) => r.id !== id));
     };
 
@@ -703,17 +877,11 @@ export const ResourceManager = () => {
                 throw new Error("Failed to approve article");
             }
             setApproveModel({open:false,id:null})
-            toast({
-                title: "Article approved!",
-                description: "The article has been successfully approved.",
-            });
+            toast.success("Article approved! The article has been successfully approved.");
 
         } catch (error: any) {
             setApproveModel({open:false,id:null})
-            toast({
-                title: error.message || "An error occurred while approving the article.",
-                variant: "destructive",
-            });
+            toast.error(error.message || "An error occurred while approving the article.");
         }
     }
 
@@ -882,18 +1050,33 @@ export const ResourceManager = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {/* Resource Status filter */}
-                        <Select value={resourceStatusFilter} onValueChange={setResourceStatusFilter}>
-                            <SelectTrigger className="w-full md:w-40">
-                                <SelectValue placeholder="Status"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Resources</SelectItem>
-                                {resourceStatusOptions.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {/* Video Type filter - only show when video tab is selected */}
+                        {typeFilter === 'video' && (
+                            <Select value={videoTypeFilter} onValueChange={handleVideoTypeChange}>
+                                <SelectTrigger className="w-full md:w-40">
+                                    <SelectValue placeholder="Video Type"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {videoTypeOptions.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                        {/* Resource Status filter - hide when video tab is selected */}
+                        {typeFilter !== 'video' && (
+                            <Select value={resourceStatusFilter} onValueChange={setResourceStatusFilter}>
+                                <SelectTrigger className="w-full md:w-40">
+                                    <SelectValue placeholder="Status"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Resources</SelectItem>
+                                    {resourceStatusOptions.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                         {/* Status filter */}
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className="w-full md:w-40">
@@ -948,10 +1131,12 @@ export const ResourceManager = () => {
                         }`}
                     >
                         <FileText className="w-4 h-4 mr-2" />
-                        All Types ({resources.length})
+                        All Types ({articleCount + videoCount + tipCount})
                     </button>
                     {resourceTypes.map((type) => {
-                        const count = resources.filter(r => r.type === type.value).length;
+                        const count = type.value === 'article' ? articleCount : 
+                                     type.value === 'video' ? videoCount : 
+                                     type.value === 'tip' ? tipCount : 0;
                         const Icon = type.icon;
                         const colors = {
                             article: {
@@ -999,6 +1184,7 @@ export const ResourceManager = () => {
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Author</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Type</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Category</th>
+                                <th className="text-left py-3 px-4 font-medium text-gray-600">Duration</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Resource Status</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Published</th>
@@ -1038,6 +1224,12 @@ export const ResourceManager = () => {
                                             {resource.category_name
                                                 .replace("-", " ")
                                                 .replace(/\b\w/g, (l) => l.toUpperCase())}
+                                        </td>
+                                        <td className="py-2 px-4">
+                                            {resource.type === 'video' && resource.duration ? 
+                                                `${Math.floor(resource.duration / 60)}:${(resource.duration % 60).toString().padStart(2, '0')}` : 
+                                                resource.type === 'video' ? 'N/A' : '-'
+                                            }
                                         </td>
                                         <td className="py-2 px-4">
                                             <Badge className={getStatusColor(resource?.resource_status)}>
@@ -1098,8 +1290,8 @@ export const ResourceManager = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={8} className="py-8 text-center text-gray-500">
-                                        {isLoading ? (
+                                    <td colSpan={9} className="py-8 text-center text-gray-500">
+                                        {isLoadingArticles || isLoadingVideos ? (
                                             <div className="flex flex-col items-center">
                                                 <RefreshCw className="h-6 w-6 animate-spin text-[#012765] mb-2" />
                                                 <span>Loading resources...</span>
@@ -1220,7 +1412,7 @@ export const ResourceManager = () => {
                                     <div className="space-y-4">
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500">Author</h3>
-                                            <p>{viewingResource.counsellor_code}</p>
+                                            <p>{viewingResource.counsellor_name}</p>
                                         </div>
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500">Type</h3>

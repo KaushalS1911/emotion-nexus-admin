@@ -54,9 +54,9 @@ const getTagsArray = (tags: any) => {
 };
 
 const platforms = [
-    {value: "Web", label: "Web"},
-    {value: "App", label: "App"},
-    {value: "Both", label: "Both"},
+    {value: "Web", label: "web"},
+    {value: "App", label: "app"},
+    {value: "Both", label: "both"},
 ];
 
 const ages = ["13+", "14+", "16+", "18+"];
@@ -479,7 +479,7 @@ export default function ResourceFormPage() {
                                                 <SelectValue placeholder={"Select type"}/>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {[{label:"Session",value:"session"}, {label:"Story",value:'story'}].map((cat) => (
+                                                {[{label:"Session",value:"session"}, {label:"Shorts",value:'shorts'}].map((cat) => (
                                                     <SelectItem key={cat.value} value={cat.value}>
                                                         {cat.label}
                                                     </SelectItem>

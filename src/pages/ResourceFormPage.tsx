@@ -205,9 +205,31 @@ export default function ResourceFormPage() {
             }
 
             if (field === 'file') {
+                try {
+                    // STEP 1: Ask backend for signed upload URL
+                    const presignRes = await axios.post(
+                        "https://interactapiverse.com/shape/videos/upload-url",
+                        { filename: file.name },
+                        { headers: { "Content-Type": "application/json" } }
+                    );
+                    console.log(presignRes,"presignRes")
+
+                    const uploadUrl = presignRes.data?.data?.upload_url; // the signed S3 PUT URL
+                    const fileUrl = presignRes.data?.data?.upload_url; // public file URL (if returned)
+
+                    // STEP 2: Upload file directly to S3
+                    await axios.put(uploadUrl, file, {
+                        headers: { "Content-Type": file.type },
+                    });
+
+                    setForm((f) => ({...f, [field]: {...file,...presignRes.data?.data,filename:file?.name}}));
+                    setFilePreview(URL.createObjectURL(file));
+
+                } catch (error) {
+                    console.error("Upload failed:", error);
+                }
                 // For video files, we'll store the file object directly
-                setForm((f) => ({...f, [field]: file}));
-                setFilePreview(URL.createObjectURL(file));
+
             } else {
                 // For images, convert to base64
                 const base64 = await fileToBase64(file);
@@ -254,6 +276,7 @@ export default function ResourceFormPage() {
         if (type === "article" && !form.description.trim()) newErrors.description = "Description is required";
         if (!form.tags || form.tags.length === 0) newErrors.tags = "At least one tag is required";
         if (type === "video" && !form.file) newErrors.file = "Video file is required";
+        if (type === "video" && !form.type) newErrors.type = "Type is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -268,34 +291,29 @@ export default function ResourceFormPage() {
         try {
             if (type === "video") {
                 // Handle video upload
-                const formData = new FormData();
-                formData.append('file', form.file);
-                formData.append('age', form.age);
-                formData.append('category', form.category_name);
-                formData.append('tags', JSON.stringify(form.tags));
-                formData.append('platform', form.platform);
-                formData.append('author', form.author);
+                const formData = {
+                    s3_key:form?.file?.s3_key,
+                    original_filename:form?.file?.filename,
+                    age:form?.age,
+                    category:form?.category_name,
+                    tags:form?.tags,
+                    platform:form?.platform,
+                    author:form?.author,
+                    created_at:new Date(),
+                    type:form?.type,
+                    content_type:'video/mp4',
+                }
 
                 let response;
                 if (id) {
                     response = await axios.put(
                         `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
                         formData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data'
-                            }
-                        }
                     );
                 } else {
                     response = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/upload",
                         formData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data'
-                            }
-                        }
                     );
                 }
 
@@ -363,7 +381,7 @@ export default function ResourceFormPage() {
     };
 
     return (
-        <>
+        <div>
             <Button variant="outline" className="mb-4" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4"/>
                 Back
@@ -395,26 +413,25 @@ export default function ResourceFormPage() {
                             {/* Title and Category */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 {type === 'article' && (  <div className="flex-1">
-                                    <Label>Title</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {form.title}
-                                        </div>
-                                    ) : (
-                                        <Input
-                                            id="title"
-                                            value={form.title}
-                                            onChange={handleInput}
-                                            placeholder={`${type === 'video' ? 'Video' : 'Resource'} title...`}
-                                            className={errors.title ? 'border-red-500' : ''}
-                                        />
-                                    )}
-                                    {errors.title && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.title}</div>
-                                    )}
-                                </div>
+                                        <Label>Title</Label>
+                                        {isView ? (
+                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                {form.title}
+                                            </div>
+                                        ) : (
+                                            <Input
+                                                id="title"
+                                                value={form.title}
+                                                onChange={handleInput}
+                                                placeholder={`${type === 'video' ? 'Video' : 'Resource'} title...`}
+                                                className={errors.title ? 'border-red-500' : ''}
+                                            />
+                                        )}
+                                        {errors.title && !isView && (
+                                            <div className="text-red-500 text-xs mt-1">{errors.title}</div>
+                                        )}
+                                    </div>
                                 )}
-
                                 <div className="flex-1">
                                     <Label>Category</Label>
                                     {isView ? (
@@ -446,6 +463,34 @@ export default function ResourceFormPage() {
                                         <div className="text-red-500 text-xs mt-1">{errors.category_name}</div>
                                     )}
                                 </div>
+
+                                {type === "video"  && <div className="flex-1">
+                                    <Label>Type</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.type || "-"}
+                                        </div>
+                                    ) : (
+                                        <Select
+                                            value={form.type}
+                                            onValueChange={(v) => handleSelect("type", v)}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={"Select type"}/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {[{label:"Session",value:"session"}, {label:"Story",value:'story'}].map((cat) => (
+                                                    <SelectItem key={cat.value} value={cat.value}>
+                                                        {cat.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                    {errors.type && !isView && (
+                                        <div className="text-red-500 text-xs mt-1">{errors?.type}</div>
+                                    )}
+                                </div>}
                             </div>
 
                             {/* Author and Image/Video */}
@@ -620,81 +665,81 @@ export default function ResourceFormPage() {
                             </div>
                             {type === 'article' && (
                                 <>
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
-                                    <Label>Resource Status</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {resourceStatusOptions.find(s => s.value === form.resource_status)?.label || form.resource_status}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.resource_status}
-                                            onValueChange={(v) => handleSelect("resource_status", v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select resource status"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {resourceStatusOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </div>
-
-                                <div className="flex-1">
-                                    <Label>Status</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {statusOptions.find(s => s.value === form.status)?.label || form.status}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.status}
-                                            onValueChange={(v) => handleSelect("status", v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select status"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {statusOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Description - Only for articles */}
-                                <div>
-                                    <Label>Description</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
-                                            {form.description}
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <Textarea
-                                                id="description"
-                                                value={form.description}
-                                                onChange={handleInput}
-                                                placeholder="Resource description..."
-                                                className={errors.description ? 'border-red-500' : ''}
-                                                rows={6}
-                                            />
-                                            {errors.description && (
-                                                <div className="text-red-500 text-xs mt-1">{errors.description}</div>
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <div className="flex-1">
+                                            <Label>Resource Status</Label>
+                                            {isView ? (
+                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                    {resourceStatusOptions.find(s => s.value === form.resource_status)?.label || form.resource_status}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={form.resource_status}
+                                                    onValueChange={(v) => handleSelect("resource_status", v)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select resource status"/>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {resourceStatusOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>
+                                                                {opt.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             )}
-                                        </>
-                                    )}
-                                </div>
+                                        </div>
+
+                                        <div className="flex-1">
+                                            <Label>Status</Label>
+                                            {isView ? (
+                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                    {statusOptions.find(s => s.value === form.status)?.label || form.status}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={form.status}
+                                                    onValueChange={(v) => handleSelect("status", v)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select status"/>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {statusOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>
+                                                                {opt.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Description - Only for articles */}
+                                    <div>
+                                        <Label>Description</Label>
+                                        {isView ? (
+                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
+                                                {form.description}
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Textarea
+                                                    id="description"
+                                                    value={form.description}
+                                                    onChange={handleInput}
+                                                    placeholder="Resource description..."
+                                                    className={errors.description ? 'border-red-500' : ''}
+                                                    rows={6}
+                                                />
+                                                {errors.description && (
+                                                    <div className="text-red-500 text-xs mt-1">{errors.description}</div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
                                 </>
                             )}
 
@@ -763,7 +808,7 @@ export default function ResourceFormPage() {
                                 <Button
                                     type="submit"
                                     className="bg-[#012765] text-white"
-                                    disabled={isLoading}
+                                    disabled={isLoading || (type === 'video' && !filePreview)}
                                 >
                                     {isLoading
                                         ? type === 'video' ? "Uploading..." : "Publishing..."
@@ -774,6 +819,6 @@ export default function ResourceFormPage() {
                     </Card>
                 </div>
             </form>
-        </>
+        </div>
     );
 }

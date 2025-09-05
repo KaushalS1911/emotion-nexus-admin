@@ -189,6 +189,13 @@ export const ResourceManager = () => {
     const [editingResource, setEditingResource] = useState<Resource | null>(null);
     const [viewingResource, setViewingResource] = useState<Resource | null>(null);
     const [errors, setErrors] = useState<ResourceFormErrors>({});
+    
+    // Video modal states
+    const [videoModalOpen, setVideoModalOpen] = useState(false);
+    const [selectedVideo, setSelectedVideo] = useState<Resource | null>(null);
+    const [videoPresignedUrl, setVideoPresignedUrl] = useState<string | null>(null);
+    const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+    const [videoError, setVideoError] = useState<string | null>(null);
 
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -499,6 +506,42 @@ export const ResourceManager = () => {
         }
     };
 
+    // Fetch presigned URL for video playback
+    const fetchVideoPresignedUrl = async (videoId: string) => {
+        setIsLoadingVideo(true);
+        setVideoError(null);
+        
+        try {
+            const response = await fetch(`https://interactapiverse.com/shape/videos/${videoId}/play`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            if (data.status === '200' && data.data && data.data.presigned_url) {
+                setVideoPresignedUrl(data.data.presigned_url);
+            } else {
+                throw new Error(data.message || 'Failed to get video URL');
+            }
+        } catch (error) {
+            console.error('Error fetching video presigned URL:', error);
+            setVideoError(error instanceof Error ? error.message : 'Failed to load video');
+        } finally {
+            setIsLoadingVideo(false);
+        }
+    };
+
+    // Handle video thumbnail click
+    const handleVideoThumbnailClick = (resource: Resource) => {
+        if (resource.type === 'video') {
+            setSelectedVideo(resource);
+            setVideoModalOpen(true);
+            setVideoPresignedUrl(null);
+            setVideoError(null);
+            fetchVideoPresignedUrl(resource.id);
+        }
+    };
+
     // Fetch resources on component mount
     useEffect(() => {
         fetchArticles('all');
@@ -529,6 +572,24 @@ export const ResourceManager = () => {
     useEffect(() => {
         localStorage.setItem("resources", JSON.stringify(resources));
     }, [resources]);
+
+    // Handle video autoplay when presigned URL is loaded
+    useEffect(() => {
+        if (videoPresignedUrl && videoModalOpen) {
+            // Small delay to ensure video element is rendered
+            const timer = setTimeout(() => {
+                const videoElement = document.querySelector('video');
+                if (videoElement) {
+                    videoElement.play().catch(error => {
+                        console.log('Autoplay prevented:', error);
+                        // Autoplay was prevented, user will need to click play
+                    });
+                }
+            }, 100);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [videoPresignedUrl, videoModalOpen]);
 
     // Reset page to 0 when filters change
     useEffect(() => {
@@ -1196,11 +1257,21 @@ export const ResourceManager = () => {
                                 paginatedResources.map((resource) => (
                                     <tr key={resource.id} className="border-b hover:bg-gray-50">
                                         <td className="py-2 px-4">
-                                            <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden">
+                                            <div 
+                                                className={`h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden relative ${
+                                                    resource.type === 'video' ? 'cursor-pointer hover:bg-gray-300 transition-colors' : ''
+                                                }`}
+                                                onClick={() => resource.type === 'video' ? handleVideoThumbnailClick(resource) : null}
+                                            >
                                                 {resource.image ? (
                                                     <img src={resource.image} alt={resource.title} className="h-full w-full object-cover" />
                                                 ) : (
                                                     getTypeIcon(resource.type)
+                                                )}
+                                                {resource.type === 'video' && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+                                                        <Video className="h-4 w-4 text-white" />
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>
@@ -1470,6 +1541,113 @@ export const ResourceManager = () => {
                             </div>
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Video Modal */}
+            <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">
+                            {selectedVideo?.title || 'Video Player'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="mt-4">
+                        {isLoadingVideo ? (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin text-[#012765] mb-4" />
+                                <p className="text-gray-600">Loading video...</p>
+                            </div>
+                        ) : videoError ? (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <div className="text-red-500 mb-4">
+                                    <Video className="h-12 w-12 mx-auto mb-2" />
+                                    <p className="text-center">{videoError}</p>
+                                </div>
+                                <Button 
+                                    onClick={() => selectedVideo && fetchVideoPresignedUrl(selectedVideo.id)}
+                                    variant="outline"
+                                >
+                                    Retry
+                                </Button>
+                            </div>
+                        ) : videoPresignedUrl ? (
+                            <div className="space-y-4">
+                                <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '450px', minHeight: '450px' }}>
+                                    <video
+                                        controls
+                                        autoPlay
+                                        muted
+                                        className="w-full h-full object-contain"
+                                        poster={selectedVideo?.image || undefined}
+                                        style={{ minHeight: '400px' }}
+                                        onLoadedMetadata={(e) => {
+                                            // Ensure video maintains aspect ratio
+                                            const video = e.target as HTMLVideoElement;
+                                            video.style.height = '100%';
+                                        }}
+                                    >
+                                        <source src={videoPresignedUrl} type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                
+                                {selectedVideo && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-700 mb-2">Video Details</h4>
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <span className="font-medium">Author:</span> {selectedVideo.counsellor_name}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Category:</span> {selectedVideo.category_name}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Duration:</span> {selectedVideo.duration ? 
+                                                        `${Math.floor(selectedVideo.duration / 60)}:${(selectedVideo.duration % 60).toString().padStart(2, '0')}` : 
+                                                        'N/A'
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">File Size:</span> {selectedVideo.file_size ? 
+                                                        `${(selectedVideo.file_size / (1024 * 1024)).toFixed(2)} MB` : 
+                                                        'N/A'
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <h4 className="font-semibold text-gray-700 mb-2">Tags</h4>
+                                            <div className="flex flex-wrap gap-1">
+                                                {selectedVideo.tags.map((tag, i) => (
+                                                    <Badge key={i} variant="secondary" className="text-xs">
+                                                        #{tag}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                            
+                                            <h4 className="font-semibold text-gray-700 mb-2 mt-4">Description</h4>
+                                            <p className="text-sm text-gray-600">
+                                                {selectedVideo.description || 'No description available'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
+                    
+                    <div className="flex justify-end mt-6 pt-4 border-t">
+                        <Button 
+                            onClick={() => setVideoModalOpen(false)}
+                            variant="outline"
+                        >
+                            Close
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 

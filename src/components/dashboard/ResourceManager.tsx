@@ -292,7 +292,7 @@ export const ResourceManager = () => {
     };
 
     // Fetch videos from API
-    const fetchVideos = useCallback(async () => {
+    const fetchVideos = useCallback(async (currentPage: number = 0) => {
         if (isLoadingVideos) return; // Prevent multiple calls
         setIsLoadingVideos(true);
         setApiError(null);
@@ -304,7 +304,7 @@ export const ResourceManager = () => {
                 platform: platformFilter === 'all' ? 'app' : platformFilter.toLowerCase(),
                 status: statusFilter === 'all' ? 'all' : statusFilter.toLowerCase(),
                 category: categoryFilter === 'all' ? '' : categoryFilter.toLowerCase(),
-                page: String(page + 1),
+                page: String(currentPage + 1),
                 per_page: String(rowsPerPage)
             });
 
@@ -378,7 +378,10 @@ export const ResourceManager = () => {
 
             setAllVideos(transformedVideos);
             setVideoCount(transformedVideos.length);
-            setPage(0); // Reset to first page when new data is fetched
+            // Only reset page if this is a filter change (currentPage is 0)
+            if (currentPage === 0) {
+                setPage(0);
+            }
 
         } catch (error) {
             console.error('Error fetching videos:', error);
@@ -386,10 +389,10 @@ export const ResourceManager = () => {
         } finally {
             setIsLoadingVideos(false);
         }
-    }, [videoTypeFilter, platformFilter, statusFilter, categoryFilter, page, rowsPerPage, isLoadingVideos]);
+    }, [videoTypeFilter, platformFilter, statusFilter, categoryFilter, rowsPerPage, isLoadingVideos]);
 
     // Fetch articles from API based on platform
-    const fetchArticles = useCallback(async (platform: string = 'all') => {
+    const fetchArticles = useCallback(async (platform: string = 'all', currentPage: number = 0) => {
         if (isLoadingArticles) return; // Prevent multiple calls
         setIsLoadingArticles(true);
         setApiError(null);
@@ -397,7 +400,7 @@ export const ResourceManager = () => {
         try {
             // If video type is selected, fetch videos instead
             if (typeFilter === 'video') {
-                await fetchVideos();
+                await fetchVideos(currentPage);
                 return;
             }
 
@@ -477,7 +480,10 @@ export const ResourceManager = () => {
             const articlesList = (articles && articles.length > 0) ? transformedResources : [];
             setAllArticles(articlesList);
             setArticleCount(articlesList.length);
-            setPage(0); // Reset to first page when new data is fetched
+            // Only reset page if this is a filter change (currentPage is 0)
+            if (currentPage === 0) {
+                setPage(0);
+            }
 
         } catch (error) {
             console.error('Error fetching articles:', error);
@@ -491,19 +497,13 @@ export const ResourceManager = () => {
     // Handle platform filter change
     const handleChangePlatform = (value: string) => {
         setPlatformFilter(value);
-        if (typeFilter === 'video') {
-            fetchVideos();
-        } else {
-            fetchArticles(value);
-        }
+        // The useEffect will handle the API call with debouncing
     };
 
     // Handle video type filter change
     const handleVideoTypeChange = (value: string) => {
         setVideoTypeFilter(value);
-        if (typeFilter === 'video') {
-            fetchVideos();
-        }
+        // The useEffect will handle the API call with debouncing
     };
 
     // Fetch presigned URL for video playback
@@ -544,17 +544,22 @@ export const ResourceManager = () => {
 
     // Fetch resources on component mount
     useEffect(() => {
-        fetchArticles('all');
-        fetchVideos();
+        fetchArticles('all', 0);
+        fetchVideos(0);
     }, []);
 
     // Handle type filter changes - only fetch when needed
     useEffect(() => {
-        if (typeFilter === 'video') {
-            fetchVideos();
-        } else if (typeFilter === 'article') {
-            fetchArticles(platformFilter);
-        }
+        // Add a small delay to prevent multiple rapid API calls
+        const timeoutId = setTimeout(() => {
+            if (typeFilter === 'video') {
+                fetchVideos(0);
+            } else if (typeFilter === 'article') {
+                fetchArticles(platformFilter, 0);
+            }
+        }, 100);
+
+        return () => clearTimeout(timeoutId);
     }, [typeFilter, videoTypeFilter, categoryFilter, statusFilter, platformFilter]);
 
     // Update resources when data changes
@@ -591,10 +596,19 @@ export const ResourceManager = () => {
         }
     }, [videoPresignedUrl, videoModalOpen]);
 
+    // Handle pagination changes - fetch new data for current page
+    useEffect(() => {
+        if (typeFilter === 'video') {
+            fetchVideos(page);
+        } else if (typeFilter === 'article') {
+            fetchArticles(platformFilter, page);
+        }
+    }, [page, rowsPerPage]);
+
     // Reset page to 0 when filters change
     useEffect(() => {
         setPage(0);
-    }, [searchTerm, typeFilter, categoryFilter, statusFilter, resourceStatusFilter, platformFilter, dateRange, topCardFilter, rowsPerPage]);
+    }, [searchTerm, typeFilter, categoryFilter, statusFilter, resourceStatusFilter, platformFilter, dateRange, topCardFilter]);
 
     // Filter resources based on current filters
     const filteredResources = resources.filter((resource) => {

@@ -352,7 +352,7 @@ export default function ResourceFormPage() {
                 setApiSuccess(id ? "Article updated successfully!" : "Article created successfully!");
             }
 
-            setTimeout(() => navigate("/resources"), 2000);
+            setTimeout(() => navigate(type === "video" ? "/videos" : "/resources"), 2000);
         } catch (error) {
             console.error("API Error:", error);
             let errorMsg = `Failed to save ${type}`;

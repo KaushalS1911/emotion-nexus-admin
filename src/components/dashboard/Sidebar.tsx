@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {cn} from "@/lib/utils";
 import {
     BarChart3,
@@ -12,13 +12,22 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     CalendarClock,
-    PlusCircle
+    PlusCircle,
+    FileText as ArticleIcon,
+    PlayCircle as VideoIcon
 } from "lucide-react";
 import logo from "../../../public/Emotionally Yours Logo.png";
 import logo1 from "../../../public/logo.jpg";
-import {Link, NavLink} from "react-router-dom";
+import {Link, NavLink, useNavigate, useLocation} from "react-router-dom";
 import { useUserContext } from "@/UserContext";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SidebarProps {
     collapsed: boolean;
@@ -43,7 +52,6 @@ const menuItems: MenuItem[] = [
     {id: "users", label: "Users", icon: Users, route: "/users"},
     {id: "reflection-cards", label: "Reflection Cards", icon: Users, route: "/reflection-cards"},
     // {id: "feedback", label: "Feedback", icon: Star, route: "/feedback"},
-    {id: "resources", label: "Resources", icon: BookOpen, route: "/resources"},
     // {id: "notifications", label: "Notifications", icon: Bell, route: "/notifications"},
     {id: "settings", label: "Settings", icon: Settings, route: "/settings"},
 ];
@@ -70,11 +78,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     setMobileOpen,
                                                 }) => {
     const { user } = useUserContext();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
+    
     const isCounsellor = user?.role === "counsellor";
     const filteredMenuItems = isCounsellor
         ? [slotMenuItem, appointmentMenuItem]
         : menuItems;
     const dashboardLabel = isCounsellor ? "Counsellor Dashboard" : "Admin Dashboard";
+    
+    // Check if current path is resources or videos
+    const isResourcesActive = location.pathname === "/resources" || location.pathname === "/videos";
+
+    const handleResourcesNavigation = (path: string) => {
+        navigate(path);
+        setResourcesDropdownOpen(false);
+        if (isMobile && setMobileOpen) {
+            setMobileOpen(false);
+        }
+    };
 
     if (isMobile) {
         return (
@@ -130,17 +153,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     }
                                     onClick={() => setMobileOpen && setMobileOpen(false)}
                                 >
-                                    <Icon className="h-5 w-5 mr-3"/>
-                                    <span className="font-medium">{item.label}</span>
+                                    <Icon className="h-5 w-5 mr-2"/>
+                                    <span className="font-medium text-sm">{item.label}</span>
                                 </NavLink>
                             );
                         })}
+                        
+                        {/* Resources Dropdown for Mobile */}
+                        {!isCounsellor && (
+                            <div className="w-full">
+                                <button
+                                    onClick={() => setResourcesDropdownOpen(!resourcesDropdownOpen)}
+                                    className={cn(
+                                        "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 rounded-lg mx-2",
+                                        isResourcesActive
+                                            ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                            : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                    )}
+                                >
+                                    <div className="flex items-center">
+                                        <BookOpen className="h-5 w-5 mr-2"/>
+                                        <span className="font-medium text-sm">Resources</span>
+                                    </div>
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", resourcesDropdownOpen && "rotate-180")} />
+                                </button>
+                                
+                                {resourcesDropdownOpen && (
+                                    <div className="ml-4 space-y-1 mt-1 mr-2">
+                                        <button
+                                            onClick={() => handleResourcesNavigation("/resources")}
+                                            className={cn(
+                                                "w-full flex items-center px-4 py-3 text-left transition-all duration-200 rounded-lg group",
+                                                location.pathname === "/resources"
+                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm border border-[#FFD6B3]"
+                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
+                                            )}
+                                        >
+                                            <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                            <span className="font-medium text-sm">Articles</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleResourcesNavigation("/videos")}
+                                            className={cn(
+                                                "w-full flex items-center px-4 py-3 text-left transition-all duration-200 rounded-lg group",
+                                                location.pathname === "/videos"
+                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm border border-[#FFD6B3]"
+                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
+                                            )}
+                                        >
+                                            <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                            <span className="font-medium text-sm">Videos</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </nav>
                     {/* Footer */}
                     <div
                         className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                         <div className="text-sm text-blue-950">
-                            <p className="font-medium">{dashboardLabel}</p>
+                            <p className="font-medium text-sm">{dashboardLabel}</p>
                             <p className="text-xs">Wellness Management System</p>
                         </div>
                     </div>
@@ -208,13 +281,106 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             }
                             end={item.route === "/dashboard"}
                         >
-                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-3")}/>
+                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-2")}/>
                             {!collapsed && (
-                                <span className="font-medium">{item.label}</span>
+                                <span className="font-medium text-sm">{item.label}</span>
                             )}
                         </NavLink>
                     );
                 })}
+                
+                {/* Resources Dropdown for Desktop */}
+                {!isCounsellor && (
+                    <div className="w-full">
+                        {collapsed ? (
+                            <DropdownMenu open={resourcesDropdownOpen} onOpenChange={setResourcesDropdownOpen}>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        className={cn(
+                                            "w-full flex items-center justify-center px-4 py-3 text-left transition-all duration-200 rounded-lg mx-2 group",
+                                            isResourcesActive
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                                : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                        )}
+                                    >
+                                        <BookOpen className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" side="right" className="w-36 max-w-36 p-1 shadow-lg border-0 bg-white/95 backdrop-blur-sm ml-1">
+                                    <DropdownMenuItem 
+                                        onClick={() => handleResourcesNavigation("/resources")}
+                                        className={cn(
+                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
+                                            location.pathname === "/resources"
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
+                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
+                                        )}
+                                    >
+                                        <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                        <span className="font-medium text-sm">Articles</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                        onClick={() => handleResourcesNavigation("/videos")}
+                                        className={cn(
+                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
+                                            location.pathname === "/videos"
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
+                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
+                                        )}
+                                    >
+                                        <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                        <span className="font-medium text-sm">Videos</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <DropdownMenu open={resourcesDropdownOpen} onOpenChange={setResourcesDropdownOpen}>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        className={cn(
+                                            "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 group",
+                                            isResourcesActive
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                                : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                        )}
+                                    >
+                                        <div className="flex items-center">
+                                            <BookOpen className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-200"/>
+                                            <span className="font-medium text-sm">Resources</span>
+                                        </div>
+                                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200 group-hover:scale-110", resourcesDropdownOpen && "rotate-180")} />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-36 max-w-36 p-1 shadow-lg border-0 bg-white/95 backdrop-blur-sm">
+                                    <DropdownMenuItem 
+                                        onClick={() => handleResourcesNavigation("/resources")}
+                                        className={cn(
+                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
+                                            location.pathname === "/resources"
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
+                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
+                                        )}
+                                    >
+                                        <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                        <span className="font-medium text-sm">Articles</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                        onClick={() => handleResourcesNavigation("/videos")}
+                                        className={cn(
+                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
+                                            location.pathname === "/videos"
+                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
+                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
+                                        )}
+                                    >
+                                        <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                        <span className="font-medium text-sm">Videos</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                )}
             </nav>
 
             {/* Footer */}
@@ -222,7 +388,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div
                     className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                     <div className="text-sm text-blue-950">
-                        <p className="font-medium">{dashboardLabel}</p>
+                        <p className="font-medium text-sm">{dashboardLabel}</p>
                         <p className="text-xs">Wellness Management System</p>
                     </div>
                 </div>

@@ -84,7 +84,6 @@ const mockResources = [
 
 const resourceTypes = [
     { value: "article", label: "Article", icon: FileText },
-    { value: "video", label: "Video", icon: Video },
     { value: "tip", label: "Tip", icon: BookOpen },
 ];
 
@@ -545,33 +544,26 @@ export const ResourceManager = () => {
     // Fetch resources on component mount
     useEffect(() => {
         fetchArticles('all', 0);
-        fetchVideos(0);
     }, []);
 
     // Handle type filter changes - only fetch when needed
     useEffect(() => {
-        // Add a small delay to prevent multiple rapid API calls
         const timeoutId = setTimeout(() => {
-            if (typeFilter === 'video') {
-                fetchVideos(0);
-            } else if (typeFilter === 'article') {
+            if (typeFilter === 'article') {
                 fetchArticles(platformFilter, 0);
             }
         }, 100);
-
         return () => clearTimeout(timeoutId);
-    }, [typeFilter, videoTypeFilter, categoryFilter, statusFilter, platformFilter]);
+    }, [typeFilter, categoryFilter, statusFilter, platformFilter]);
 
     // Update resources when data changes
     useEffect(() => {
         if (typeFilter === 'all') {
-            setResources([...allArticles, ...allVideos, ...allTips]);
+            setResources([...allArticles, ...allTips]);
         } else if (typeFilter === 'article') {
             setResources(allArticles);
-        } else if (typeFilter === 'video') {
-            setResources(allVideos);
         }
-    }, [allArticles, allVideos, allTips, typeFilter]);
+    }, [allArticles, allTips, typeFilter]);
 
     // Save to localStorage whenever resources change
     useEffect(() => {
@@ -598,9 +590,7 @@ export const ResourceManager = () => {
 
     // Handle pagination changes - fetch new data for current page
     useEffect(() => {
-        if (typeFilter === 'video') {
-            fetchVideos(page);
-        } else if (typeFilter === 'article') {
+        if (typeFilter === 'article') {
             fetchArticles(platformFilter, page);
         }
     }, [page, rowsPerPage]);
@@ -990,7 +980,7 @@ export const ResourceManager = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-[#FF7119]">
-                        Resources
+                        Articles
                     </h1>
                     <p className="text-gray-600 mt-2 text-[#012765]">
                         Manage wellness articles, videos, and tips
@@ -1012,16 +1002,6 @@ export const ResourceManager = () => {
                         <Plus className="h-4 w-4 mr-2"/>
                         Add Article
                     </Button>
-                    <Button
-                        className="bg-[#012765] text-white"
-                        onClick={() => {
-                            navigate("/resources/new")
-                            sessionStorage.setItem('resourceType',"video")
-                        }}
-                    >
-                        <Plus className="h-4 w-4 mr-2"/>
-                        Add Video
-                    </Button>
                 </div>
             </div>
 
@@ -1035,7 +1015,7 @@ export const ResourceManager = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-[#012765]">Total Resources</p>
+                                <p className="text-sm font-medium text-[#012765]">Total Articles</p>
                                 <p className="text-3xl font-bold text-[#012765]">{resources.length}</p>
                             </div>
                             <BookOpen className="h-8 w-8 text-blue-500"/>

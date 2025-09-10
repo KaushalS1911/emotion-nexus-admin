@@ -13,6 +13,7 @@ import {AssessmentData} from "@/components/dashboard/AssessmentData";
 import {InquiriesManagement} from "@/components/dashboard/InquiriesManagement";
 import {FeedbackTracking} from "@/components/dashboard/FeedbackTracking";
 import {ResourceManager} from "@/components/dashboard/ResourceManager";
+import {VideoManager} from "@/components/dashboard/VideoManager";
 import {NotificationsCenter} from "@/components/dashboard/NotificationsCenter";
 import {SettingsPage} from "@/components/dashboard/SettingsPage";
 import Users from "@/components/dashboard/Users";
@@ -97,6 +98,9 @@ const adminRoutes = [
     {path: "/inquiries/:id/notes", element: <InquiryNotes/>},
     {path: "/feedback", element: <FeedbackTracking/>},
     {path: "/resources", element: <ResourceManager/>},
+    {path: "/videos", element: <VideoManager/>},
+    {path: "/videos/new", element: <ResourceFormPage/>},
+    {path: "/videos/edit/:id", element: <ResourceFormPage/>},
     {path: "/resources/new", element: <ResourceFormPage/>},
     {path: "/resources/edit/:id", element: <ResourceFormPage/>},
     {path: "/notifications", element: <NotificationsCenter/>},

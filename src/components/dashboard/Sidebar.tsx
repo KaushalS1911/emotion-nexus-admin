@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
     BarChart3,
     User,
     Users,
     FileText,
     MessageSquare,
-    Star,
     BookOpen,
-    Bell,
     Settings,
     ChevronLeft,
     ChevronRight,
@@ -16,18 +14,12 @@ import {
     CalendarClock,
     PlusCircle,
     FileText as ArticleIcon,
-    PlayCircle as VideoIcon
+    PlayCircle as VideoIcon,
 } from "lucide-react";
 import logo from "../../../public/Emotionally Yours Logo.png";
 import logo1 from "../../../public/logo.jpg";
-import {Link, NavLink, useNavigate, useLocation} from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useUserContext } from "@/UserContext";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface SidebarProps {
     collapsed: boolean;
@@ -45,15 +37,13 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    {id: "dashboard", label: "Dashboard", icon: BarChart3, route: "/dashboard"},
-    {id: "beneficieries", label: "Beneficiaries", icon: User, route: "/Beneficieries"},
-    {id: "assessments", label: "Assessments", icon: FileText, route: "/assessments"},
-    {id: "inquiries", label: "Inquiries", icon: MessageSquare, route: "/inquiries"},
-    {id: "users", label: "Users", icon: Users, route: "/users"},
-    {id: "reflection-cards", label: "Reflection Cards", icon: Users, route: "/reflection-cards"},
-    // {id: "feedback", label: "Feedback", icon: Star, route: "/feedback"},
-    // {id: "notifications", label: "Notifications", icon: Bell, route: "/notifications"},
-    {id: "settings", label: "Settings", icon: Settings, route: "/settings"},
+    { id: "dashboard", label: "Dashboard", icon: BarChart3, route: "/dashboard" },
+    { id: "beneficieries", label: "Beneficiaries", icon: User, route: "/Beneficieries" },
+    { id: "assessments", label: "Assessments", icon: FileText, route: "/assessments" },
+    { id: "inquiries", label: "Inquiries", icon: MessageSquare, route: "/inquiries" },
+    { id: "users", label: "Users", icon: Users, route: "/users" },
+    { id: "reflection-cards", label: "Reflection Cards", icon: Users, route: "/reflection-cards" },
+    { id: "settings", label: "Settings", icon: Settings, route: "/settings" },
 ];
 
 const slotMenuItem = {
@@ -80,23 +70,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const { user } = useUserContext();
     const navigate = useNavigate();
     const location = useLocation();
-    const [resourcesDropdownOpen, setResourcesDropdownOpen] = useState(false);
-    
-    const isCounsellor = user?.role === "counsellor";
-    const filteredMenuItems = isCounsellor
-        ? [slotMenuItem, appointmentMenuItem]
-        : menuItems;
-    const dashboardLabel = isCounsellor ? "Counsellor Dashboard" : "Admin Dashboard";
-    
-    // Check if current path is resources or videos
-    const isResourcesActive = location.pathname === "/resources" || location.pathname === "/videos";
+    const [resourcesOpen, setResourcesOpen] = useState(false);
 
-    const handleResourcesNavigation = (path: string) => {
+    const isCounsellor = user?.role === "counsellor";
+    const filteredMenuItems = isCounsellor ? [slotMenuItem, appointmentMenuItem] : menuItems;
+    const dashboardLabel = isCounsellor ? "Counsellor Dashboard" : "Admin Dashboard";
+
+    // Active check
+    const isResourcesActive =
+        location.pathname === "/resources" || location.pathname === "/videos";
+
+    const handleNavigation = (path: string) => {
         navigate(path);
-        setResourcesDropdownOpen(false);
-        if (isMobile && setMobileOpen) {
-            setMobileOpen(false);
-        }
+        if (isMobile && setMobileOpen) setMobileOpen(false);
     };
 
     if (isMobile) {
@@ -118,24 +104,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         mobileOpen ? "translate-x-0" : "-translate-x-full"
                     )}
                 >
-                    {/* Header with Logo and Close Button */}
+                    {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-100 relative">
                         <Link to="/dashboard">
-                            <img
-                                src={logo}
-                                alt="Full Logo"
-                                className="h-14 w-56 object-contain"
-                            />
+                            <img src={logo} alt="Full Logo" className="h-14 w-56 object-contain" />
                         </Link>
-                        {/* Close Button */}
                         <button
                             onClick={() => setMobileOpen && setMobileOpen(false)}
                             className="ml-2 bg-white border border-gray-300 shadow-md p-1.5 rounded-md hover:bg-gray-100 transition-all"
                         >
-                            <ChevronLeft className="h-4 w-4 text-gray-600"/>
+                            <ChevronLeft className="h-4 w-4 text-gray-600" />
                         </button>
                     </div>
-                    {/* Menu Items */}
+
+                    {/* Menu */}
                     <nav className="mt-6">
                         {filteredMenuItems.map((item) => {
                             const Icon = item.icon;
@@ -143,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 <NavLink
                                     key={item.id}
                                     to={item.route}
-                                    className={({isActive}) =>
+                                    className={({ isActive }) =>
                                         cn(
                                             "w-full flex items-center px-4 py-3 text-left transition-all duration-200",
                                             isActive
@@ -153,65 +135,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     }
                                     onClick={() => setMobileOpen && setMobileOpen(false)}
                                 >
-                                    <Icon className="h-5 w-5 mr-2"/>
+                                    <Icon className="h-5 w-5 mr-2" />
                                     <span className="font-medium text-sm">{item.label}</span>
                                 </NavLink>
                             );
                         })}
-                        
-                        {/* Resources Dropdown for Mobile */}
+
+                        {/* Resources Accordion (Mobile) */}
                         {!isCounsellor && (
                             <div className="w-full">
                                 <button
-                                    onClick={() => setResourcesDropdownOpen(!resourcesDropdownOpen)}
+                                    onClick={() => setResourcesOpen(!resourcesOpen)}
                                     className={cn(
-                                        "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 rounded-lg mx-2",
+                                        "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200",
                                         isResourcesActive
-                                            ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                            ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119]"
                                             : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
                                     )}
                                 >
                                     <div className="flex items-center">
-                                        <BookOpen className="h-5 w-5 mr-2"/>
+                                        <BookOpen className="h-5 w-5 mr-2" />
                                         <span className="font-medium text-sm">Resources</span>
                                     </div>
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", resourcesDropdownOpen && "rotate-180")} />
+                                    <ChevronDown
+                                        className={cn(
+                                            "h-4 w-4 transition-transform duration-200",
+                                            resourcesOpen && "rotate-180"
+                                        )}
+                                    />
                                 </button>
-                                
-                                {resourcesDropdownOpen && (
-                                    <div className="ml-4 space-y-1 mt-1 mr-2">
+
+                                {resourcesOpen && (
+                                    <div className="ml-6 mt-1 space-y-1">
                                         <button
-                                            onClick={() => handleResourcesNavigation("/resources")}
+                                            onClick={() => handleNavigation("/resources")}
                                             className={cn(
-                                                "w-full flex items-center px-4 py-3 text-left transition-all duration-200 rounded-lg group",
+                                                "w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200",
                                                 location.pathname === "/resources"
-                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm border border-[#FFD6B3]"
-                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
+                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119]"
+                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
                                             )}
                                         >
-                                            <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                            <span className="font-medium text-sm">Articles</span>
+                                            <ArticleIcon className="h-4 w-4 mr-2" />
+                                            <span className="text-sm font-medium">Articles</span>
                                         </button>
                                         <button
-                                            onClick={() => handleResourcesNavigation("/videos")}
+                                            onClick={() => handleNavigation("/videos")}
                                             className={cn(
-                                                "w-full flex items-center px-4 py-3 text-left transition-all duration-200 rounded-lg group",
+                                                "w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200",
                                                 location.pathname === "/videos"
-                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm border border-[#FFD6B3]"
-                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
+                                                    ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119]"
+                                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
                                             )}
                                         >
-                                            <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                            <span className="font-medium text-sm">Videos</span>
+                                            <VideoIcon className="h-4 w-4 mr-2" />
+                                            <span className="text-sm font-medium">Videos</span>
                                         </button>
                                     </div>
                                 )}
                             </div>
                         )}
                     </nav>
+
                     {/* Footer */}
-                    <div
-                        className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
+                    <div className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                         <div className="text-sm text-blue-950">
                             <p className="font-medium text-sm">{dashboardLabel}</p>
                             <p className="text-xs">Wellness Management System</p>
@@ -222,6 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         );
     }
 
+    // Desktop Sidebar
     return (
         <div
             className={cn(
@@ -229,40 +217,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 collapsed ? "w-16" : "w-64"
             )}
         >
-            {/* Header with Logo */}
+            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100 relative">
                 <Link to="/dashboard">
                     {collapsed ? (
-                        <img
-                            src={logo1}
-                            alt="Logo small"
-                            className="h-10 w-10 rounded-full mx-auto"
-                        />
+                        <img src={logo1} alt="Logo small" className="h-10 w-10 rounded-full mx-auto" />
                     ) : (
-                        <img
-                            src={logo}
-                            alt="Full Logo"
-                            className="h-14 w-56 object-contain"
-                        />
+                        <img src={logo} alt="Full Logo" className="h-14 w-56 object-contain" />
                     )}
                 </Link>
-
-                {/* Collapse Toggle Button */}
                 <div className="absolute top-6 -right-4 z-50">
                     <button
                         onClick={() => setCollapsed(!collapsed)}
                         className="bg-white border border-gray-300 shadow-md p-1.5 rounded-md hover:bg-gray-100 transition-all"
                     >
                         {collapsed ? (
-                            <ChevronRight className="h-4 w-4 text-gray-600"/>
+                            <ChevronRight className="h-4 w-4 text-gray-600" />
                         ) : (
-                            <ChevronLeft className="h-4 w-4 text-gray-600"/>
+                            <ChevronLeft className="h-4 w-4 text-gray-600" />
                         )}
                     </button>
                 </div>
             </div>
 
-            {/* Menu Items */}
+            {/* Menu */}
             <nav className="mt-6">
                 {filteredMenuItems.map((item) => {
                     const Icon = item.icon;
@@ -270,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <NavLink
                             key={item.id}
                             to={item.route}
-                            className={({isActive}) =>
+                            className={({ isActive }) =>
                                 cn(
                                     "w-full flex items-center px-4 py-3 text-left transition-all duration-200",
                                     isActive
@@ -281,103 +259,113 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             }
                             end={item.route === "/dashboard"}
                         >
-                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-2")}/>
-                            {!collapsed && (
-                                <span className="font-medium text-sm">{item.label}</span>
-                            )}
+                            <Icon className={cn("h-5 w-5", collapsed ? "" : "mr-2")} />
+                            {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
                         </NavLink>
                     );
                 })}
-                
-                {/* Resources Dropdown for Desktop */}
+
+                {/* Resources Accordion (Desktop) */}
                 {!isCounsellor && (
-                    <div className="w-full">
-                        {collapsed ? (
-                            <DropdownMenu open={resourcesDropdownOpen} onOpenChange={setResourcesDropdownOpen}>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        className={cn(
-                                            "w-full flex items-center justify-center px-4 py-3 text-left transition-all duration-200 rounded-lg mx-2 group",
-                                            isResourcesActive
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
-                                                : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
-                                        )}
-                                    >
-                                        <BookOpen className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" side="right" className="w-36 max-w-36 p-1 shadow-lg border-0 bg-white/95 backdrop-blur-sm ml-1">
-                                    <DropdownMenuItem 
-                                        onClick={() => handleResourcesNavigation("/resources")}
-                                        className={cn(
-                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
-                                            location.pathname === "/resources"
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
-                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
-                                        )}
-                                    >
-                                        <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                        <span className="font-medium text-sm">Articles</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                        onClick={() => handleResourcesNavigation("/videos")}
-                                        className={cn(
-                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
-                                            location.pathname === "/videos"
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
-                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
-                                        )}
-                                    >
-                                        <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                        <span className="font-medium text-sm">Videos</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                            <DropdownMenu open={resourcesDropdownOpen} onOpenChange={setResourcesDropdownOpen}>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        className={cn(
-                                            "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 group",
-                                            isResourcesActive
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
-                                                : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
-                                        )}
-                                    >
-                                        <div className="flex items-center">
-                                            <BookOpen className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-200"/>
-                                            <span className="font-medium text-sm">Resources</span>
-                                        </div>
-                                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200 group-hover:scale-110", resourcesDropdownOpen && "rotate-180")} />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-36 max-w-36 p-1 shadow-lg border-0 bg-white/95 backdrop-blur-sm">
-                                    <DropdownMenuItem 
-                                        onClick={() => handleResourcesNavigation("/resources")}
-                                        className={cn(
-                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
-                                            location.pathname === "/resources"
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
-                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
-                                        )}
-                                    >
-                                        <ArticleIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                        <span className="font-medium text-sm">Articles</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                        onClick={() => handleResourcesNavigation("/videos")}
-                                        className={cn(
-                                            "flex items-center px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 group",
-                                            location.pathname === "/videos"
-                                                ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119] shadow-sm"
-                                                : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-[#FF7119]"
-                                        )}
-                                    >
-                                        <VideoIcon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                                        <span className="font-medium text-sm">Videos</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                    <div className="w-full relative">
+                        <button
+                            onClick={() => setResourcesOpen(!resourcesOpen)}
+                            className={cn(
+                                "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200",
+                                isResourcesActive
+                                    ? "text-[#FF7119]"
+                                    : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50",
+                                collapsed && "justify-center"
+                            )}
+                        >
+                            <div className="flex items-center">
+                                <BookOpen className={cn("h-5 w-5", !collapsed && "mr-2")} />
+                                {!collapsed && <span className="font-medium text-sm">Resources</span>}
+                            </div>
+                            {!collapsed && (
+                                <ChevronDown
+                                    className={cn(
+                                        "h-4 w-4 transition-transform duration-200",
+                                        resourcesOpen && "rotate-180"
+                                    )}
+                                />
+                            )}
+                        </button>
+
+                        {resourcesOpen && (
+                            <>
+                                {/* Normal submenu when expanded & sidebar not collapsed */}
+                                {!collapsed && (
+                                    <div className="mt-1 space-y-1">
+                                        <NavLink
+                                            to="/resources"
+                                            className={({ isActive }) =>
+                                                cn(
+                                                    "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 group",
+                                                    isActive
+                                                        ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                                        : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                                )
+                                            }
+                                        >
+                                            <div className="flex items-center">
+                                                <FileText className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                                <span className="font-medium text-sm">Articles</span>
+                                            </div>
+                                        </NavLink>
+                                        <NavLink
+                                            to="/videos"
+                                            className={({ isActive }) =>
+                                                cn(
+                                                    "w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-200 group",
+                                                    isActive
+                                                        ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] border-r-2 border-[#FF7119] text-[#FF7119] shadow-sm"
+                                                        : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                                )
+                                            }
+                                        >
+                                            <div className="flex items-center">
+                                                <VideoIcon className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                                                <span className="font-medium text-sm">Videos</span>
+                                            </div>
+                                        </NavLink>
+                                    </div>
+                                )}
+
+                                {/* Flyout submenu when collapsed */}
+                                {collapsed && (
+                                    <div className="absolute left-full top-0 mt-0 ml-2 bg-white shadow-lg rounded-lg w-40 py-2 z-50">
+                                        <NavLink
+                                            to="/resources"
+                                            className={({ isActive }) =>
+                                                cn(
+                                                    "flex items-center px-3 py-2 text-sm transition-all duration-200",
+                                                    isActive
+                                                        ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119]"
+                                                        : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                                )
+                                            }
+                                        >
+                                            <FileText className="h-4 w-4 mr-2" />
+                                            Articles
+                                        </NavLink>
+                                        <NavLink
+                                            to="/videos"
+                                            className={({ isActive }) =>
+                                                cn(
+                                                    "flex items-center px-3 py-2 text-sm transition-all duration-200",
+                                                    isActive
+                                                        ? "bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] text-[#FF7119]"
+                                                        : "text-blue-950 hover:text-[#FF7119] hover:bg-gray-50"
+                                                )
+                                            }
+                                        >
+                                            <VideoIcon className="h-4 w-4 mr-2" />
+                                            Videos
+                                        </NavLink>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 )}
@@ -385,8 +373,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Footer */}
             {!collapsed && (
-                <div
-                    className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
+                <div className="absolute bottom-4 left-4 right-4 p-4 bg-gradient-to-r from-[#FFE3CC] to-[#FFD6B3] rounded-lg">
                     <div className="text-sm text-blue-950">
                         <p className="font-medium text-sm">{dashboardLabel}</p>
                         <p className="text-xs">Wellness Management System</p>

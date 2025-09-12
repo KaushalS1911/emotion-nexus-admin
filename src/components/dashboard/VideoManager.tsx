@@ -61,7 +61,7 @@ export const VideoManager = () => {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [platformFilter, setPlatformFilter] = useState("all");
-    const [videoTypeFilter, setVideoTypeFilter] = useState("session");
+    const [videoTypeFilter, setVideoTypeFilter] = useState("shorts");
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
 
     const [page, setPage] = useState(0);

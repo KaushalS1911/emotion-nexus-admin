@@ -87,8 +87,8 @@ export const VideoManager = () => {
                 platform: platformFilter === 'all' ? 'app' : platformFilter.toLowerCase(),
                 status: statusFilter === 'all' ? 'all' : statusFilter.toLowerCase(),
                 category: categoryFilter === 'all' ? '' : categoryFilter.toLowerCase(),
-                page: String(currentPage + 1),
-                per_page: String(rowsPerPage)
+                // page: String(currentPage + 1),
+                // per_page: String(rowsPerPage)
             });
             const response = await fetch(`${baseUrl}?${params}`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

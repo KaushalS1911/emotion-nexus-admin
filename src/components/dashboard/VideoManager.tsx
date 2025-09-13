@@ -81,7 +81,7 @@ export const VideoManager = () => {
         setIsLoading(true);
         setApiError(null);
         try {
-            const baseUrl = 'https://interactapiverse.com/shape/videos';
+            const baseUrl = 'https://interactapiverse.com/mahadevasth/shape/videos';
             const params = new URLSearchParams({
                 type: videoTypeFilter,
                 platform: platformFilter === 'all' ? 'app' : platformFilter.toLowerCase(),
@@ -143,7 +143,7 @@ export const VideoManager = () => {
         setIsLoadingVideo(true);
         setVideoError(null);
         try {
-            const response = await fetch(`https://interactapiverse.com/shape/videos/${videoId}/play`);
+            const response = await fetch(`https://interactapiverse.com/mahadevasth/shape/videos/${videoId}/play`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.status === '200' && data.data && data.data.presigned_url) {

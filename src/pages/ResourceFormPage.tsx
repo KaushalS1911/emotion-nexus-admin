@@ -208,7 +208,7 @@ export default function ResourceFormPage() {
                 try {
                     // STEP 1: Ask backend for signed upload URL
                     const presignRes = await axios.post(
-                        "https://interactapiverse.com/shape/videos/upload-url",
+                        "https://interactapiverse.com/mahadevasth/shape/videos/upload-url",
                         { filename: file.name },
                         { headers: { "Content-Type": "application/json" } }
                     );
@@ -307,12 +307,12 @@ export default function ResourceFormPage() {
                 let response;
                 if (id) {
                     response = await axios.put(
-                        `https://interactapiverse.com/shape/videos/${id}`,
+                        `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
                         formData,
                     );
                 } else {
                     response = await axios.post(
-                        "https://interactapiverse.com/shape/upload",
+                        "https://interactapiverse.com/mahadevasth/shape/upload",
                         formData,
                     );
                 }

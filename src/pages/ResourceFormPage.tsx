@@ -39,6 +39,7 @@ const getInitialForm = () => ({
     status: "published",
     resource_status: "Live",
     admin_approval: "approved",
+    premium: "no",
 });
 
 const getTagsArray = (tags: any) => {
@@ -138,6 +139,7 @@ export default function ResourceFormPage() {
                     status: data.status,
                     resource_status: data.resource_status,
                     admin_approval: "pending",
+                    premium: data?.premium || 'no'
                 });
 
                 setEmptyPreview(data.image || null);
@@ -303,7 +305,7 @@ export default function ResourceFormPage() {
                     type:form?.type,
                     content_type:'video/mp4',
                     thumbnail:form?.thumbnail || '',
-                    premium: form.premium === 'yes' ? "premium" : "not_premium",
+                    premium: form?.premium === 'yes' ? "premium" : "not_premium",
                 }
 
                 let response;
@@ -638,6 +640,78 @@ export default function ResourceFormPage() {
                                         <div className="text-red-500 text-xs mt-1">{errors.platform}</div>
                                     )}
                                 </div>
+
+                                {/* Thumbnail field */}
+                                <div className="flex-1">
+                                    <Label>Thumbnail Image</Label>
+                                    {form.thumbnail ? (
+                                        <div className="relative mt-2 w-full max-w-xs">
+                                            <img
+                                                src={form.thumbnail}
+                                                alt="Thumbnail Preview"
+                                                className="w-full h-32 object-cover rounded"
+                                            />
+                                            {!isView && (
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                    onClick={() => {
+                                                        setForm(f => ({ ...f, thumbnail: null }));
+                                                    }}
+                                                    aria-label="Remove thumbnail"
+                                                >
+                                                    <X className="w-4 h-4 text-gray-700" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : isView ? (
+                                        <div className="py-2 px-3 text-gray-400">No thumbnail</div>
+                                    ) : (
+                                        <>
+                                            <Input
+                                                id="thumbnail"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={e => handleFile("thumbnail", e)}
+                                            />
+                                            <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Premium field */}
+                                <div className="flex-1 mt-4">
+                                    <Label>Premium</Label>
+                                    {isView ? (
+                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                            {form.premium === "yes" ? "Premium" : "Not Premium"}
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-4 mt-2">
+                                            <label className="flex items-center gap-1">
+                                                <input
+                                                    type="radio"
+                                                    name="premium"
+                                                    value="yes"
+                                                    checked={form.premium === "yes"}
+                                                    onChange={e => setForm(f => ({ ...f, premium: e.target.value }))}
+                                                />
+                                                Premium
+                                            </label>
+                                            <label className="flex items-center gap-1">
+                                                <input
+                                                    type="radio"
+                                                    name="premium"
+                                                    value="no"
+                                                    checked={form.premium !== "yes"}
+                                                    onChange={e => setForm(f => ({ ...f, premium: e.target.value }))}
+                                                />
+                                                Not Premium
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+
 
                                 <div className="flex-1">
                                     <Label>Age</Label>

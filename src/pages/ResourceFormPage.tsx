@@ -39,7 +39,7 @@ const getInitialForm = () => ({
     status: "published",
     resource_status: "Live",
     admin_approval: "approved",
-    premium: "no",
+    premium: "premium",
 });
 
 const getTagsArray = (tags: any) => {
@@ -139,7 +139,7 @@ export default function ResourceFormPage() {
                     status: data.status,
                     resource_status: data.resource_status,
                     admin_approval: "pending",
-                    premium: data?.premium || 'no'
+                    premium: data.premium
                 });
 
                 setEmptyPreview(data.image || null);
@@ -304,8 +304,8 @@ export default function ResourceFormPage() {
                     created_at:new Date(),
                     type:form?.type,
                     content_type:'video/mp4',
-                    thumbnail:form?.thumbnail || '',
-                    premium: form?.premium === 'yes' ? "premium" : "not_premium",
+                    thumbnail:form?.thumbnail,
+                    premium: form?.premium
                 }
 
                 let response;
@@ -687,28 +687,28 @@ export default function ResourceFormPage() {
                                             {form.premium === "yes" ? "Premium" : "Not Premium"}
                                         </div>
                                     ) : (
-                                        <div className="flex gap-4 mt-2">
-                                            <label className="flex items-center gap-1">
-                                                <input
-                                                    type="radio"
-                                                    name="premium"
-                                                    value="yes"
-                                                    checked={form.premium === "yes"}
-                                                    onChange={e => setForm(f => ({ ...f, premium: e.target.value }))}
-                                                />
-                                                Premium
-                                            </label>
-                                            <label className="flex items-center gap-1">
-                                                <input
-                                                    type="radio"
-                                                    name="premium"
-                                                    value="no"
-                                                    checked={form.premium !== "yes"}
-                                                    onChange={e => setForm(f => ({ ...f, premium: e.target.value }))}
-                                                />
-                                                Not Premium
-                                            </label>
+                                        <div className="flex-1 mt-4">
+                                            <Label>Premium Type</Label>
+                                            {isView ? (
+                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                    {form.premium === "premium" ? "Premium" : "Open to All"}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={form.premium}
+                                                    onValueChange={(v) => setForm(f => ({ ...f, premium: v }))}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select premium type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="premium">Premium</SelectItem>
+                                                        <SelectItem value="open to all">Open to All</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
                                         </div>
+
                                     )}
                                 </div>
 

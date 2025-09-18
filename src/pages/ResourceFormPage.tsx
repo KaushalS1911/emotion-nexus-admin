@@ -669,76 +669,78 @@ export default function ResourceFormPage() {
 
 
                                 {/* Premium field */}
-                                <div className="flex flex-col md:flex-row gap-4">
-                                    {/* Thumbnail field */}
-                                    <div className="flex-1">
-                                        <Label>Thumbnail Image</Label>
-                                        {form.thumbnail ? (
-                                            <div className="relative mt-2 w-full max-w-xs">
-                                                <img
-                                                    src={form.thumbnail}
-                                                    alt="Thumbnail Preview"
-                                                    className="w-full h-32 object-cover rounded"
-                                                />
-                                                {!isView && (
-                                                    <button
-                                                        type="button"
-                                                        className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                        onClick={() => {
-                                                            setForm(f => ({ ...f, thumbnail: null }));
-                                                        }}
-                                                        aria-label="Remove thumbnail"
-                                                    >
-                                                        <X className="w-4 h-4 text-gray-700" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ) : isView ? (
-                                            <div className="py-2 px-3 text-gray-400">No thumbnail</div>
-                                        ) : (
-                                            <>
-                                                <Input
-                                                    id="thumbnail"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={e => handleFile("thumbnail", e)}
-                                                />
-                                                <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
-                                            </>
-                                        )}
+                                {type === 'video' && (
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        {/* Thumbnail field */}
+                                        <div className="flex-1">
+                                            <Label>Thumbnail Image</Label>
+                                            {form.thumbnail ? (
+                                                <div className="relative mt-2 w-full max-w-xs">
+                                                    <img
+                                                        src={form.thumbnail}
+                                                        alt="Thumbnail Preview"
+                                                        className="w-full h-32 object-cover rounded"
+                                                    />
+                                                    {!isView && (
+                                                        <button
+                                                            type="button"
+                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                            onClick={() => {
+                                                                setForm(f => ({ ...f, thumbnail: null }));
+                                                            }}
+                                                            aria-label="Remove thumbnail"
+                                                        >
+                                                            <X className="w-4 h-4 text-gray-700" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : isView ? (
+                                                <div className="py-2 px-3 text-gray-400">No thumbnail</div>
+                                            ) : (
+                                                <>
+                                                    <Input
+                                                        id="thumbnail"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={e => handleFile("thumbnail", e)}
+                                                    />
+                                                    <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className='flex-1'>
+                                            <Label>Premium</Label>
+                                            {isView ? (
+                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                    {form.premium === "yes" ? "Premium" : "Not Premium"}
+                                                </div>
+                                            ) : (
+                                                <div className="flex-1 mt-4">
+                                                    {isView ? (
+                                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                            {form.premium === "premium" ? "Premium" : "Open to All"}
+                                                        </div>
+                                                    ) : (
+                                                        <Select
+                                                            value={form.premium}
+                                                            onValueChange={(v) => setForm(f => ({ ...f, premium: v }))}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select premium type" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="premium">Premium</SelectItem>
+                                                                <SelectItem value="open to all">Open to All</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                </div>
+
+                                            )}
+                                        </div>
                                     </div>
-                                   <div className='flex-1'>
-                                       <Label>Premium</Label>
-                                       {isView ? (
-                                           <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                               {form.premium === "yes" ? "Premium" : "Not Premium"}
-                                           </div>
-                                       ) : (
-                                           <div className="flex-1 mt-4">
-                                               {isView ? (
-                                                   <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                       {form.premium === "premium" ? "Premium" : "Open to All"}
-                                                   </div>
-                                               ) : (
-                                                   <Select
-                                                       value={form.premium}
-                                                       onValueChange={(v) => setForm(f => ({ ...f, premium: v }))}
-                                                   >
-                                                       <SelectTrigger>
-                                                           <SelectValue placeholder="Select premium type" />
-                                                       </SelectTrigger>
-                                                       <SelectContent>
-                                                           <SelectItem value="premium">Premium</SelectItem>
-                                                           <SelectItem value="open to all">Open to All</SelectItem>
-                                                       </SelectContent>
-                                                   </Select>
-                                               )}
-                                           </div>
 
-                                       )}
-                                   </div>
-                                </div>
-
+                                )}
 
 
                             </div>

@@ -666,6 +666,7 @@ export default function ResourceFormPage() {
                                     )}
                                 </div>
 
+                            </div>
 
 
                                 {/* Premium field */}
@@ -743,7 +744,6 @@ export default function ResourceFormPage() {
                                 )}
 
 
-                            </div>
                             {type === 'article' && (
                                 <>
                                     <div className="flex flex-col md:flex-row gap-4">

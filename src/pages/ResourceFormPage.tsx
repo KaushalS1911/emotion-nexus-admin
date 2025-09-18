@@ -711,11 +711,7 @@ export default function ResourceFormPage() {
                                         </div>
                                         <div className='flex-1'>
                                             <Label>Premium</Label>
-                                            {isView ? (
-                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                    {form.premium === "yes" ? "Premium" : "Not Premium"}
-                                                </div>
-                                            ) : (
+
                                                 <div className="flex-1 mt-4">
                                                     {isView ? (
                                                         <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
@@ -737,7 +733,7 @@ export default function ResourceFormPage() {
                                                     )}
                                                 </div>
 
-                                            )}
+
                                         </div>
                                     </div>
 

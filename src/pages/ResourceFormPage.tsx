@@ -302,6 +302,8 @@ export default function ResourceFormPage() {
                     created_at:new Date(),
                     type:form?.type,
                     content_type:'video/mp4',
+                    thumbnail:form?.thumbnail || '',
+                    premium: form.premium === 'yes' ? "premium" : "not_premium",
                 }
 
                 let response;

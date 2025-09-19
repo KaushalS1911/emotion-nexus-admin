@@ -323,9 +323,9 @@ export const VideoManager = () => {
                                                     ) : (
                                                         <Video className="h-4 w-4" />
                                                     )}
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
-                                                        <Video className="h-4 w-4 text-white" />
-                                                    </div>
+                                                    {/*<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">*/}
+                                                    {/*    <Video className="h-4 w-4 text-white" />*/}
+                                                    {/*</div>*/}
                                                 </div>
                                             </td>
                                             <td className="py-2 px-4 max-w-[200px]">

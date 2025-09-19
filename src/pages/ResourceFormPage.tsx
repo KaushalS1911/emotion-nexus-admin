@@ -193,18 +193,6 @@ export default function ResourceFormPage() {
         return counsellor ? counsellor.user_id : undefined;
     };
 
-    const handleRemoveImage = () => {
-        setEmptyPreview(null);
-        setForm(f => ({...f, emptyImage: null}));
-        if (emptyInputRef.current) emptyInputRef.current.value = '';
-    };
-    const handleRemoveThumbnail = () => {
-        setThumbnailPreview(null);
-        setForm(f => ({...f, thumbnail: null}));
-        // (add thumbnailInputRef clearing if needed)
-    };
-
-
     // Form Handlers
     const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm((f) => ({...f, [e.target.id]: e.target.value}));
@@ -277,7 +265,7 @@ export default function ResourceFormPage() {
         setForm((f) => ({...f, tags: f.tags.filter((t: string) => t !== tag)}));
     };
 
-    const handleRemoveImage = () => {
+    const handleRemoveThumbnail = () => {
         setEmptyPreview(null);
         setForm(f => ({...f, emptyImage: null}));
         if (emptyInputRef.current) emptyInputRef.current.value = '';

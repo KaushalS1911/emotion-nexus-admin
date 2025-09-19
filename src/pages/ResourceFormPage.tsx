@@ -241,7 +241,13 @@ export default function ResourceFormPage() {
         }
     };
 
-    const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setForm((f) => ({...f, thumbnail: e.target.files[0]}));
+        }
+
+
+        const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
             e.preventDefault();
             if (!form.tags.includes(tagInput.trim())) {
@@ -703,7 +709,7 @@ export default function ResourceFormPage() {
                                                         id="thumbnail"
                                                         type="file"
                                                         accept="image/*"
-                                                        onChange={e => handleFile("thumbnail", e)}
+                                                        onChange={e => handleThumbnailChange("thumbnail", e)}
                                                     />
                                                     <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
                                                 </>
@@ -898,4 +904,4 @@ export default function ResourceFormPage() {
             </form>
         </div>
     );
-}
+}}

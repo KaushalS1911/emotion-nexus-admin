@@ -221,6 +221,8 @@ export const VideoManager = () => {
     const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
     const pageRows = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+    console.log(pageRows)
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">

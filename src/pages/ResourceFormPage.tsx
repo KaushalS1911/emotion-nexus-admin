@@ -299,33 +299,50 @@ export default function ResourceFormPage() {
         try {
             if (type === "video") {
                 // Handle video upload
-                const formData = {
-                    s3_key:form?.file?.s3_key,
-                    original_filename:form?.file?.filename,
-                    age:form?.age,
-                    category:form?.category_name,
-                    tags:form?.tags,
-                    platform:form?.platform,
-                    author:form?.author,
-                    created_at:new Date(),
-                    type:form?.type,
-                    content_type:'video/mp4',
-                    thumbnail:form?.thumbnail,
-                    premium: form?.premium
-                }
+                const formData = new FormData();
+                formData.append("s3_key", form?.file?.s3_key);
+                formData.append("original_filename", form?.file?.filename);
+                formData.append("age", form?.age);
+                formData.append("category", form?.category_name);
+
+// If tags is an array, stringify it before appending
+                formData.append("tags", JSON.stringify(form?.tags));
+
+                formData.append("platform", form?.platform);
+                formData.append("author", form?.author);
+                formData.append("created_at", new Date().toISOString());
+                formData.append("type", form?.type);
+                formData.append("content_type", "video/mp4");
+
+// For thumbnail, if it’s a file object, append directly
+// If it's just a URL/string, append as text
+                formData.append("thumbnail", form?.thumbnail);
+
+                formData.append("premium", form?.premium);
 
                 let response;
                 if (id) {
                     response = await axios.put(
                         `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
                         formData,
+                        {
+                            headers: {
+                                "Content-Type": "multipart/form-data",
+                            },
+                        }
                     );
                 } else {
                     response = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/upload",
                         formData,
+                        {
+                            headers: {
+                                "Content-Type": "multipart/form-data",
+                            },
+                        }
                     );
                 }
+
 
                 setApiSuccess(id ? "Video updated successfully!" : "Video uploaded successfully!");
             } else {

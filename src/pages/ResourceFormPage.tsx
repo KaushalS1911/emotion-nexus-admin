@@ -201,44 +201,47 @@ export default function ResourceFormPage() {
     const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 50 * 1024 * 1024) { // 50MB max for videos
-                setApiError(`File size should be less than ${field === 'file' ? '50MB' : '1MB'}`);
+            if (field === 'file' && file.size > 50 * 1024 * 1024) {
+                setApiError("File size should be less than 50MB");
+                return;
+            }
+            if ((field === 'thumbnail' || field === 'emptyImage') && file.size > 1 * 1024 * 1024) {
+                setApiError("Image size should be less than 1MB");
                 return;
             }
 
             if (field === 'file') {
                 try {
-                    // STEP 1: Ask backend for signed upload URL
+                    // Video direct S3 upload, unchanged
                     const presignRes = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/videos/upload-url",
                         { filename: file.name },
                         { headers: { "Content-Type": "application/json" } }
                     );
-
                     const uploadUrl = presignRes.data?.data?.upload_url;
-                    // STEP 2: Upload file directly to S3
                     await axios.put(uploadUrl, file, {
                         headers: { "Content-Type": file.type },
                     });
-
                     setForm((f) => ({ ...f, [field]: { ...file, ...presignRes.data?.data, filename: file?.name } }));
                     setFilePreview(URL.createObjectURL(file));
-
                 } catch (error) {
                     console.error("Upload failed:", error);
                 }
-            } else {
-                // for images, convert to base64
-                const base64 = await fileToBase64(file);
-                if (field === "emptyImage") setEmptyPreview(base64);
-                if (field === "thumbnail") setForm((f) => ({ ...f, thumbnail: base64 }));
-                setForm((f) => ({ ...f, [field]: base64 }));
+            } else if (field === "thumbnail") {
+                // For thumbnail, just store the File object and a preview
+                setForm((f) => ({ ...f, thumbnail: file }));
+                setEmptyPreview(URL.createObjectURL(file)); // For preview, if you want
+            } else if (field === "emptyImage") {
+                // For article thumbnails, store file (optional: update for your API)
+                setForm((f) => ({ ...f, emptyImage: file }));
+                setEmptyPreview(URL.createObjectURL(file));
             }
         }
     };
 
+
     const handleThumbnailChange = async (_field: string, e: React.ChangeEvent<HTMLInputElement>) => {
-        const field = _field; // just for clarity
+        const field = _field;
         if (e.target.files && e.target.files.length > 0) {
             await handleFile(field, e);
         }
@@ -295,26 +298,21 @@ export default function ResourceFormPage() {
 
         try {
             if (type === "video") {
-                // Handle video upload
+                // Prepare formdata for video upload (includes file + thumbnail as file)
                 const formData = new FormData();
-                formData.append("s3_key", form?.file?.s3_key);
-                formData.append("original_filename", form?.file?.filename);
-                formData.append("age", form?.age);
-                formData.append("category", form?.category_name);
-
-// If tags is an array, stringify it before appending
+                formData.append("s3_key", form?.file?.s3_key ?? "");
+                formData.append("original_filename", form?.file?.filename ?? "");
+                formData.append("age", form?.age ?? "");
+                formData.append("category", form?.category_name ?? "");
                 formData.append("tags", JSON.stringify(form?.tags));
-
-                formData.append("platform", form?.platform);
-                formData.append("author", form?.author);
+                formData.append("platform", form?.platform ?? "");
+                formData.append("author", form?.author ?? "");
                 formData.append("created_at", new Date().toISOString());
-                formData.append("type", form?.type);
+                formData.append("type", form?.type ?? "");
                 formData.append("content_type", "video/mp4");
-
-// For thumbnail, if it’s a file object, append directly
-// If it's just a URL/string, append as text
-                formData.append("thumbnail", form?.thumbnail);
-
+                if (form?.thumbnail instanceof File) {
+                    formData.append("thumbnail", form.thumbnail); // as a file
+                }
                 formData.append("premium", form?.premium);
 
                 let response;
@@ -322,28 +320,20 @@ export default function ResourceFormPage() {
                     response = await axios.put(
                         `https://interactapiverse.com/mahadevasth/shape/videos/${id}`,
                         formData,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        }
+                        { headers: { "Content-Type": "multipart/form-data" } }
                     );
                 } else {
                     response = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/upload",
                         formData,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        }
+                        { headers: { "Content-Type": "multipart/form-data" } }
                     );
                 }
 
-
                 setApiSuccess(id ? "Video updated successfully!" : "Video uploaded successfully!");
             } else {
-                // Handle article upload
+                // Article branch unchanged unless your backend wants file uploads for emptyImage
+                // If you want to also send images as files for articles, use FormData here similarly
                 const payload = {
                     admin_approval: 'pending',
                     article: form.description,
@@ -351,13 +341,13 @@ export default function ResourceFormPage() {
                     category: getSelectedCategoryId(),
                     counsellor_code: getSelectedCounsellorId(),
                     created_at: new Date().toISOString(),
-                    image: form.emptyImage,
+                    image: form.emptyImage, // If this is a file, change to FormData branch!
                     platform: form.platform,
                     resource_status: isDraft ? "draft" : form.resource_status,
                     status: form.status || "published",
                     tags: form.tags || [],
                     title: form.title,
-                    ...(id && { id: id }) // Only include ID if we're updating
+                    ...(id && { id: id })
                 };
 
                 let response;
@@ -389,6 +379,7 @@ export default function ResourceFormPage() {
             setIsLoading(false);
         }
     };
+
 
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {

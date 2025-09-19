@@ -34,6 +34,8 @@ type VideoResource = {
     content_type?: string;
     width?: number;
     height?: number;
+    thumbnail?: string;
+    priority?: string;
 };
 
 const videoTypeOptions = [
@@ -127,6 +129,8 @@ export const VideoManager = () => {
                     content_type: video.content_type,
                     width: video.width,
                     height: video.height,
+                    thumbnail: video?.thumbnail_presigned_url,
+                    priority: video.priority,
                 };
             });
             setVideos(transformed);
@@ -312,8 +316,8 @@ export const VideoManager = () => {
                                             <td className="py-2 px-4">
                                                 <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden relative cursor-pointer hover:bg-gray-300"
                                                      onClick={() => handleVideoThumbnailClick(v)}>
-                                                    {v.image ? (
-                                                        <img src={v.image} alt={v.title} className="h-full w-full object-cover" />
+                                                    {v.thumbnail ? (
+                                                        <img src={v.thumbnail} alt={v.title} className="h-full w-full object-cover" />
                                                     ) : (
                                                         <Video className="h-4 w-4" />
                                                     )}

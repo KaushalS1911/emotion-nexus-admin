@@ -90,6 +90,7 @@ export default function ResourceFormPage() {
     const [form, setForm] = useState(getInitialForm());
     const [tagInput, setTagInput] = useState("");
     const [emptyPreview, setEmptyPreview] = useState<string | null>(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<ResourceFormErrors>({});
     const emptyInputRef = useRef<HTMLInputElement>(null);
@@ -143,9 +144,12 @@ export default function ResourceFormPage() {
                 });
 
                 setEmptyPreview(data.image || null);
-                if (type === "video" && data.file) {
-                    setFilePreview(data.file);
+                if (type === 'video') {
+                    setThumbnailPreview(data.image || null);
+                } else {
+                    setEmptyPreview(data.image || null);
                 }
+
             } catch (error) {
                 setApiError("Failed to fetch resource from API");
             } finally {
@@ -189,6 +193,18 @@ export default function ResourceFormPage() {
         return counsellor ? counsellor.user_id : undefined;
     };
 
+    const handleRemoveImage = () => {
+        setEmptyPreview(null);
+        setForm(f => ({...f, emptyImage: null}));
+        if (emptyInputRef.current) emptyInputRef.current.value = '';
+    };
+    const handleRemoveThumbnail = () => {
+        setThumbnailPreview(null);
+        setForm(f => ({...f, thumbnail: null}));
+        // (add thumbnailInputRef clearing if needed)
+    };
+
+
     // Form Handlers
     const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm((f) => ({...f, [e.target.id]: e.target.value}));
@@ -230,7 +246,7 @@ export default function ResourceFormPage() {
             } else if (field === "thumbnail") {
                 // For thumbnail, just store the File object and a preview
                 setForm((f) => ({ ...f, thumbnail: file }));
-                setEmptyPreview(URL.createObjectURL(file)); // For preview, if you want
+                setThumbnailPreview(URL.createObjectURL(file));// For preview, if you want
             } else if (field === "emptyImage") {
                 // For article thumbnails, store file (optional: update for your API)
                 setForm((f) => ({ ...f, emptyImage: file }));
@@ -585,36 +601,43 @@ export default function ResourceFormPage() {
                                     ) : (
                                         <>
                                             <Label>Thumbnail Image</Label>
-                                            {emptyPreview ? (
+                                            {form.thumbnail || thumbnailPreview ? (
                                                 <div className="relative mt-2 w-full max-w-xs">
                                                     <img
-                                                        src={emptyPreview}
-                                                        alt="Preview"
+                                                        src={
+                                                            thumbnailPreview
+                                                                ? thumbnailPreview
+                                                                : typeof form.thumbnail === 'string'
+                                                                    ? form.thumbnail  // For existing (URL) thumbnail from API
+                                                                    : form.thumbnail
+                                                                        ? URL.createObjectURL(form.thumbnail)
+                                                                        : ''
+                                                        }
+                                                        alt="Thumbnail Preview"
                                                         className="w-full h-32 object-cover rounded"
                                                     />
                                                     {!isView && (
                                                         <button
                                                             type="button"
                                                             className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                            onClick={handleRemoveImage}
-                                                            aria-label="Remove image"
+                                                            onClick={handleRemoveThumbnail}
+                                                            aria-label="Remove thumbnail"
                                                         >
-                                                            <X className="w-4 h-4 text-gray-700"/>
+                                                            <X className="w-4 h-4 text-gray-700" />
                                                         </button>
                                                     )}
                                                 </div>
                                             ) : isView ? (
-                                                <div className="py-2 px-3 text-gray-400">No image</div>
+                                                <div className="py-2 px-3 text-gray-400">No thumbnail</div>
                                             ) : (
                                                 <>
                                                     <Input
-                                                        id="emptyImage"
+                                                        id="thumbnail"
                                                         type="file"
                                                         accept="image/*"
-                                                        onChange={(e) => handleFile("emptyImage", e)}
-                                                        ref={emptyInputRef}
+                                                        onChange={e => handleThumbnailChange("thumbnail", e)}
                                                     />
-                                                    <div className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. 1MB max.</div>
+                                                    <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
                                                 </>
                                             )}
                                         </>

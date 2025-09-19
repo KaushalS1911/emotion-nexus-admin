@@ -921,4 +921,4 @@ export default function ResourceFormPage() {
             </form>
         </div>
     );
-}}
+}

@@ -214,44 +214,41 @@ export default function ResourceFormPage() {
                         { filename: file.name },
                         { headers: { "Content-Type": "application/json" } }
                     );
-                    console.log(presignRes,"presignRes")
 
-                    const uploadUrl = presignRes.data?.data?.upload_url; // the signed S3 PUT URL
-                    const fileUrl = presignRes.data?.data?.upload_url; // public file URL (if returned)
-
+                    const uploadUrl = presignRes.data?.data?.upload_url;
                     // STEP 2: Upload file directly to S3
                     await axios.put(uploadUrl, file, {
                         headers: { "Content-Type": file.type },
                     });
 
-                    setForm((f) => ({...f, [field]: {...file,...presignRes.data?.data,filename:file?.name}}));
+                    setForm((f) => ({ ...f, [field]: { ...file, ...presignRes.data?.data, filename: file?.name } }));
                     setFilePreview(URL.createObjectURL(file));
 
                 } catch (error) {
                     console.error("Upload failed:", error);
                 }
-                // For video files, we'll store the file object directly
-
             } else {
-                // For images, convert to base64
+                // for images, convert to base64
                 const base64 = await fileToBase64(file);
-                setEmptyPreview(base64);
-                setForm((f) => ({...f, [field]: base64}));
+                if (field === "emptyImage") setEmptyPreview(base64);
+                if (field === "thumbnail") setForm((f) => ({ ...f, thumbnail: base64 }));
+                setForm((f) => ({ ...f, [field]: base64 }));
             }
         }
     };
 
-    const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleThumbnailChange = async (_field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const field = _field; // just for clarity
         if (e.target.files && e.target.files.length > 0) {
-            setForm((f) => ({...f, thumbnail: e.target.files[0]}));
+            await handleFile(field, e);
         }
+    };
 
-
-        const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
             e.preventDefault();
             if (!form.tags.includes(tagInput.trim())) {
-                setForm((f) => ({...f, tags: [...f.tags, tagInput.trim()]}));
+                setForm((f) => ({ ...f, tags: [...f.tags, tagInput.trim()] }));
             }
             setTagInput("");
         }

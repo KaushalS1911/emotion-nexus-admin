@@ -557,7 +557,7 @@ export default function ResourceFormPage() {
                                 </div>
 
                                 <div className="flex-1">
-                                    {type === 'video' ? (
+                                    {type === 'video' && (
                                         <>
                                             <Label>Video File</Label>
                                             {filePreview ? (
@@ -596,50 +596,7 @@ export default function ResourceFormPage() {
                                                 </>
                                             )}
                                         </>
-                                    ) : (
-                                        <>
-                                            <Label>Thumbnail Image</Label>
-                                            {form.thumbnail || thumbnailPreview ? (
-                                                <div className="relative mt-2 w-full max-w-xs">
-                                                    <img
-                                                        src={
-                                                            thumbnailPreview
-                                                                ? thumbnailPreview
-                                                                : typeof form.thumbnail === 'string'
-                                                                    ? form.thumbnail  // For existing (URL) thumbnail from API
-                                                                    : form.thumbnail
-                                                                        ? URL.createObjectURL(form.thumbnail)
-                                                                        : ''
-                                                        }
-                                                        alt="Thumbnail Preview"
-                                                        className="w-full h-32 object-cover rounded"
-                                                    />
-                                                    {!isView && (
-                                                        <button
-                                                            type="button"
-                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                            onClick={handleRemoveThumbnail}
-                                                            aria-label="Remove thumbnail"
-                                                        >
-                                                            <X className="w-4 h-4 text-gray-700" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ) : isView ? (
-                                                <div className="py-2 px-3 text-gray-400">No thumbnail</div>
-                                            ) : (
-                                                <>
-                                                    <Input
-                                                        id="thumbnail"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={e => handleThumbnailChange("thumbnail", e)}
-                                                    />
-                                                    <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
+                                    ) }
                                 </div>
                             </div>
 
@@ -702,7 +659,7 @@ export default function ResourceFormPage() {
 
 
                                 {/* Premium field */}
-                                {type === 'video' && (
+                                (
                                     <div className="flex flex-col md:flex-row gap-4">
                                         {/* Thumbnail field */}
                                         <div className="flex-1">
@@ -769,7 +726,7 @@ export default function ResourceFormPage() {
                                         </div>
                                     </div>
 
-                                )}
+                                )
 
 
                             {type === 'article' && (

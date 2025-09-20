@@ -295,6 +295,7 @@ export default function ResourceFormPage() {
     };
 
     // Save to API
+// Save to API
     const saveToAPI = async (isDraft: boolean = false) => {
         setIsLoading(true);
         setApiError(null);
@@ -336,34 +337,48 @@ export default function ResourceFormPage() {
 
                 setApiSuccess(id ? "Video updated successfully!" : "Video uploaded successfully!");
             } else {
-                // Article branch unchanged unless your backend wants file uploads for emptyImage
-                // If you want to also send images as files for articles, use FormData here similarly
-                const payload = {
-                    admin_approval: 'pending',
-                    article: form.description,
-                    audience_age: form.age,
-                    category: getSelectedCategoryId(),
-                    counsellor_code: getSelectedCounsellorId(),
-                    created_at: new Date().toISOString(),
-                    image: form.emptyImage, // If this is a file, change to FormData branch!
-                    platform: form.platform,
-                    resource_status: isDraft ? "draft" : form.resource_status,
-                    status: form.status || "published",
-                    tags: form.tags || [],
-                    title: form.title,
-                    ...(id && { id: id })
-                };
+                // Article branch - now using FormData for image upload
+                const formData = new FormData();
+
+                // Add all the required form fields to FormData
+                formData.append("title", form.title);
+                formData.append("article", form.description);
+                formData.append("counsellor_code", getSelectedCounsellorId()?.toString() || "");
+                formData.append("type", "article"); // Set type as article
+                formData.append("category", getSelectedCategoryId()?.toString() || "");
+                formData.append("platform", form.platform);
+                formData.append("audience_age", form.age);
+                formData.append("status", form.status || "published");
+                formData.append("tags", JSON.stringify(form.tags || []));
+                formData.append("resource_status", isDraft ? "draft" : form.resource_status);
+                formData.append("admin_approval", "pending");
+                formData.append("created_at", new Date().toISOString());
+
+                // Always send image as file - this is the key change
+                if (form.emptyImage instanceof File) {
+                    formData.append("image", form.emptyImage); // Send as file
+                } else if (form.emptyImage && typeof form.emptyImage === 'string') {
+                    // For existing images (URLs), you might need to handle differently
+                    // For now, we'll include it as image_url but your backend should handle this
+                    formData.append("existing_image_url", form.emptyImage);
+                }
+
+                if (id) {
+                    formData.append("id", id);
+                }
 
                 let response;
                 if (id) {
                     response = await axios.put(
                         `https://interactapiverse.com/mahadevasth/shape/articles/${id}`,
-                        payload
+                        formData,
+                        { headers: { "Content-Type": "multipart/form-data" } }
                     );
                 } else {
                     response = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/articles/upload",
-                        payload
+                        formData,
+                        { headers: { "Content-Type": "multipart/form-data" } }
                     );
                 }
 
@@ -383,7 +398,6 @@ export default function ResourceFormPage() {
             setIsLoading(false);
         }
     };
-
 
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {

@@ -937,7 +937,7 @@ export const ResourceManager = () => {
     const handleSubmitArticle = async () => {
         try {
             const response = await fetch(
-                `https://interactapiverse.com/mahadevasth/shape/article/${approveModel.id}/approval`,
+                `https://interactapiverse.com/mahadevasth/shape/articles/${approveModel.id}/approval`,
                 {
                     method: "PUT",
                     headers: {
@@ -964,15 +964,15 @@ export const ResourceManager = () => {
     const handleDeleteArticle = async () => {
         try {
             const response = await fetch(
-                `https://interactapiverse.com/mahadevasth/shape/article/${deleteModel.id}/delete`,
+                `https://interactapiverse.com/mahadevasth/shape/articles/${deleteModel.id}/delete`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    // body: JSON.stringify({
-                    //     admin_approval: "rejected",
-                    // }),
+                    body: JSON.stringify({
+                        admin_approval: "rejected",
+                    }),
                 }
             );
 

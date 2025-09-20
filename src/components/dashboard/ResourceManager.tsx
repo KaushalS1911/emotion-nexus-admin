@@ -970,9 +970,9 @@ export const ResourceManager = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        admin_approval: "rejected",
-                    }),
+                    // body: JSON.stringify({
+                    //     admin_approval: "rejected",
+                    // }),
                 }
             );
 

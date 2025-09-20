@@ -76,6 +76,8 @@ type Resource = {
     content_type?: string;
     width?: number;
     height?: number;
+    article_thumbnail?: string;
+    admin_approval: string
 }
 
 const mockResources = [
@@ -172,6 +174,7 @@ export const ResourceManager = () => {
     const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
     const [topCardFilter, setTopCardFilter] = useState<'all' | 'published' | 'draft'>('all');
     const [approveModel, setApproveModel] = useState({open:false,id:null});
+    const [deleteModel, setDeleteModel] = useState({open:false,id:null});
     const [videoTypeFilter, setVideoTypeFilter] = useState("session");
     // Pagination states
     const [page, setPage] = useState(0);
@@ -463,6 +466,7 @@ export const ResourceManager = () => {
                     title: article.title || ``,
                     type: 'article',
                     category_name: article.category_name || '',
+                    admin_approval: article.admin_approval || '',
                     counsellor_name: article.counsellor_name,
                     publishDate: article.publish_date || article.created_at || new Date().toISOString(),
                     status: article.status || '',
@@ -470,6 +474,7 @@ export const ResourceManager = () => {
                     description: article.description || '',
                     tags,
                     image: imageUrl,
+                    article_thumbnail: article.image_presigned_url,
                     platform: article.platform || 'web',
                     age: article.audience_age || '',
                     views: article.views || 0,
@@ -931,12 +936,18 @@ export const ResourceManager = () => {
 
     const handleSubmitArticle = async () => {
         try {
-            const response = await fetch(`https://interactapiverse.com/mahadevasth/shape/article/${approveModel.id}/approval`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
+            const response = await fetch(
+                `https://interactapiverse.com/mahadevasth/shape/article/${approveModel.id}/approval`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        admin_approval: "approved",
+                    }),
                 }
-            });
+            );
 
             if (!response.ok) {
                 throw new Error("Failed to approve article");
@@ -950,6 +961,34 @@ export const ResourceManager = () => {
         }
     }
 
+    const handleDeleteArticle = async () => {
+        try {
+            const response = await fetch(
+                `https://interactapiverse.com/mahadevasth/shape/article/${deleteModel.id}/delete`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        admin_approval: "rejected",
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to delete article");
+            }
+            setDeleteModel({open:false,id:null})
+            toast.success("Article deleted! The article has been successfully approved.");
+
+        } catch (error: any) {
+            setDeleteModel({open:false,id:null})
+            toast.error(error.message || "An error occurred while deleting the article.");
+        }
+    }
+
+    console.log(resources)
     return (
         <div className="space-y-6">
             <Dialog open={approveModel?.open} onOpenChange={()=>setApproveModel({open:false,id:null})}>
@@ -971,6 +1010,31 @@ export const ResourceManager = () => {
                             type="submit"
                             className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
                             onClick={handleSubmitArticle}
+                        >
+                            Ok
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={deleteModel?.open} onOpenChange={()=>setDeleteModel({open:false,id:null})}>
+                <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden p-3 pt-4">
+                    <div>Are you sure you want to delete this article?</div>
+
+                    <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                                setDeleteModel({open:false,id:null});
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                            onClick={handleDeleteArticle}
                         >
                             Ok
                         </Button>
@@ -1175,57 +1239,57 @@ export const ResourceManager = () => {
             </Card>
 
             {/* Type Filter Chips */}
-            <div className="mb-6">
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        onClick={() => setTypeFilter('all')}
-                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                            typeFilter === 'all'
-                                ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-500 ring-offset-2'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                    >
-                        <FileText className="w-4 h-4 mr-2" />
-                        All Types ({articleCount + videoCount + tipCount})
-                    </button>
-                    {resourceTypes.map((type) => {
-                        const count = type.value === 'article' ? articleCount : 
-                                     type.value === 'video' ? videoCount : 
-                                     type.value === 'tip' ? tipCount : 0;
-                        const Icon = type.icon;
-                        const colors = {
-                            article: {
-                                active: 'bg-indigo-100 text-indigo-800 ring-2 ring-indigo-500 ring-offset-2',
-                                default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            },
-                            video: {
-                                active: 'bg-purple-100 text-purple-800 ring-2 ring-purple-500 ring-offset-2',
-                                default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            },
-                            tip: {
-                                active: 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500 ring-offset-2',
-                                default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }
-                        };
-                        const typeColor = colors[type.value as keyof typeof colors];
+            {/*<div className="mb-6">*/}
+            {/*    <div className="flex flex-wrap gap-2">*/}
+            {/*        <button*/}
+            {/*            onClick={() => setTypeFilter('all')}*/}
+            {/*            className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${*/}
+            {/*                typeFilter === 'all'*/}
+            {/*                    ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-500 ring-offset-2'*/}
+            {/*                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'*/}
+            {/*            }`}*/}
+            {/*        >*/}
+            {/*            <FileText className="w-4 h-4 mr-2" />*/}
+            {/*            All Types ({articleCount + videoCount + tipCount})*/}
+            {/*        </button>*/}
+            {/*        {resourceTypes.map((type) => {*/}
+            {/*            const count = type.value === 'article' ? articleCount : */}
+            {/*                         type.value === 'video' ? videoCount : */}
+            {/*                         type.value === 'tip' ? tipCount : 0;*/}
+            {/*            const Icon = type.icon;*/}
+            {/*            const colors = {*/}
+            {/*                article: {*/}
+            {/*                    active: 'bg-indigo-100 text-indigo-800 ring-2 ring-indigo-500 ring-offset-2',*/}
+            {/*                    default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'*/}
+            {/*                },*/}
+            {/*                video: {*/}
+            {/*                    active: 'bg-purple-100 text-purple-800 ring-2 ring-purple-500 ring-offset-2',*/}
+            {/*                    default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'*/}
+            {/*                },*/}
+            {/*                tip: {*/}
+            {/*                    active: 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500 ring-offset-2',*/}
+            {/*                    default: 'bg-gray-100 text-gray-700 hover:bg-gray-200'*/}
+            {/*                }*/}
+            {/*            };*/}
+            {/*            const typeColor = colors[type.value as keyof typeof colors];*/}
 
-                        return (
-                            <button
-                                key={type.value}
-                                onClick={() => setTypeFilter(type.value)}
-                                className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                                    typeFilter === type.value
-                                        ? typeColor.active
-                                        : typeColor.default
-                                }`}
-                            >
-                                <Icon className="w-4 h-4 mr-2" />
-                                {type.label} ({count})
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+            {/*            return (*/}
+            {/*                <button*/}
+            {/*                    key={type.value}*/}
+            {/*                    onClick={() => setTypeFilter(type.value)}*/}
+            {/*                    className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${*/}
+            {/*                        typeFilter === type.value*/}
+            {/*                            ? typeColor.active*/}
+            {/*                            : typeColor.default*/}
+            {/*                    }`}*/}
+            {/*                >*/}
+            {/*                    <Icon className="w-4 h-4 mr-2" />*/}
+            {/*                    {type.label} ({count})*/}
+            {/*                </button>*/}
+            {/*            );*/}
+            {/*        })}*/}
+            {/*    </div>*/}
+            {/*</div>*/}
 
             {/* Resources Table */}
             <Card className="border-0 shadow-lg">
@@ -1234,14 +1298,15 @@ export const ResourceManager = () => {
                         <table className="w-full">
                             <thead>
                             <tr className="border-b">
-                                <th className="text-left py-3 px-4 font-medium text-gray-600">Thumbnail</th>
+                                <th className="text-left py-3 px-4 font-medium text-gray-600"></th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Title</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Author</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-600">Type</th>
+                                {/*<th className="text-left py-3 px-4 font-medium text-gray-600">Type</th>*/}
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Category</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-600">Duration</th>
+                                {/*<th className="text-left py-3 px-4 font-medium text-gray-600">Duration</th>*/}
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Resource Status</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                                <th className="text-left py-3 px-4 font-medium text-gray-600">Approve Articles</th>
                                 <th className="text-left py-3 px-4 font-medium text-gray-600">Published</th>
                                 <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
                             </tr>
@@ -1251,21 +1316,20 @@ export const ResourceManager = () => {
                                 paginatedResources.map((resource) => (
                                     <tr key={resource.id} className="border-b hover:bg-gray-50">
                                         <td className="py-2 px-4">
-                                            <div 
+                                            <div
                                                 className={`h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden relative ${
                                                     resource.type === 'video' ? 'cursor-pointer hover:bg-gray-300 transition-colors' : ''
                                                 }`}
                                                 onClick={() => resource.type === 'video' ? handleVideoThumbnailClick(resource) : null}
                                             >
-                                                {resource.image ? (
-                                                    <img src={resource.image} alt={resource.title} className="h-full w-full object-cover" />
-                                                ) : (
-                                                    getTypeIcon(resource.type)
-                                                )}
-                                                {resource.type === 'video' && (
+                                                {resource.type === 'video' ? (
                                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
                                                         <Video className="h-4 w-4 text-white" />
                                                     </div>
+                                                ) :  resource?.article_thumbnail ? (
+                                                    <img src={resource?.article_thumbnail} alt={resource.title} className="h-full w-full object-cover" />
+                                                ) : (
+                                                    getTypeIcon(resource.type)
                                                 )}
                                             </div>
                                         </td>
@@ -1279,23 +1343,23 @@ export const ResourceManager = () => {
                                             </div>
                                         </td>
                                         <td className="py-2 px-4">{resource.counsellor_name}</td>
-                                        <td className="py-2 px-4">
-                                            <Badge className={`${getTypeColor(resource.type)} flex items-center gap-1 font-normal`}>
-                                                {getTypeIcon(resource.type)}
-                                                <span>{resource.type}</span>
-                                            </Badge>
-                                        </td>
+                                        {/*<td className="py-2 px-4">*/}
+                                        {/*    <Badge className={`${getTypeColor(resource.type)} flex items-center gap-1 font-normal`}>*/}
+                                        {/*        {getTypeIcon(resource.type)}*/}
+                                        {/*        <span>{resource.type}</span>*/}
+                                        {/*    </Badge>*/}
+                                        {/*</td>*/}
                                         <td className="py-2 px-4">
                                             {resource.category_name
                                                 .replace("-", " ")
                                                 .replace(/\b\w/g, (l) => l.toUpperCase())}
                                         </td>
-                                        <td className="py-2 px-4">
-                                            {resource.type === 'video' && resource.duration ? 
-                                                `${Math.floor(resource.duration / 60)}:${(resource.duration % 60).toString().padStart(2, '0')}` : 
-                                                resource.type === 'video' ? 'N/A' : '-'
-                                            }
-                                        </td>
+                                        {/*<td className="py-2 px-4">*/}
+                                        {/*    {resource.type === 'video' && resource.duration ? */}
+                                        {/*        `${Math.floor(resource.duration / 60)}:${(resource.duration % 60).toString().padStart(2, '0')}` : */}
+                                        {/*        resource.type === 'video' ? 'N/A' : '-'*/}
+                                        {/*    }*/}
+                                        {/*</td>*/}
                                         <td className="py-2 px-4">
                                             <Badge className={getStatusColor(resource?.resource_status)}>
                                                 {resource?.resource_status?.charAt(0)?.toUpperCase() + resource?.resource_status?.slice(1)}
@@ -1305,6 +1369,17 @@ export const ResourceManager = () => {
                                             <Badge className={getStatusColor(resource.status)}>
                                                 {resource.status.charAt(0).toUpperCase() + resource.status.slice(1)}
                                             </Badge>
+                                        </td>
+                                        <td>
+                                        <div
+                                            onClick={() => setApproveModel({open:true,id:resource.id})}
+                                            className="flex justify-center items-center"
+                                        >
+                                            <Button variant='outline' disabled={resource?.admin_approval === "approved"}>
+                                                {/*<Eye className="mr-2 h-4 w-4" />*/}
+                                                Approve Article
+                                            </Button>
+                                        </div>
                                         </td>
                                         <td className="py-2 px-4">
                                             {resource.publishDate
@@ -1319,14 +1394,14 @@ export const ResourceManager = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        disabled={resource?.admin_approval === "approved"}
-                                                        onClick={() => setApproveModel({open:true,id:resource.id})}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <Eye className="mr-2 h-4 w-4" />
-                                                        Approve Article
-                                                    </DropdownMenuItem>
+                                                    {/*<DropdownMenuItem*/}
+                                                    {/*    disabled={resource?.admin_approval === "approved"}*/}
+                                                    {/*    onClick={() => setApproveModel({open:true,id:resource.id})}*/}
+                                                    {/*    className="cursor-pointer"*/}
+                                                    {/*>*/}
+                                                    {/*    <Eye className="mr-2 h-4 w-4" />*/}
+                                                    {/*    Approve Article*/}
+                                                    {/*</DropdownMenuItem>*/}
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/resources/edit/${resource.id}`)}
                                                         className="cursor-pointer"
@@ -1342,7 +1417,7 @@ export const ResourceManager = () => {
                                                         Edit Resource
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        onClick={() => handleDelete(resource.id)}
+                                                        onClick={() => setDeleteModel({open:true,id:resource.id})}
                                                         className="cursor-pointer text-red-600"
                                                     >
                                                         <Trash2 className="mr-2 h-4 w-4" />

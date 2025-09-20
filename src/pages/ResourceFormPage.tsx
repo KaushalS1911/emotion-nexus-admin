@@ -352,7 +352,6 @@ export default function ResourceFormPage() {
                 formData.append("tags", JSON.stringify(form.tags || []));
                 formData.append("resource_status", isDraft ? "draft" : form.resource_status);
                 formData.append("admin_approval", "pending");
-                formData.append("created_at", new Date().toISOString());
 
                 // Always send image as file - this is the key change
                 if (form?.thumbnail instanceof File) {

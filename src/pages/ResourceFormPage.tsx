@@ -355,12 +355,8 @@ export default function ResourceFormPage() {
                 formData.append("created_at", new Date().toISOString());
 
                 // Always send image as file - this is the key change
-                if (form.emptyImage instanceof File) {
-                    formData.append("image", form.emptyImage); // Send as file
-                } else if (form.emptyImage && typeof form.emptyImage === 'string') {
-                    // For existing images (URLs), you might need to handle differently
-                    // For now, we'll include it as image_url but your backend should handle this
-                    formData.append("existing_image_url", form.emptyImage);
+                if (form?.thumbnail instanceof File) {
+                    formData.append("image", form.thumbnail); // as a file
                 }
 
                 if (id) {

@@ -1009,7 +1009,7 @@ export const ResourceManager = () => {
                         <Button
                             type="submit"
                             className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
-                            onClick={handleSubmitArticle}
+                            onClick={() => handleSubmitArticle()}
                         >
                             Ok
                         </Button>
@@ -1034,7 +1034,7 @@ export const ResourceManager = () => {
                         <Button
                             type="submit"
                             className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
-                            onClick={handleDeleteArticle}
+                            onClick={() => handleDeleteArticle()}
                         >
                             Ok
                         </Button>

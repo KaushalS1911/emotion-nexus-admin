@@ -9,6 +9,8 @@ import {ArrowLeft, X} from "lucide-react";
 import {Card} from "@/components/ui/card.tsx";
 import axios from "axios";
 import {useArticleCategories} from "@/hooks/useArticleCategories.tsx";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 type ResourceFormErrors = {
     title?: string;
@@ -825,13 +827,15 @@ export default function ResourceFormPage() {
                                             </div>
                                         ) : (
                                             <>
-                                                <Textarea
+                                                <ReactQuill
                                                     id="description"
                                                     value={form.description}
-                                                    onChange={handleInput}
-                                                    placeholder="Resource description..."
-                                                    className={errors.description ? 'border-red-500' : ''}
-                                                    rows={6}
+                                                    onChange={(value) =>
+                                                        handleInput({ target: { id: "description", value } })
+                                                    }
+                                                    placeholder="Article description..."
+                                                    className={errors.description ? "ql-error" : ""}
+                                                    style={{ height: "9rem", margin: "0 0 2.4rem 0" }}
                                                 />
                                                 {errors.description && (
                                                     <div className="text-red-500 text-xs mt-1">{errors.description}</div>

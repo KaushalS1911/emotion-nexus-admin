@@ -301,7 +301,7 @@ export const VideoManager = () => {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b">
-                                    <th className="text-left py-3 px-4 font-medium text-gray-600">Thumbnail</th>
+                                    <th className="text-left py-3 px-4 font-medium text-gray-600"></th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Title</th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Author</th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Category</th>
@@ -316,7 +316,7 @@ export const VideoManager = () => {
                                     pageRows.map((v) => (
                                         <tr key={v.id} className="border-b hover:bg-gray-50">
                                             <td className="py-2 px-4">
-                                                <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden relative hover:bg-gray-300">
+                                                <div className="h-10 w-10 rounded-md bg-gray-200 cursor-pointer flex items-center justify-center overflow-hidden relative hover:bg-gray-300" onClick={() => handleVideoThumbnailClick(v)}>
                                                     {v.thumbnail ? (
                                                         <img src={v.thumbnail} alt={v.title} className="h-full w-full object-cover" />
                                                     ) : (
@@ -328,7 +328,7 @@ export const VideoManager = () => {
                                                 </div>
                                             </td>
                                             <td className="py-2 px-4 max-w-[200px]">
-                                                <div className="truncate font-medium cursor-pointer" onClick={() => handleVideoThumbnailClick(v)}>{v.title}</div>
+                                                <div className="truncate font-medium" >{v.title}</div>
                                                 <div className="text-sm text-gray-500 truncate">
                                                     {v.tags.slice(0, 2).map((tag, i) => (
                                                         <span key={i} className="mr-1">#{tag}</span>

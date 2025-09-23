@@ -306,7 +306,7 @@ export const VideoManager = () => {
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Title</th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Author</th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Category</th>
-                                    <th className="text-left py-3 px-4 font-medium text-gray-600">Duration</th>
+                                    {/*<th className="text-left py-3 px-4 font-medium text-gray-600">Duration</th>*/}
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                                     <th className="text-left py-3 px-4 font-medium text-gray-600">Published</th>
                                     <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
@@ -339,7 +339,7 @@ export const VideoManager = () => {
                                             </td>
                                             <td className="py-2 px-4">{v.counsellor_name}</td>
                                             <td className="py-2 px-4">{v.category_name}</td>
-                                            <td className="py-2 px-4">{v.duration ? `${Math.floor((v.duration as number) / 60)}:${((v.duration as number) % 60).toString().padStart(2, '0')}` : 'N/A'}</td>
+                                            {/*<td className="py-2 px-4">{v.duration ? `${Math.floor((v.duration as number) / 60)}:${((v.duration as number) % 60).toString().padStart(2, '0')}` : 'N/A'}</td>*/}
                                             <td className="py-2 px-4">
                                                 <Badge className={v.status?.toLowerCase() === 'live' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                                                     {v.status?.charAt(0)?.toUpperCase() + v.status?.slice(1)}

@@ -78,6 +78,9 @@ export const VideoManager = () => {
     const [videoPresignedUrl, setVideoPresignedUrl] = useState<string | null>(null);
     const [isLoadingVideo, setIsLoadingVideo] = useState(false);
     const [videoError, setVideoError] = useState<string | null>(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [videoToDelete, setVideoToDelete] = useState<VideoResource | null>(null);
+
 
     const fetchVideos = useCallback(async (currentPage: number = 0) => {
         if (isLoading) return;
@@ -222,7 +225,18 @@ export const VideoManager = () => {
     const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
     const pageRows = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-    console.log(selectedVideo)
+    const handleDeleteVideo = async (id: string) => {
+        try {
+            // 🔹 Call API when backend is ready
+            // await fetch(`https://interactapiverse.com/mahadevasth/shape/videos/${id}/delete`, { method: "DELETE" });
+
+            // Remove from state immediately
+            setVideos((prev) => prev.filter((v) => v.id !== id));
+        } catch (err) {
+            console.error("Delete failed", err);
+        }
+    };
+
 
     return (
         <div className="space-y-6">
@@ -362,7 +376,13 @@ export const VideoManager = () => {
                                                         {/*    <Edit className="mr-2 h-4 w-4" />*/}
                                                         {/*    Edit Video*/}
                                                         {/*</DropdownMenuItem>*/}
-                                                        <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => { /* wire when backend ready */ }}>
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer text-red-600"
+                                                            onClick={() => {
+                                                                setVideoToDelete(v);
+                                                                setDeleteConfirmOpen(true);
+                                                            }}
+                                                        >
                                                             <Trash2 className="mr-2 h-4 w-4" />
                                                             Delete
                                                         </DropdownMenuItem>
@@ -471,6 +491,39 @@ export const VideoManager = () => {
 
 
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+                <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden p-3 pt-4">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-bold ">
+                            Delete Video
+                        </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-gray-600">
+                        Are you sure you want to delete{" "}
+                        <span className="font-medium">{videoToDelete?.title}</span>?
+                    </p>
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-[#FF7119] text-white font-semibold hover:bg-[#d95e00] transition-colors"
+                            onClick={() => {
+                                if (videoToDelete) {
+                                    handleDeleteVideo(videoToDelete.id);
+                                }
+                                setDeleteConfirmOpen(false);
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 };

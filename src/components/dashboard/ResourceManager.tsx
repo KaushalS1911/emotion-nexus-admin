@@ -987,7 +987,6 @@ export const ResourceManager = () => {
         }
     }
 
-    console.log(resources)
     return (
         <div className="space-y-6">
             <Dialog open={approveModel?.open} onOpenChange={()=>setApproveModel({open:false,id:null})}>

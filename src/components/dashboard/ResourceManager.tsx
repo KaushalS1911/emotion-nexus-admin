@@ -466,7 +466,6 @@ export const ResourceManager = () => {
                     title: article.title || ``,
                     type: 'article',
                     category_name: article.category_name || '',
-                    admin_approval: article.admin_approval || '',
                     counsellor_name: article.counsellor_name,
                     publishDate: article.publish_date || article.created_at || new Date().toISOString(),
                     status: article.status || '',
@@ -480,7 +479,7 @@ export const ResourceManager = () => {
                     views: article.views || 0,
                     likes: article.likes || 0,
                 };
-            });
+            }).filter((article) => article.resource_status !== 'deleted');
             const articlesList = (articles && articles.length > 0) ? transformedResources : [];
             setAllArticles(articlesList);
             setArticleCount(articlesList.length);
@@ -1375,10 +1374,14 @@ export const ResourceManager = () => {
                                             onClick={() => setApproveModel({open:true,id:resource.id})}
                                             className="flex justify-center items-center"
                                         >
-                                            <Button variant='outline' disabled={resource?.admin_approval === "approved"}>
-                                                {/*<Eye className="mr-2 h-4 w-4" />*/}
+                                            <Button
+                                                variant="outline"
+                                                className={`bg-green-100 cursor-pointer text-green-800 hover:bg-green-200 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                disabled={resource?.admin_approval === "approved"}
+                                            >
                                                 Approve Article
                                             </Button>
+
                                         </div>
                                         </td>
                                         <td className="py-2 px-4">

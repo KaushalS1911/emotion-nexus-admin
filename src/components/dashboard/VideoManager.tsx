@@ -354,14 +354,14 @@ export const VideoManager = () => {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => navigate(`/videos/edit/${v.id}?view=1`)} className="cursor-pointer">
-                                                            <Eye className="mr-2 h-4 w-4" />
-                                                            View Details
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => navigate(`/videos/edit/${v.id}`)} className="cursor-pointer">
-                                                            <Edit className="mr-2 h-4 w-4" />
-                                                            Edit Video
-                                                        </DropdownMenuItem>
+                                                        {/*<DropdownMenuItem onClick={() => navigate(`/videos/edit/${v.id}?view=1`)} className="cursor-pointer">*/}
+                                                        {/*    <Eye className="mr-2 h-4 w-4" />*/}
+                                                        {/*    View Details*/}
+                                                        {/*</DropdownMenuItem>*/}
+                                                        {/*<DropdownMenuItem onClick={() => navigate(`/videos/edit/${v.id}`)} className="cursor-pointer">*/}
+                                                        {/*    <Edit className="mr-2 h-4 w-4" />*/}
+                                                        {/*    Edit Video*/}
+                                                        {/*</DropdownMenuItem>*/}
                                                         <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => { /* wire when backend ready */ }}>
                                                             <Trash2 className="mr-2 h-4 w-4" />
                                                             Delete

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Video, Search, Plus, RefreshCw, MoreVertical, Eye, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {cn} from "@/lib/utils.ts";
 
 type VideoResource = {
     id: string;
@@ -221,7 +222,7 @@ export const VideoManager = () => {
     const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
     const pageRows = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-    console.log(pageRows)
+    console.log(selectedVideo)
 
     return (
         <div className="space-y-6">
@@ -422,62 +423,53 @@ export const VideoManager = () => {
             </Card>
             {/* Video Modal */}
             <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">{selectedVideo?.title || 'Video Player'}</DialogTitle>
-                    </DialogHeader>
-                    <div className="mt-4">
-                        {isLoadingVideo ? (
-                            <div className="flex flex-col items-center justify-center py-12">
-                                <RefreshCw className="h-8 w-8 animate-spin text-[#012765] mb-4" />
-                                <p className="text-gray-600">Loading video...</p>
-                            </div>
-                        ) : videoError ? (
-                            <div className="flex flex-col items-center justify-center py-12">
-                                <div className="text-red-500 mb-4">
-                                    <Video className="h-12 w-12 mx-auto mb-2" />
-                                    <p className="text-center">{videoError}</p>
-                                </div>
-                                <Button onClick={() => selectedVideo && fetchVideoPresignedUrl(selectedVideo.id)} variant="outline">Retry</Button>
-                            </div>
-                        ) : videoPresignedUrl ? (
-                            <div className="space-y-4">
-                                <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '450px', minHeight: '450px' }}>
-                                    <video controls autoPlay muted className="w-full h-full object-contain" poster={selectedVideo?.image || undefined} style={{ minHeight: '400px' }}>
-                                        <source src={videoPresignedUrl} type="video/mp4" />
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                                {selectedVideo && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <h4 className="font-semibold text-gray-700 mb-2">Video Details</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div><span className="font-medium">Author:</span> {selectedVideo.counsellor_name}</div>
-                                                <div><span className="font-medium">Category:</span> {selectedVideo.category_name}</div>
-                                                <div><span className="font-medium">Duration:</span> {selectedVideo.duration ? `${Math.floor((selectedVideo.duration as number) / 60)}:${((selectedVideo.duration as number) % 60).toString().padStart(2, '0')}` : 'N/A'}</div>
-                                                <div><span className="font-medium">File Size:</span> {selectedVideo.file_size ? `${((selectedVideo.file_size as number) / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-gray-700 mb-2">Tags</h4>
-                                            <div className="flex flex-wrap gap-1">
-                                                {selectedVideo.tags.map((tag, i) => (
-                                                    <Badge key={i} variant="secondary" className="text-xs">#{tag}</Badge>
-                                                ))}
-                                            </div>
-                                            <h4 className="font-semibold text-gray-700 mb-2 mt-4">Description</h4>
-                                            <p className="text-sm text-gray-600">{selectedVideo.description || 'No description available'}</p>
-                                        </div>
-                                    </div>
+                <DialogContent
+                    className={cn(
+                        "overflow-hidden p-0",
+                        selectedVideo?.type === "shorts"
+                            ? "w-full max-w-sm h-[90vh]"
+                            : "w-full max-w-4xl h-[90vh]"
+                    )}
+                >
+                    <div className="flex flex-col h-full p-6 space-y-4 justify-between">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold">
+                                {selectedVideo?.title || "Video Player"}
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div
+                            className={cn(
+                                "relative bg-black rounded-lg overflow-hidden flex items-center justify-center mx-auto",
+                                selectedVideo?.type === "shorts"
+                                    ? "w-[340px] h-[600px]"
+                                    : "w-full h-[450px]"
+                            )}
+                        >
+                            <video
+                                controls
+                                autoPlay
+                                muted
+                                className={cn(
+                                    "object-contain",
+                                    selectedVideo?.type === "shorts" ? "h-full w-auto" : "w-full h-full"
                                 )}
-                            </div>
-                        ) : null}
-                    </div>
-                    <div className="flex justify-end mt-6 pt-4 border-t">
-                        <Button onClick={() => setVideoModalOpen(false)} variant="outline">Close</Button>
+                                poster={selectedVideo?.image || undefined}
+                            >
+                                <source src={videoPresignedUrl} type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                        <div className="flex justify-end pt-2 border-t">
+                            <Button onClick={() => setVideoModalOpen(false)} variant="outline">
+                                Close
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
+
+
             </Dialog>
         </div>
     );

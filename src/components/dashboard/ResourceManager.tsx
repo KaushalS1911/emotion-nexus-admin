@@ -918,7 +918,7 @@ export const ResourceManager = () => {
 
     const getTypeColor = (type: string) => {
         const colors = {
-            article: "bg-blue-100 text-blue-800",
+            sarticle: "bg-blue-100 text-blue-800",
             video: "bg-purple-100 text-purple-800",
             tip: "bg-green-100 text-green-800",
         };

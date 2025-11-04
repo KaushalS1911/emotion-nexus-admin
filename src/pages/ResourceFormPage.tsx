@@ -207,10 +207,6 @@ export default function ResourceFormPage() {
     const handleFile = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (field === 'file' && file.size > 50 * 1024 * 1024) {
-                setApiError("File size should be less than 50MB");
-                return;
-            }
             if ((field === 'thumbnail' || field === 'emptyImage') && file.size > 1 * 1024 * 1024) {
                 setApiError("Image size should be less than 1MB");
                 return;
@@ -400,8 +396,14 @@ export default function ResourceFormPage() {
     const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
 
-        if (!validateForm()) return;
+        // Validate form first - if validation fails, do not call API
+        const isValid = validateForm();
+        if (!isValid) {
+            // Validation errors are already set by validateForm
+            return;
+        }
 
+        // Only proceed with API call if validation passes
         try {
             await saveToAPI(isDraft);
         } catch (error) {
@@ -453,7 +455,7 @@ export default function ResourceFormPage() {
                                                 id="title"
                                                 value={form.title}
                                                 onChange={handleInput}
-                                                placeholder={`${type === 'video' ? 'Video' : 'Resource'} title...`}
+                                                placeholder="Resource title..."
                                                 className={errors.title ? 'border-red-500' : ''}
                                             />
                                         )}
@@ -590,7 +592,7 @@ export default function ResourceFormPage() {
                                                         onChange={(e) => handleFile("file", e)}
                                                         ref={fileInputRef}
                                                     />
-                                                    <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI. 50MB max.</div>
+                                                    <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI</div>
                                                     {errors.file && (
                                                         <div className="text-red-500 text-xs mt-1">{errors.file}</div>
                                                     )}
@@ -830,9 +832,7 @@ export default function ResourceFormPage() {
                                                 <ReactQuill
                                                     id="description"
                                                     value={form.description}
-                                                    onChange={(value) =>
-                                                        handleInput({ target: { id: "description", value } })
-                                                    }
+                                                    onChange={(value) => setForm((f) => ({...f, description: value}))}
                                                     placeholder="Article description..."
                                                     className={errors.description ? "ql-error" : ""}
                                                     style={{ height: "9rem", margin: "0 0 2.4rem 0" }}

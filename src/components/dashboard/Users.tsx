@@ -72,7 +72,7 @@ export default function Users() {
         // Fetch users from API
         const fetchUsers = async () => {
             try {
-                const response = await fetch("https://interactapiverse.com/mahadevasth/counsellors");
+                const response = await fetch("https://interactapiverse.com/mahadevasth/users");
                 if (!response.ok) throw new Error("Failed to fetch users");
                 const data = await response.json();
                 // If API returns { data: [...] }, use data.data, else use data

@@ -7,6 +7,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Textarea} from "@/components/ui/textarea";
 import {ArrowLeft, X} from "lucide-react";
 import {Card} from "@/components/ui/card.tsx";
+import {Progress} from "@/components/ui/progress";
 import axios from "axios";
 import {useArticleCategories} from "@/hooks/useArticleCategories.tsx";
 import ReactQuill from "react-quill";
@@ -94,6 +95,8 @@ export default function ResourceFormPage() {
     const [emptyPreview, setEmptyPreview] = useState<string | null>(null);
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
     const [errors, setErrors] = useState<ResourceFormErrors>({});
     const emptyInputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,20 +217,46 @@ export default function ResourceFormPage() {
 
             if (field === 'file') {
                 try {
-                    // Video direct S3 upload, unchanged
+                    setIsUploading(true);
+                    setUploadProgress(0);
+                    // Video direct S3 upload with progress tracking
+                    // Ensure filename is a string
+                    const filename = file.name || `video_${Date.now()}.mp4`;
+                    
+                    // Try FormData format first (some APIs expect this)
+                    const formData = new FormData();
+                    formData.append('filename', filename);
+                    
                     const presignRes = await axios.post(
                         "https://interactapiverse.com/mahadevasth/shape/videos/upload-url",
-                        { filename: file.name },
-                        { headers: { "Content-Type": "application/json" } }
+                        formData
                     );
                     const uploadUrl = presignRes.data?.data?.upload_url;
                     await axios.put(uploadUrl, file, {
                         headers: { "Content-Type": file.type },
+                        onUploadProgress: (progressEvent) => {
+                            if (progressEvent.total) {
+                                const percentCompleted = Math.round(
+                                    (progressEvent.loaded * 100) / progressEvent.total
+                                );
+                                setUploadProgress(percentCompleted);
+                            }
+                        },
                     });
-                    setForm((f) => ({ ...f, [field]: { ...file, ...presignRes.data?.data, filename: file?.name } }));
+                    setForm((f) => ({ ...f, [field]: { ...file, ...presignRes.data?.data, filename: filename } }));
                     setFilePreview(URL.createObjectURL(file));
+                    setUploadProgress(100);
                 } catch (error) {
                     console.error("Upload failed:", error);
+                    if (axios.isAxiosError(error) && error.response) {
+                        const errorMsg = error.response.data?.message || error.response.data?.data || "Video upload failed. Please try again.";
+                        setApiError(errorMsg);
+                    } else {
+                        setApiError("Video upload failed. Please try again.");
+                    }
+                    setUploadProgress(0);
+                } finally {
+                    setIsUploading(false);
                 }
             } else if (field === "thumbnail") {
                 // For thumbnail, just store the File object and a preview
@@ -272,6 +301,8 @@ export default function ResourceFormPage() {
     const handleRemoveFile = () => {
         setFilePreview(null);
         setForm(f => ({...f, file: null}));
+        setUploadProgress(0);
+        setIsUploading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -591,7 +622,17 @@ export default function ResourceFormPage() {
                                                         accept="video/*"
                                                         onChange={(e) => handleFile("file", e)}
                                                         ref={fileInputRef}
+                                                        disabled={isUploading}
                                                     />
+                                                    {isUploading && (
+                                                        <div className="mt-2 space-y-2">
+                                                            <div className="flex justify-between text-xs text-gray-600">
+                                                                <span>Uploading video...</span>
+                                                                <span>{uploadProgress}%</span>
+                                                            </div>
+                                                            <Progress value={uploadProgress} className="h-2" />
+                                                        </div>
+                                                    )}
                                                     <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI</div>
                                                     {errors.file && (
                                                         <div className="text-red-500 text-xs mt-1">{errors.file}</div>
@@ -601,10 +642,10 @@ export default function ResourceFormPage() {
                                         </>
                                     ) : (<div className="flex-1">
                                         <Label>Thumbnail Image</Label>
-                                        {form.thumbnail ? (
+                                        {(emptyPreview || (form.emptyImage && typeof form.emptyImage === 'string')) ? (
                                             <div className="relative mt-2 w-full max-w-xs">
                                                 <img
-                                                    src={form.thumbnail}
+                                                    src={emptyPreview || (typeof form.emptyImage === 'string' ? form.emptyImage : '')}
                                                     alt="Thumbnail Preview"
                                                     className="w-full h-32 object-cover rounded"
                                                 />
@@ -613,7 +654,8 @@ export default function ResourceFormPage() {
                                                         type="button"
                                                         className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
                                                         onClick={() => {
-                                                            setForm(f => ({ ...f, thumbnail: null }));
+                                                            setForm(f => ({ ...f, emptyImage: null }));
+                                                            setEmptyPreview(null);
                                                         }}
                                                         aria-label="Remove thumbnail"
                                                     >
@@ -626,10 +668,10 @@ export default function ResourceFormPage() {
                                         ) : (
                                             <>
                                                 <Input
-                                                    id="thumbnail"
+                                                    id="emptyImage"
                                                     type="file"
                                                     accept="image/*"
-                                                    onChange={e => handleThumbnailChange("thumbnail", e)}
+                                                    onChange={e => handleFile("emptyImage", e)}
                                                 />
                                                 <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
                                             </>
@@ -702,10 +744,10 @@ export default function ResourceFormPage() {
                                         {/* Thumbnail field */}
                                         <div className="flex-1">
                                             <Label>Thumbnail Image</Label>
-                                            {form.thumbnail ? (
+                                            {(thumbnailPreview || (form.thumbnail && typeof form.thumbnail === 'string')) ? (
                                                 <div className="relative mt-2 w-full max-w-xs">
                                                     <img
-                                                        src={form.thumbnail}
+                                                        src={thumbnailPreview || (typeof form.thumbnail === 'string' ? form.thumbnail : '')}
                                                         alt="Thumbnail Preview"
                                                         className="w-full h-32 object-cover rounded"
                                                     />
@@ -715,6 +757,7 @@ export default function ResourceFormPage() {
                                                             className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
                                                             onClick={() => {
                                                                 setForm(f => ({ ...f, thumbnail: null }));
+                                                                setThumbnailPreview(null);
                                                             }}
                                                             aria-label="Remove thumbnail"
                                                         >

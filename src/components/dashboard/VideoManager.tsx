@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Video, Search, Plus, RefreshCw, MoreVertical, Eye, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import {cn} from "@/lib/utils.ts";
+import HlsPlayer from "@/components/ui/HlsPlayer";
+
 
 type VideoResource = {
     id: string;
@@ -151,11 +153,11 @@ export const VideoManager = () => {
         setIsLoadingVideo(true);
         setVideoError(null);
         try {
-            const response = await fetch(`https://interactapiverse.com/mahadevasth/shape/videos/${videoId}/play`);
+            const response = await fetch(`https://interactapiverse.com/mahadevasth/shape/videos/${videoId}/play-hls`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            if (data.status === '200' && data.data && data.data.presigned_url) {
-                setVideoPresignedUrl(data.data.presigned_url);
+            if (data.status === '200' && data.data && data.data.hls_url) {
+                setVideoPresignedUrl(data.data.hls_url);
             } else {
                 throw new Error(data.message || 'Failed to get video URL');
             }
@@ -192,16 +194,6 @@ export const VideoManager = () => {
         setPage(0);
     }, [searchTerm, categoryFilter, statusFilter, platformFilter, dateRange]);
 
-    // Auto-play when URL loaded and modal open
-    useEffect(() => {
-        if (videoPresignedUrl && videoModalOpen) {
-            const timer = setTimeout(() => {
-                const el = document.querySelector('video') as HTMLVideoElement | null;
-                el?.play().catch(() => {});
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [videoPresignedUrl, videoModalOpen]);
 
     const filtered = videos.filter((v) => {
         const matchesSearch = (
@@ -237,6 +229,13 @@ export const VideoManager = () => {
         }
     };
 
+    const isPortraitVideo = useMemo(() => {
+        if (!selectedVideo) return false;
+        if (selectedVideo.width && selectedVideo.height) {
+            return selectedVideo.height > selectedVideo.width;
+        }
+        return selectedVideo.type === "shorts";
+    }, [selectedVideo]);
 
     return (
         <div className="space-y-6">
@@ -446,8 +445,8 @@ export const VideoManager = () => {
                 <DialogContent
                     className={cn(
                         "overflow-hidden p-0",
-                        selectedVideo?.type === "shorts"
-                            ? "w-full max-w-sm h-[90vh]"
+                        isPortraitVideo
+                            ? "w-full max-w-md h-[90vh]"
                             : "w-full max-w-4xl h-[90vh]"
                     )}
                 >
@@ -458,28 +457,47 @@ export const VideoManager = () => {
                             </DialogTitle>
                         </DialogHeader>
 
-                        <div
-                            className={cn(
-                                "relative bg-black rounded-lg overflow-hidden flex items-center justify-center mx-auto",
-                                selectedVideo?.type === "shorts"
-                                    ? "w-[340px] h-[600px]"
-                                    : "w-full h-[450px]"
-                            )}
-                        >
-                            <video
-                                controls
-                                autoPlay
-                                muted
+                        {isLoadingVideo ? (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin text-[#012765] mb-4" />
+                                <p className="text-gray-600">Loading video...</p>
+                            </div>
+                        ) : videoError ? (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <div className="text-red-500 mb-4">
+                                    <Video className="h-12 w-12 mx-auto mb-2" />
+                                    <p className="text-center">{videoError}</p>
+                                </div>
+                                <Button 
+                                    onClick={() => selectedVideo && fetchVideoPresignedUrl(selectedVideo.id)}
+                                    variant="outline"
+                                    className="mt-2"
+                                >
+                                    Retry
+                                </Button>
+                            </div>
+                        ) : videoPresignedUrl ? (
+                            <div
                                 className={cn(
-                                    "object-contain",
-                                    selectedVideo?.type === "shorts" ? "h-full w-auto" : "w-full h-full"
+                                    "relative bg-black rounded-2xl overflow-hidden flex items-center justify-center mx-auto w-full",
+                                    isPortraitVideo
+                                        ? "max-w-xs sm:max-w-sm h-[620px]"
+                                        : "min-h-[450px]"
                                 )}
-                                poster={selectedVideo?.image || undefined}
                             >
-                                <source src={videoPresignedUrl} type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
+                                <HlsPlayer
+                                    src={videoPresignedUrl}
+                                    poster={selectedVideo?.thumbnail || selectedVideo?.image || undefined}
+                                    autoPlay={true}
+                                    muted={true}
+                                    controls={true}
+                                    className={cn(
+                                        "w-full",
+                                        isPortraitVideo ? "h-full" : ""
+                                    )}
+                                />
+                            </div>
+                        ) : null}
 
                         <div className="flex justify-end pt-2 border-t">
                             <Button onClick={() => setVideoModalOpen(false)} variant="outline">
@@ -488,7 +506,6 @@ export const VideoManager = () => {
                         </div>
                     </div>
                 </DialogContent>
-
 
             </Dialog>
 

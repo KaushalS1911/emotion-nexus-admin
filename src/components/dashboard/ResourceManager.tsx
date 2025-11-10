@@ -37,6 +37,8 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {useArticleCategories} from "@/hooks/useArticleCategories.tsx";
 import {toast} from "sonner";
+import HlsPlayer from "@/components/ui/HlsPlayer";
+import { cn } from "@/lib/utils.ts";
 
 // Types and constants
 type ResourceFormErrors = {
@@ -77,7 +79,6 @@ type Resource = {
     width?: number;
     height?: number;
     article_thumbnail?: string;
-    admin_approval: string
 }
 
 const mockResources = [
@@ -198,6 +199,7 @@ export const ResourceManager = () => {
     const [videoPresignedUrl, setVideoPresignedUrl] = useState<string | null>(null);
     const [isLoadingVideo, setIsLoadingVideo] = useState(false);
     const [videoError, setVideoError] = useState<string | null>(null);
+    const [isPortraitVideo, setIsPortraitVideo] = useState(false);
 
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -509,25 +511,25 @@ export const ResourceManager = () => {
         // The useEffect will handle the API call with debouncing
     };
 
-    // Fetch presigned URL for video playback
+    // Fetch HLS URL for video playback
     const fetchVideoPresignedUrl = async (videoId: string) => {
         setIsLoadingVideo(true);
         setVideoError(null);
         
         try {
-            const response = await fetch(`https://interactapiverse.com/shape/videos/${videoId}/play`);
+            const response = await fetch(`https://interactapiverse.com/shape/videos/${videoId}/play-hls`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            if (data.status === '200' && data.data && data.data.presigned_url) {
-                setVideoPresignedUrl(data.data.presigned_url);
+            if (data.status === '200' && data.data && data.data.hls_url) {
+                setVideoPresignedUrl(data.data.hls_url);
             } else {
                 throw new Error(data.message || 'Failed to get video URL');
             }
         } catch (error) {
-            console.error('Error fetching video presigned URL:', error);
+            console.error('Error fetching video HLS URL:', error);
             setVideoError(error instanceof Error ? error.message : 'Failed to load video');
         } finally {
             setIsLoadingVideo(false);
@@ -574,23 +576,6 @@ export const ResourceManager = () => {
         localStorage.setItem("resources", JSON.stringify(resources));
     }, [resources]);
 
-    // Handle video autoplay when presigned URL is loaded
-    useEffect(() => {
-        if (videoPresignedUrl && videoModalOpen) {
-            // Small delay to ensure video element is rendered
-            const timer = setTimeout(() => {
-                const videoElement = document.querySelector('video');
-                if (videoElement) {
-                    videoElement.play().catch(error => {
-                        console.log('Autoplay prevented:', error);
-                        // Autoplay was prevented, user will need to click play
-                    });
-                }
-            }, 100);
-            
-            return () => clearTimeout(timer);
-        }
-    }, [videoPresignedUrl, videoModalOpen]);
 
     // Handle pagination changes - fetch new data for current page
     useEffect(() => {
@@ -986,6 +971,42 @@ export const ResourceManager = () => {
             toast.error(error.message || "An error occurred while deleting the article.");
         }
     }
+
+    useEffect(() => {
+        if (!selectedVideo) {
+            setIsPortraitVideo(false);
+            return;
+        }
+
+        if (selectedVideo.width && selectedVideo.height) {
+            setIsPortraitVideo(selectedVideo.height > selectedVideo.width);
+            return;
+        }
+
+        const previewSource = selectedVideo.article_thumbnail || selectedVideo.image;
+        if (!previewSource) {
+            setIsPortraitVideo(false);
+            return;
+        }
+
+        let isMounted = true;
+        const img = new Image();
+        img.onload = () => {
+            if (isMounted) {
+                setIsPortraitVideo(img.naturalHeight > img.naturalWidth);
+            }
+        };
+        img.onerror = () => {
+            if (isMounted) {
+                setIsPortraitVideo(false);
+            }
+        };
+        img.src = previewSource;
+
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedVideo]);
 
     return (
         <div className="space-y-6">
@@ -1617,7 +1638,14 @@ export const ResourceManager = () => {
 
             {/* Video Modal */}
             <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+                <DialogContent
+                    className={cn(
+                        "overflow-hidden p-0",
+                        isPortraitVideo
+                            ? "w-full max-w-md h-[90vh]"
+                            : "w-full max-w-4xl h-[90vh]"
+                    )}
+                >
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold">
                             {selectedVideo?.title || 'Video Player'}
@@ -1639,29 +1667,32 @@ export const ResourceManager = () => {
                                 <Button 
                                     onClick={() => selectedVideo && fetchVideoPresignedUrl(selectedVideo.id)}
                                     variant="outline"
+                                    className="mt-2"
                                 >
                                     Retry
                                 </Button>
                             </div>
                         ) : videoPresignedUrl ? (
                             <div className="space-y-4">
-                                <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '450px', minHeight: '450px' }}>
-                                    <video
-                                        controls
-                                        autoPlay
-                                        muted
-                                        className="w-full h-full object-contain"
-                                        poster={selectedVideo?.image || undefined}
-                                        style={{ minHeight: '400px' }}
-                                        onLoadedMetadata={(e) => {
-                                            // Ensure video maintains aspect ratio
-                                            const video = e.target as HTMLVideoElement;
-                                            video.style.height = '100%';
-                                        }}
-                                    >
-                                        <source src={videoPresignedUrl} type="video/mp4" />
-                                        Your browser does not support the video tag.
-                                    </video>
+                                <div
+                                    className={cn(
+                                        "relative bg-black rounded-2xl overflow-hidden flex items-center justify-center mx-auto w-full",
+                                        isPortraitVideo
+                                            ? "max-w-xs sm:max-w-sm h-[620px]"
+                                            : "min-h-[450px]"
+                                    )}
+                                >
+                                    <HlsPlayer
+                                        src={videoPresignedUrl}
+                                        poster={selectedVideo?.article_thumbnail || selectedVideo?.image || undefined}
+                                        autoPlay={true}
+                                        muted={true}
+                                        controls={true}
+                                        className={cn(
+                                            "w-full",
+                                            isPortraitVideo ? "h-full" : ""
+                                        )}
+                                    />
                                 </div>
                                 
                                 {selectedVideo && (

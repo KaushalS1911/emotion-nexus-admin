@@ -9,7 +9,28 @@ interface DatePickerDialogProps {
     title: string;
     selectedDate?: string;
     placeholder?: string;
+    disablePast?: boolean;
 }
+
+const startOfDay = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+};
+
+const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseDateString = (value?: string) => {
+    if (!value) return null;
+    const [year, month, day] = value.split('-').map(Number);
+    if ([year, month, day].some(isNaN)) return null;
+    return new Date(year, month - 1, day);
+};
 
 export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
     isOpen,
@@ -17,8 +38,10 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
     onDateSelect,
     title,
     selectedDate,
-    placeholder = "Select date"
+    placeholder = "Select date",
+    disablePast = false
 }) => {
+    const todayStart = startOfDay(new Date());
     const [currentDate, setCurrentDate] = useState(new Date());
     const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
 
@@ -29,10 +52,6 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
 
     const getFirstDayOfMonth = (year: number, month: number) => {
         return new Date(year, month, 1).getDay();
-    };
-
-    const formatDate = (date: Date) => {
-        return date.toISOString().split('T')[0];
     };
 
     const isToday = (date: Date) => {
@@ -58,12 +77,13 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
     };
 
     const handleDateSelect = (date: Date) => {
+        if (disablePast && startOfDay(date) < todayStart) return;
         setTempSelectedDate(date);
     };
 
     const handleOK = () => {
         if (tempSelectedDate) {
-            const formattedDate = formatDate(tempSelectedDate);
+            const formattedDate = formatLocalDate(tempSelectedDate);
             onDateSelect(formattedDate);
             onClose();
         }
@@ -71,8 +91,25 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
 
     const handleToday = () => {
         const today = new Date();
-        setTempSelectedDate(today);
+        if (disablePast && startOfDay(today) < todayStart) {
+            setTempSelectedDate(todayStart);
+        } else {
+            setTempSelectedDate(today);
+        }
     };
+
+    React.useEffect(() => {
+        if (!isOpen) return;
+        const parsedSelected = parseDateString(selectedDate);
+        if (parsedSelected) {
+            setCurrentDate(new Date(parsedSelected.getFullYear(), parsedSelected.getMonth(), 1));
+            setTempSelectedDate(parsedSelected);
+        } else {
+            const now = new Date();
+            setCurrentDate(new Date(now.getFullYear(), now.getMonth(), 1));
+            setTempSelectedDate(disablePast ? todayStart : now);
+        }
+    }, [isOpen, selectedDate, disablePast, todayStart]);
 
     if (!isOpen) return null;
 
@@ -141,6 +178,7 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                             const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                             const isTodayDate = isToday(date);
                             const isSelectedDate = isSelected(date);
+                            const isPastDate = disablePast && startOfDay(date) < todayStart;
                             
                             return (
                                 <button
@@ -152,7 +190,8 @@ export const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                                             : isTodayDate
                                             ? 'bg-[#FF6600]/10 text-[#FF6600] border border-[#FF6600]'
                                             : 'text-gray-700 hover:bg-gray-100'
-                                    }`}
+                                    } ${isPastDate ? 'opacity-40 pointer-events-none cursor-not-allowed' : ''}`}
+                                    disabled={isPastDate}
                                 >
                                     {day}
                                 </button>
@@ -196,6 +235,7 @@ interface DateInputButtonProps {
     placeholder?: string;
     className?: string;
     title?: string;
+    disablePast?: boolean;
 }
 
 export const DateInputButton: React.FC<DateInputButtonProps> = ({
@@ -203,7 +243,8 @@ export const DateInputButton: React.FC<DateInputButtonProps> = ({
     onChange,
     placeholder = "Select date",
     className = "",
-    title = "Select Date"
+    title = "Select Date",
+    disablePast = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -234,6 +275,7 @@ export const DateInputButton: React.FC<DateInputButtonProps> = ({
                 title={title}
                 selectedDate={value}
                 placeholder={placeholder}
+                disablePast={disablePast}
             />
         </>
     );

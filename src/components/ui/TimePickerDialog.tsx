@@ -11,6 +11,12 @@ interface TimePickerDialogProps {
     placeholder?: string;
 }
 
+const to12Hour = (hour24: number) => {
+    if (hour24 === 0) return 12;
+    if (hour24 > 12) return hour24 - 12;
+    return hour24;
+};
+
 export const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
     isOpen,
     onClose,
@@ -19,29 +25,36 @@ export const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
     selectedTime,
     placeholder = "Select time"
 }) => {
-    const [selectedHour, setSelectedHour] = useState<number>(() => {
-        if (selectedTime) {
-            const [hour] = selectedTime.split(':');
-            return parseInt(hour);
-        }
-        return new Date().getHours();
-    });
-    
-    const [selectedMinute, setSelectedMinute] = useState<number>(() => {
-        if (selectedTime) {
-            const [, minute] = selectedTime.split(':');
-            return parseInt(minute);
-        }
-        return 0;
-    });
+    const now = new Date();
+    const deriveHour = (time?: string) => {
+        if (!time) return to12Hour(now.getHours());
+        const [hour] = time.split(':');
+        return to12Hour(parseInt(hour, 10));
+    };
 
-    const [isAM, setIsAM] = useState<boolean>(() => {
-        if (selectedTime) {
-            const [hour] = selectedTime.split(':');
-            return parseInt(hour) < 12;
-        }
-        return new Date().getHours() < 12;
-    });
+    const deriveMinute = (time?: string) => {
+        if (!time) return Math.floor(now.getMinutes() / 15) * 15;
+        const [, minute] = time.split(':');
+        return parseInt(minute, 10);
+    };
+
+    const deriveIsAM = (time?: string) => {
+        if (!time) return now.getHours() < 12;
+        const [hour] = time.split(':');
+        return parseInt(hour, 10) < 12;
+    };
+
+    const [selectedHour, setSelectedHour] = useState<number>(() => deriveHour(selectedTime));
+    const [selectedMinute, setSelectedMinute] = useState<number>(() => deriveMinute(selectedTime));
+
+    const [isAM, setIsAM] = useState<boolean>(() => deriveIsAM(selectedTime));
+
+    React.useEffect(() => {
+        if (!isOpen) return;
+        setSelectedHour(deriveHour(selectedTime));
+        setSelectedMinute(deriveMinute(selectedTime));
+        setIsAM(deriveIsAM(selectedTime));
+    }, [isOpen, selectedTime]);
 
     const handleHourChange = (increment: boolean) => {
         setSelectedHour(prev => {
@@ -76,12 +89,9 @@ export const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
     };
 
     const handleNow = () => {
-        const now = new Date();
         const hour = now.getHours();
         const minute = now.getMinutes();
-        
-        // Set the time values without closing
-        setSelectedHour(hour === 0 ? 12 : hour > 12 ? hour - 12 : hour);
+        setSelectedHour(to12Hour(hour));
         setSelectedMinute(minute);
         setIsAM(hour < 12);
     };

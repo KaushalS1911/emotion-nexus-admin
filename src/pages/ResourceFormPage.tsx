@@ -309,7 +309,7 @@ export default function ResourceFormPage() {
     // Validation
     const validateForm = () => {
         const newErrors: ResourceFormErrors = {};
-        if (type === "article" && !form.title.trim()) newErrors.title = "Title is required";
+        if (!form.title.trim()) newErrors.title = "Title is required";
         if (!form.author.trim()) newErrors.author = "Author is required";
         if (!form.category_name) newErrors.category_name = "Category is required";
         if (!form.platform) newErrors.platform = "Platform is required";
@@ -336,6 +336,7 @@ export default function ResourceFormPage() {
                 const formData = new FormData();
                 formData.append("s3_key", form?.file?.s3_key ?? "");
                 formData.append("original_filename", form?.file?.filename ?? "");
+                formData.append("title", form?.title ?? "");
                 formData.append("age", form?.age ?? "");
                 formData.append("category", form?.category_name ?? "");
                 formData.append("tags", JSON.stringify(form?.tags));
@@ -472,62 +473,61 @@ export default function ResourceFormPage() {
                     )}
 
                     <Card className="p-6">
-                        <div className="flex flex-col gap-4">
-                            {/* Title and Category */}
-                            <div className="flex flex-col md:flex-row gap-4">
-                                {type === 'article' && (  <div className="flex-1">
-                                        <Label>Title</Label>
-                                        {isView ? (
-                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                {form.title}
-                                            </div>
-                                        ) : (
-                                            <Input
-                                                id="title"
-                                                value={form.title}
-                                                onChange={handleInput}
-                                                placeholder="Resource title..."
-                                                className={errors.title ? 'border-red-500' : ''}
-                                            />
-                                        )}
-                                        {errors.title && !isView && (
-                                            <div className="text-red-500 text-xs mt-1">{errors.title}</div>
-                                        )}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="flex flex-col gap-2">
+                                <Label>Title</Label>
+                                {isView ? (
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                        {form.title}
                                     </div>
+                                ) : (
+                                    <Input
+                                        id="title"
+                                        value={form.title}
+                                        onChange={handleInput}
+                                        placeholder={type === 'video' ? "Video title..." : "Resource title..."}
+                                        className={errors.title ? 'border-red-500' : ''}
+                                    />
                                 )}
-                                <div className="flex-1">
-                                    <Label>Category</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {form.category_name || "-"}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.category_name}
-                                            onValueChange={(v) => handleSelect("category_name", v)}
-                                            disabled={categoriesLoading}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={categoriesLoading ? "Loading..." : "Select category"}/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categoriesError && (
-                                                    <div className="text-red-500 text-xs p-2">{categoriesError}</div>
-                                                )}
-                                                {categories.map((cat) => (
-                                                    <SelectItem key={cat.id} value={cat.category}>
-                                                        {cat.category}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors.category_name && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.category_name}</div>
-                                    )}
-                                </div>
+                                {errors.title && !isView && (
+                                    <div className="text-red-500 text-xs mt-1">{errors.title}</div>
+                                )}
+                            </div>
 
-                                {type === "video"  && <div className="flex-1">
+                            <div className="flex flex-col gap-2">
+                                <Label>Category</Label>
+                                {isView ? (
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                        {form.category_name || "-"}
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={form.category_name}
+                                        onValueChange={(v) => handleSelect("category_name", v)}
+                                        disabled={categoriesLoading}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={categoriesLoading ? "Loading..." : "Select category"}/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categoriesError && (
+                                                <div className="text-red-500 text-xs p-2">{categoriesError}</div>
+                                            )}
+                                            {categories.map((cat) => (
+                                                <SelectItem key={cat.id} value={cat.category}>
+                                                    {cat.category}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {errors.category_name && !isView && (
+                                    <div className="text-red-500 text-xs mt-1">{errors.category_name}</div>
+                                )}
+                            </div>
+
+                            {type === "video" && (
+                                <div className="flex flex-col gap-2">
                                     <Label>Type</Label>
                                     {isView ? (
                                         <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
@@ -553,109 +553,202 @@ export default function ResourceFormPage() {
                                     {errors.type && !isView && (
                                         <div className="text-red-500 text-xs mt-1">{errors?.type}</div>
                                     )}
-                                </div>}
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Author</Label>
+                                {isView ? (
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                        {form.author}
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={form.author}
+                                        onValueChange={(v) => handleSelect("author", v)}
+                                        disabled={counsellorsLoading}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={counsellorsLoading ? "Loading..." : "Select author"}/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {counsellorsError && (
+                                                <div className="text-red-500 text-xs p-2">{counsellorsError}</div>
+                                            )}
+                                            {counsellors.map((c) => (
+                                                <SelectItem key={c.user_id} value={c.full_name}>
+                                                    {c.full_name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {errors.author && !isView && (
+                                    <div className="text-red-500 text-xs mt-1">{errors.author}</div>
+                                )}
                             </div>
 
-                            {/* Author and Image/Video */}
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
-                                    <Label>Author</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {form.author}
+                            {type === 'video' ? (
+                                <div className="flex flex-col gap-2 md:col-span-2">
+                                    <Label>Video File</Label>
+                                    {filePreview ? (
+                                        <div className="relative mt-2 w-full max-w-md">
+                                            <video
+                                                src={filePreview}
+                                                controls
+                                                className="w-full h-40 object-cover rounded"
+                                            />
+                                            {!isView && (
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                    onClick={handleRemoveFile}
+                                                    aria-label="Remove video"
+                                                >
+                                                    <X className="w-4 h-4 text-gray-700"/>
+                                                </button>
+                                            )}
                                         </div>
+                                    ) : isView ? (
+                                        <div className="py-2 px-3 text-gray-400">No video</div>
                                     ) : (
-                                        <Select
-                                            value={form.author}
-                                            onValueChange={(v) => handleSelect("author", v)}
-                                            disabled={counsellorsLoading}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={counsellorsLoading ? "Loading..." : "Select author"}/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {counsellorsError && (
-                                                    <div className="text-red-500 text-xs p-2">{counsellorsError}</div>
-                                                )}
-                                                {counsellors.map((c) => (
-                                                    <SelectItem key={c.user_id} value={c.full_name}>
-                                                        {c.full_name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors.author && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.author}</div>
-                                    )}
-                                </div>
-
-                                <div className="flex-1">
-                                    {type === 'video' ? (
                                         <>
-                                            <Label>Video File</Label>
-                                            {filePreview ? (
-                                                <div className="relative mt-2 w-full max-w-xs">
-                                                    <video
-                                                        src={filePreview}
-                                                        controls
-                                                        className="w-full h-32 object-cover rounded"
-                                                    />
-                                                    {!isView && (
-                                                        <button
-                                                            type="button"
-                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                            onClick={handleRemoveFile}
-                                                            aria-label="Remove video"
-                                                        >
-                                                            <X className="w-4 h-4 text-gray-700"/>
-                                                        </button>
-                                                    )}
+                                            <Input
+                                                id="file"
+                                                type="file"
+                                                accept="video/*"
+                                                onChange={(e) => handleFile("file", e)}
+                                                ref={fileInputRef}
+                                                disabled={isUploading}
+                                            />
+                                            {isUploading && (
+                                                <div className="mt-2 space-y-2">
+                                                    <div className="flex justify-between text-xs text-gray-600">
+                                                        <span>Uploading video...</span>
+                                                        <span>{uploadProgress}%</span>
+                                                    </div>
+                                                    <Progress value={uploadProgress} className="h-2" />
                                                 </div>
-                                            ) : isView ? (
-                                                <div className="py-2 px-3 text-gray-400">No video</div>
-                                            ) : (
-                                                <>
-                                                    <Input
-                                                        id="file"
-                                                        type="file"
-                                                        accept="video/*"
-                                                        onChange={(e) => handleFile("file", e)}
-                                                        ref={fileInputRef}
-                                                        disabled={isUploading}
-                                                    />
-                                                    {isUploading && (
-                                                        <div className="mt-2 space-y-2">
-                                                            <div className="flex justify-between text-xs text-gray-600">
-                                                                <span>Uploading video...</span>
-                                                                <span>{uploadProgress}%</span>
-                                                            </div>
-                                                            <Progress value={uploadProgress} className="h-2" />
-                                                        </div>
-                                                    )}
-                                                    <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI</div>
-                                                    {errors.file && (
-                                                        <div className="text-red-500 text-xs mt-1">{errors.file}</div>
-                                                    )}
-                                                </>
+                                            )}
+                                            <div className="text-xs text-gray-500 mt-1">MP4, MOV or AVI</div>
+                                            {errors.file && (
+                                                <div className="text-red-500 text-xs mt-1">{errors.file}</div>
                                             )}
                                         </>
-                                    ) : (<div className="flex-1">
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-2 md:col-span-2">
+                                    <Label>Thumbnail Image</Label>
+                                    {(emptyPreview || (form.emptyImage && typeof form.emptyImage === 'string')) ? (
+                                        <div className="relative mt-2 w-full max-w-md">
+                                            <img
+                                                src={emptyPreview || (typeof form.emptyImage === 'string' ? form.emptyImage : '')}
+                                                alt="Thumbnail Preview"
+                                                className="w-full h-40 object-cover rounded"
+                                            />
+                                            {!isView && (
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
+                                                    onClick={() => {
+                                                        setForm(f => ({ ...f, emptyImage: null }));
+                                                        setEmptyPreview(null);
+                                                    }}
+                                                    aria-label="Remove thumbnail"
+                                                >
+                                                    <X className="w-4 h-4 text-gray-700" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : isView ? (
+                                        <div className="py-2 px-3 text-gray-400">No thumbnail</div>
+                                    ) : (
+                                        <>
+                                            <Input
+                                                id="emptyImage"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={e => handleFile("emptyImage", e)}
+                                            />
+                                            <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Platform</Label>
+                                {isView ? (
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                        {platforms.find(p => p.value.toLowerCase() === form.platform.toLowerCase())?.label || form.platform}
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={form.platform}
+                                        onValueChange={(v) => handleSelect("platform", v)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select platform"/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {platforms.map((platform) => (
+                                                <SelectItem key={platform.value} value={platform.value}>
+                                                    {platform.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {errors.platform && !isView && (
+                                    <div className="text-red-500 text-xs mt-1">{errors.platform}</div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Age</Label>
+                                {isView ? (
+                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                        {form.age}
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={form.age}
+                                        onValueChange={(v) => handleSelect("age", v)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select age"/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {ages.map((age) => (
+                                                <SelectItem key={age} value={age}>{age}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {errors.age && !isView && (
+                                    <div className="text-red-500 text-xs mt-1">{errors.age}</div>
+                                )}
+                            </div>
+
+                            {type === 'video' && (
+                                <>
+                                    <div className="flex flex-col gap-2">
                                         <Label>Thumbnail Image</Label>
-                                        {(emptyPreview || (form.emptyImage && typeof form.emptyImage === 'string')) ? (
-                                            <div className="relative mt-2 w-full max-w-xs">
+                                        {(thumbnailPreview || (form.thumbnail && typeof form.thumbnail === 'string')) ? (
+                                            <div className="relative mt-2 w-full max-w-md">
                                                 <img
-                                                    src={emptyPreview || (typeof form.emptyImage === 'string' ? form.emptyImage : '')}
+                                                    src={thumbnailPreview || (typeof form.thumbnail === 'string' ? form.thumbnail : '')}
                                                     alt="Thumbnail Preview"
-                                                    className="w-full h-32 object-cover rounded"
+                                                    className="w-full h-40 object-cover rounded"
                                                 />
                                                 {!isView && (
                                                     <button
                                                         type="button"
                                                         className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
                                                         onClick={() => {
-                                                            setForm(f => ({ ...f, emptyImage: null }));
-                                                            setEmptyPreview(null);
+                                                            setForm(f => ({ ...f, thumbnail: null }));
+                                                            setThumbnailPreview(null);
                                                         }}
                                                         aria-label="Remove thumbnail"
                                                     >
@@ -668,203 +761,93 @@ export default function ResourceFormPage() {
                                         ) : (
                                             <>
                                                 <Input
-                                                    id="emptyImage"
+                                                    id="thumbnail"
                                                     type="file"
                                                     accept="image/*"
-                                                    onChange={e => handleFile("emptyImage", e)}
+                                                    onChange={e => handleThumbnailChange("thumbnail", e)}
                                                 />
                                                 <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
                                             </>
                                         )}
-                                    </div>) }
-                                </div>
-                            </div>
-
-                            {/* Platform, Age, Status */}
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
-                                    <Label>Platform</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {platforms.find(p => p.value.toLowerCase() === form.platform.toLowerCase())?.label || form.platform}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.platform}
-                                            onValueChange={(v) => handleSelect("platform", v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select platform"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {platforms.map((platform) => (
-                                                    <SelectItem key={platform.value} value={platform.value}>
-                                                        {platform.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors.platform && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.platform}</div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <Label>Age</Label>
-                                    {isView ? (
-                                        <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                            {form.age}
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            value={form.age}
-                                            onValueChange={(v) => handleSelect("age", v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select age"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {ages.map((age) => (
-                                                    <SelectItem key={age} value={age}>{age}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                    {errors.age && !isView && (
-                                        <div className="text-red-500 text-xs mt-1">{errors.age}</div>
-                                    )}
-                                </div>
-
-                            </div>
-
-
-                                {/* Premium field */}
-                            {type === 'video' && (
-                                    <div className="flex flex-col md:flex-row gap-4">
-                                        {/* Thumbnail field */}
-                                        <div className="flex-1">
-                                            <Label>Thumbnail Image</Label>
-                                            {(thumbnailPreview || (form.thumbnail && typeof form.thumbnail === 'string')) ? (
-                                                <div className="relative mt-2 w-full max-w-xs">
-                                                    <img
-                                                        src={thumbnailPreview || (typeof form.thumbnail === 'string' ? form.thumbnail : '')}
-                                                        alt="Thumbnail Preview"
-                                                        className="w-full h-32 object-cover rounded"
-                                                    />
-                                                    {!isView && (
-                                                        <button
-                                                            type="button"
-                                                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 hover:bg-opacity-100 border border-gray-300"
-                                                            onClick={() => {
-                                                                setForm(f => ({ ...f, thumbnail: null }));
-                                                                setThumbnailPreview(null);
-                                                            }}
-                                                            aria-label="Remove thumbnail"
-                                                        >
-                                                            <X className="w-4 h-4 text-gray-700" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ) : isView ? (
-                                                <div className="py-2 px-3 text-gray-400">No thumbnail</div>
-                                            ) : (
-                                                <>
-                                                    <Input
-                                                        id="thumbnail"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={e => handleThumbnailChange("thumbnail", e)}
-                                                    />
-                                                    <div className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. 1MB max.</div>
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className='flex-1'>
-                                            <Label>Premium</Label>
-
-                                            <div className="flex-1 mt-4">
-                                                {isView ? (
-                                                    <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                        {form.premium === "premium" ? "Premium" : "Open to All"}
-                                                    </div>
-                                                ) : (
-                                                    <Select
-                                                        value={form.premium}
-                                                        onValueChange={(v) => setForm(f => ({ ...f, premium: v }))}
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select premium type" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="premium">Premium</SelectItem>
-                                                            <SelectItem value="open to all">Open to All</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                )}
-                                            </div>
-
-                                        </div>
                                     </div>
 
-                                )}
-
+                                    <div className="flex flex-col gap-2">
+                                        <Label>Premium</Label>
+                                        {isView ? (
+                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                {form.premium === "premium" ? "Premium" : "Open to All"}
+                                            </div>
+                                        ) : (
+                                            <Select
+                                                value={form.premium}
+                                                onValueChange={(v) => setForm(f => ({ ...f, premium: v }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select premium type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="premium">Premium</SelectItem>
+                                                    <SelectItem value="open to all">Open to All</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    </div>
+                                </>
+                            )}
 
                             {type === 'article' && (
                                 <>
-                                    <div className="flex flex-col md:flex-row gap-4">
-                                        <div className="flex-1">
-                                            <Label>Resource Status</Label>
-                                            {isView ? (
-                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                    {resourceStatusOptions.find(s => s.value === form.resource_status)?.label || form.resource_status}
-                                                </div>
-                                            ) : (
-                                                <Select
-                                                    value={form.resource_status}
-                                                    onValueChange={(v) => handleSelect("resource_status", v)}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select resource status"/>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {resourceStatusOptions.map((opt) => (
-                                                            <SelectItem key={opt.value} value={opt.value}>
-                                                                {opt.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        </div>
-
-                                        <div className="flex-1">
-                                            <Label>Status</Label>
-                                            {isView ? (
-                                                <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
-                                                    {statusOptions.find(s => s.value === form.status)?.label || form.status}
-                                                </div>
-                                            ) : (
-                                                <Select
-                                                    value={form.status}
-                                                    onValueChange={(v) => handleSelect("status", v)}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select status"/>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {statusOptions.map((opt) => (
-                                                            <SelectItem key={opt.value} value={opt.value}>
-                                                                {opt.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Label>Resource Status</Label>
+                                        {isView ? (
+                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                {resourceStatusOptions.find(s => s.value === form.resource_status)?.label || form.resource_status}
+                                            </div>
+                                        ) : (
+                                            <Select
+                                                value={form.resource_status}
+                                                onValueChange={(v) => handleSelect("resource_status", v)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select resource status"/>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {resourceStatusOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
                                     </div>
 
-                                    {/* Description - Only for articles */}
-                                    <div>
+                                    <div className="flex flex-col gap-2">
+                                        <Label>Status</Label>
+                                        {isView ? (
+                                            <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800">
+                                                {statusOptions.find(s => s.value === form.status)?.label || form.status}
+                                            </div>
+                                        ) : (
+                                            <Select
+                                                value={form.status}
+                                                onValueChange={(v) => handleSelect("status", v)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select status"/>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {statusOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 md:col-span-2">
                                         <Label>Description</Label>
                                         {isView ? (
                                             <div className="py-2 px-3 bg-gray-50 rounded border text-gray-800 min-h-[48px]">
@@ -889,8 +872,7 @@ export default function ResourceFormPage() {
                                 </>
                             )}
 
-                            {/* Tags */}
-                            <div>
+                            <div className="flex flex-col gap-2 md:col-span-2">
                                 <Label>Tags</Label>
                                 {isView ? (
                                     <div className="flex flex-wrap gap-2 mb-2">

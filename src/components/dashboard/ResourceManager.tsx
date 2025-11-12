@@ -356,7 +356,7 @@ export const ResourceManager = () => {
                 return {
                     id: video.id || Date.now() + index,
                     admin_approval: video.admin_approval || '',
-                    title: video.original_filename || video.filename || `Video ${index + 1}`,
+                    title: video.title || video.original_filename || video.filename || `Video ${index + 1}`,
                     type: 'video',
                     category_name: video.category || 'General',
                     counsellor_name: video.author || '',

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from "react";
+import React, {useEffect, useState, useMemo, useCallback} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
@@ -11,9 +11,9 @@ import {getDay} from 'date-fns/getDay';
 import {enUS} from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {addMinutes} from 'date-fns';
-import {Select} from "@/components/ui/select";
 import {DateInputButton} from "@/components/ui/DatePickerDialog";
 import {TimeInputButton} from "@/components/ui/TimePickerDialog";
+import {useUserContext} from "@/UserContext";
 
 const locales = {'en-US': enUS};
 const localizer = dateFnsLocalizer({
@@ -42,11 +42,13 @@ interface Slot {
 function formatTime12h(time: string) {
     if (!time) return "";
     const [h, m] = time.split(":");
-    let hour = parseInt(h, 10);
+    let hour = parseInt(h ?? "0", 10);
+    const minute = (m ?? "00").replace(/\D/g, "").padStart(2, "0");
     const ampm = hour >= 12 ? "PM" : "AM";
     hour = hour % 12;
     if (hour === 0) hour = 12;
-    return `${hour}:${m} ${ampm}`;
+    const displayHour = hour === 0 ? 12 : hour;
+    return `${displayHour}:${minute} ${ampm}`;
 }
 
 function getTimeOfDayBorderColor(time: string) {
@@ -60,6 +62,7 @@ function getTimeOfDayBorderColor(time: string) {
 }
 
 function SlotPage() {
+    const {user} = useUserContext();
     const [slots, setSlots] = useState<Slot[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogForceOpen, setDialogForceOpen] = useState(false);
@@ -77,35 +80,108 @@ function SlotPage() {
     const [timeOfDayFilter, setTimeOfDayFilter] = useState('all');
     const [successDialogOpen, setSuccessDialogOpen] = useState(false);
 
-    // Fetch slots from API on mount
-    useEffect(() => {
-        fetch("https://interactapiverse.com/mahadevasth/user/slots?user_id=1")
-            .then(res => res.json())
-            .then((data: ApiSlot[]) => {
-                // Flatten API slots to Slot[] for calendar
-                const flat: Slot[] = [];
-                data.forEach(apiSlot => {
-                    apiSlot.available_slots.forEach(range => {
-                        // Parse "10:00AM-11:00AM" to 24h
-                        const [start, end] = range.split("-");
-                        const parseTime = (t: string) => {
-                            let [h, m] = t.replace(/AM|PM/, '').split(":");
-                            let hour = parseInt(h, 10);
-                            if (/PM/.test(t) && hour !== 12) hour += 12;
-                            if (/AM/.test(t) && hour === 12) hour = 0;
-                            return `${hour.toString().padStart(2, '0')}:${m}`;
-                        };
-                        flat.push({
-                            id: `${apiSlot.slot_date}-${range}`,
-                            date: apiSlot.slot_date,
-                            startTime: parseTime(start),
-                            endTime: parseTime(end),
-                        });
-                    });
-                });
-                setSlots(flat);
-            });
+    const [activeUserId, setActiveUserId] = useState<string | null>(() => {
+        if (typeof window === "undefined") return null;
+        return sessionStorage.getItem("user-token");
+    });
+
+    const formatDateKey = useCallback((date: Date) => {
+        const year = date.getFullYear();
+        const month = `${date.getMonth() + 1}`.padStart(2, '0');
+        const day = `${date.getDate()}`.padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }, []);
+
+    const startOfToday = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+    }, []);
+
+    const normalizeDate = useCallback((date: Date) => {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    }, []);
+
+    const buildDateWithTime = useCallback((dateStr: string, timeStr: string) => {
+        const [year, month, day] = dateStr.split("-").map(Number);
+        const [rawHour, rawMinute] = (timeStr || "").split(":");
+        const parsedHour = parseInt(rawHour ?? "", 10);
+        const parsedMinute = parseInt(rawMinute ?? "", 10);
+        const hour = Number.isNaN(parsedHour) ? 0 : parsedHour;
+        const minute = Number.isNaN(parsedMinute) ? 0 : parsedMinute;
+        return new Date(year, (month ?? 1) - 1, day ?? 1, hour, minute, 0, 0);
+    }, []);
+
+    const getUserSlotsEndpoint = useCallback(
+        (userId: string) => `https://interactapiverse.com/mahadevasth/user-slots/${userId}`,
+        []
+    );
+
+    const transformApiSlots = useCallback((data: ApiSlot[]): Slot[] => {
+        const flat: Slot[] = [];
+        data.forEach(apiSlot => {
+            apiSlot.available_slots.forEach(range => {
+                const [start, end] = range.split("-");
+                const parseTime = (t: string) => {
+                    const cleaned = t.trim().toUpperCase();
+                    const match = cleaned.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/);
+
+                    if (!match) {
+                        return "";
+                    }
+
+                    let [, hourStr, minuteStr, meridiem] = match;
+                    let hour = parseInt(hourStr ?? "0", 10);
+                    const minute = minuteStr ?? "00";
+
+                    if (meridiem === "PM" && hour !== 12) hour += 12;
+                    if (meridiem === "AM" && hour === 12) hour = 0;
+
+                    return `${hour.toString().padStart(2, "0")}:${minute}`;
+                };
+                const parsedStart = parseTime(start);
+                const parsedEnd = parseTime(end);
+                if (!parsedStart || !parsedEnd) {
+                    return;
+                }
+                flat.push({
+                    id: `${apiSlot.slot_date}-${range}`,
+                    date: apiSlot.slot_date,
+                    startTime: parsedStart,
+                    endTime: parsedEnd,
+                });
+            });
+        });
+        return flat;
+    }, []);
+
+    useEffect(() => {
+        if (user?.id) {
+            setActiveUserId(user.id.toString());
+        } else if (typeof window !== "undefined") {
+            const stored = sessionStorage.getItem("user-token");
+            if (stored) setActiveUserId(stored);
+        }
+    }, [user]);
+
+    const fetchSlotsForUser = useCallback(async (userId: string) => {
+        try {
+            const response = await fetch(getUserSlotsEndpoint(userId));
+            const json = await response.json();
+            const slotsData: ApiSlot[] = Array.isArray(json) ? json : json?.data || [];
+            setSlots(transformApiSlots(slotsData));
+        } catch (error) {
+            console.error("Failed to fetch slots:", error);
+            setSlots([]);
+        }
+    }, [getUserSlotsEndpoint, transformApiSlots]);
+
+    useEffect(() => {
+        if (!activeUserId) return;
+        fetchSlotsForUser(activeUserId);
+    }, [activeUserId, fetchSlotsForUser]);
 
     // Filtering logic (add time of day filter)
     const filteredSlots = useMemo(() => {
@@ -130,8 +206,9 @@ function SlotPage() {
 
     // Calendar events
     const events = useMemo(() => filteredSlots.map(slot => {
-        const start = new Date(`${slot.date}T${slot.startTime}`);
-        const end = new Date(`${slot.date}T${slot.endTime}`);
+        const start = buildDateWithTime(slot.date, slot.startTime);
+        const end = buildDateWithTime(slot.date, slot.endTime);
+
         return {
             id: slot.id,
             title: `${formatTime12h(slot.startTime)} - ${formatTime12h(slot.endTime)}`,
@@ -139,7 +216,7 @@ function SlotPage() {
             end,
             slot,
         };
-    }), [filteredSlots]);
+    }), [filteredSlots, buildDateWithTime]);
 
     // Helper: get all slots for a date (yyyy-mm-dd)
     const getSlotsForDate = (dateStr: string) =>
@@ -188,7 +265,14 @@ function SlotPage() {
     };
 
     const openCreateDialog = (date?: Date) => {
-        setEditSlotDate(date ? format(date, 'yyyy-MM-dd') : "");
+        let initialDate: string | "";
+        if (date) {
+            const normalized = normalizeDate(date);
+            initialDate = normalizeDate(normalized) < startOfToday ? formatDateKey(startOfToday) : formatDateKey(normalized);
+        } else {
+            initialDate = formatDateKey(startOfToday);
+        }
+        setEditSlotDate(initialDate);
         setSlotTimes([{startTime: "", endTime: ""}]);
         setErrors({});
         setDialogOpen(true);
@@ -200,13 +284,28 @@ function SlotPage() {
     const handleRemoveTimeRange = (idx: number) => {
         setSlotTimes(slotTimes.filter((_, i) => i !== idx));
     };
+    const clearError = useCallback((key: string) => {
+        setErrors(prev => {
+            if (!prev[key]) return prev;
+            const {[key]: _, ...rest} = prev;
+            return rest;
+        });
+    }, []);
+
     const handleTimeChange = (idx: number, field: 'startTime' | 'endTime', value: string) => {
         setSlotTimes(slotTimes.map((t, i) => i === idx ? {...t, [field]: value} : t));
+        clearError(`${field}${idx}`);
     };
 
     const validate = () => {
         const newErrors: { [k: string]: string } = {};
         if (!editSlotDate) newErrors.date = "Date is required";
+        if (editSlotDate) {
+            const selected = normalizeDate(new Date(editSlotDate));
+            if (selected < startOfToday) {
+                newErrors.date = "Date cannot be in the past";
+            }
+        }
         slotTimes.forEach((t, idx) => {
             if (!t.startTime) newErrors[`startTime${idx}`] = "Start time required";
             if (!t.endTime) newErrors[`endTime${idx}`] = "End time required";
@@ -225,53 +324,30 @@ function SlotPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+        if (!activeUserId) {
+            console.error("No active user id found for slot submission");
+            return;
+        }
         // Format available_slots as ["10:00AM-11:00AM", ...]
         const available_slots = slotTimes.map(t => {
-            const to12h = (time: string) => {
-                let [h, m] = time.split(":");
-                let hour = parseInt(h, 10);
-                const ampm = hour >= 12 ? "PM" : "AM";
-                hour = hour % 12;
-                if (hour === 0) hour = 12;
-                return `${hour}:${m}${ampm}`;
-            };
+            const to12h = (time: string) => formatTime12h(time).replace(/\s+/g, " ").trim();
             return `${to12h(t.startTime)}-${to12h(t.endTime)}`;
         });
         const payload = {
-            user_id: 1,
+            user_id: parseInt(activeUserId, 10),
             slot_date: editSlotDate,
             available_slots,
         };
-        await fetch("https://interactapiverse.com/mahadevasth/user/slots", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload),
-        });
-        // Refetch slots after save
-        fetch("https://interactapiverse.com/mahadevasth/user/slots?user_id=1")
-            .then(res => res.json())
-            .then((data: ApiSlot[]) => {
-                const flat: Slot[] = [];
-                data.forEach(apiSlot => {
-                    apiSlot.available_slots.forEach(range => {
-                        const [start, end] = range.split("-");
-                        const parseTime = (t: string) => {
-                            let [h, m] = t.replace(/AM|PM/, '').split(":");
-                            let hour = parseInt(h, 10);
-                            if (/PM/.test(t) && hour !== 12) hour += 12;
-                            if (/AM/.test(t) && hour === 12) hour = 0;
-                            return `${hour.toString().padStart(2, '0')}:${m}`;
-                        };
-                        flat.push({
-                            id: `${apiSlot.slot_date}-${range}`,
-                            date: apiSlot.slot_date,
-                            startTime: parseTime(start),
-                            endTime: parseTime(end),
-                        });
-                    });
-                });
-                setSlots(flat);
+        try {
+            await fetch(getUserSlotsEndpoint(activeUserId), {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
             });
+            await fetchSlotsForUser(activeUserId);
+        } catch (error) {
+            console.error("Failed to create slot:", error);
+        }
         setDialogOpen(false);
         setSuccessDialogOpen(true);
     };
@@ -402,7 +478,13 @@ function SlotPage() {
                     style={{height: 600, fontFamily: 'inherit'}}
                     views={["month"]}
                     defaultView="month"
-                    onSelectSlot={slotInfo => openCreateDialog(slotInfo.start)}
+                    onSelectSlot={slotInfo => {
+                        const selectedDate = normalizeDate(slotInfo.start);
+                        if (selectedDate < startOfToday) {
+                            return;
+                        }
+                        openCreateDialog(slotInfo.start);
+                    }}
                     selectable
                     onSelectEvent={event => {
                         const slot = event.slot;
@@ -494,9 +576,13 @@ function SlotPage() {
                             <label className="block text-sm font-semibold mb-2 text-[#012765]">Date</label>
                             <DateInputButton
                                 value={editSlotDate}
-                                onChange={setEditSlotDate}
+                                onChange={(value) => {
+                                    setEditSlotDate(value);
+                                    clearError("date");
+                                }}
                                 placeholder="Select date"
                                 title="Select Slot Date"
+                                disablePast
                             />
                             {errors.date && (
                                 <div className="text-red-500 text-xs mt-1">{errors.date}</div>
